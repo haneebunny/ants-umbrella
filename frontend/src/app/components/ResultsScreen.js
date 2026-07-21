@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Icon from './Icon';
 import AssetChart from './AssetChart';
 
@@ -10,30 +10,173 @@ export default function ResultsScreen({ theme, profile, onReset, toggleTheme }) 
   const [isConnecting, setIsConnecting] = useState(false);
   const [showDemoPortfolio, setShowDemoPortfolio] = useState(false);
 
-  // 가상 포트폴리오 데이터 (사용자 슬라이더 수정 대응)
+  // 가상 포트폴리오 데이터 상태 (초기 기본값 지정 후 마운트 시 target_risk_band와 연동하여 동적 업데이트)
   const [portfolio, setPortfolio] = useState([
-    { ticker: '005930', name: '삼성전자', weight: 35, direction: 'down', confidence: 'strong', change: -1.2,
-      evidences: [
-        { type: 'ESG', direction: '부정', category: '지배구조', title: '이사회 투명성 결여 및 ESG 지배구조 리스크 논란', url: '#' },
-        { type: '공시', direction: '부정', category: '자본이벤트', title: '단기 차입금 증가 및 대규모 유상증자 결정 공시', url: '#' }
-      ]
-    },
-    { ticker: '000660', name: 'SK하이닉스', weight: 25, direction: 'up', confidence: 'medium', change: 2.1,
-      evidences: [
-        { type: '산업', direction: '긍정', category: '산업·사업동향', title: '차세대 HBM4 패키징 기술 최초 상용화 및 대규모 공급 계약 체결', url: '#' }
-      ]
-    },
-    { ticker: '005380', name: '현대차', weight: 20, direction: 'up', confidence: 'weak', change: 0.5,
-      evidences: [
-        { type: '재무', direction: '긍정', category: '실적·재무', title: '글로벌 하이브리드 판매 호조로 2분기 영업이익 역대 최고치 경신', url: '#' }
-      ]
-    },
-    { ticker: '035720', name: '카카오', weight: 20, direction: 'down', confidence: 'medium', change: -0.8,
-      evidences: [
-        { type: 'ESG', direction: '부정', category: '지배구조', title: '계열사 지분 매각 추진 및 경영진 사법 리스크 확산 우려', url: '#' }
-      ]
-    }
+    { ticker: '005930', name: '삼성전자', weight: 25, direction: 'down', confidence: 'strong', change: -1.2, evidences: [] }
   ]);
+
+  // 성향별 portfolio.json 스펙 기반 포트폴리오 로딩 및 실시간 백엔드 API 연동
+  useEffect(() => {
+    let initialHoldings = [];
+    const band = profile.target_risk_band;
+    
+    if (band === 'CONSERVATIVE' || band === 'MODERATE_CONSERVATIVE') {
+      // 1번 포트폴리오 [안정추구형] 대형 우량주 & 전통 배당·방어
+      initialHoldings = [
+        { ticker: '032830', name: '삼성생명', weight: 26, direction: 'down', confidence: 'medium', change: -0.5,
+          evidences: [
+            { type: 'ESG', direction: '부정', category: '지배구조', title: '계열사 지원 부담 및 지배구조 지배력 불투명성 부각', url: '#' }
+          ]
+        },
+        { ticker: '033780', name: 'KT&G', weight: 25, direction: 'up', confidence: 'weak', change: 0.2, evidences: [] },
+        { ticker: '105560', name: 'KB금융', weight: 25, direction: 'up', confidence: 'medium', change: 1.1,
+          evidences: [
+            { type: '재무', direction: '긍정', category: '실적·재무', title: '금리 방어선 유지 및 대출 포트폴리오 자산 성장세 지속', url: '#' }
+          ]
+        },
+        { ticker: '005380', name: '현대차', weight: 24, direction: 'down', confidence: 'weak', change: -0.2, evidences: [] }
+      ];
+    } else if (band === 'GROWTH' || band === 'AGGRESSIVE') {
+      // 2번 포트폴리오 [성장·테크 집중형] 대한민국 주도주
+      initialHoldings = [
+        { ticker: '005930', name: '삼성전자', weight: 25, direction: 'down', confidence: 'strong', change: -1.2,
+          evidences: [
+            { type: '공시', direction: '부정', category: '자본이벤트', title: '단기 설비 투자 차입금 증가 결정 공시', url: '#' }
+          ]
+        },
+        { ticker: '000660', name: 'SK하이닉스', weight: 26, direction: 'up', confidence: 'medium', change: 2.1,
+          evidences: [
+            { type: '산업', direction: '긍정', category: '산업·사업동향', title: 'HBM4 기술 상용화 및 대규모 차세대 메모리 공급 계약 체결', url: '#' }
+          ]
+        },
+        { ticker: '373220', name: 'LG에너지솔루션', weight: 24, direction: 'up', confidence: 'weak', change: 0.5, evidences: [] },
+        { ticker: '035420', name: 'NAVER', weight: 25, direction: 'down', confidence: 'medium', change: -0.8, evidences: [] }
+      ];
+    } else {
+      // 3번 포트폴리오 [복합 분산형] SASB 업종 다각화 8선 (BALANCED 등 기본값)
+      initialHoldings = [
+        { ticker: '005490', name: 'POSCO홀딩스', weight: 12, direction: 'down', confidence: 'medium', change: -0.4, evidences: [] },
+        { ticker: '068270', name: '셀트리온', weight: 13, direction: 'up', confidence: 'weak', change: 0.3, evidences: [] },
+        { ticker: '055550', name: '신한지주', weight: 12, direction: 'up', confidence: 'medium', change: 1.0, evidences: [] },
+        { ticker: '000270', name: '기아', weight: 12, direction: 'up', confidence: 'weak', change: 0.2, evidences: [] },
+        { ticker: '051910', name: 'LG화학', weight: 13, direction: 'down', confidence: 'medium', change: -0.7, evidences: [] },
+        { ticker: '028260', name: '삼성물산', weight: 12, direction: 'up', confidence: 'weak', change: 0.1, evidences: [] },
+        { ticker: '017670', name: 'SK텔레콤', weight: 13, direction: 'up', confidence: 'medium', change: 0.8, evidences: [] },
+        { ticker: '010950', name: 'S-Oil', weight: 13, direction: 'down', confidence: 'weak', change: -0.3, evidences: [] }
+      ];
+    }
+
+    // 1. 백엔드에서 포트폴리오 구성 템플릿(portfolio.json) 가져오기 시도
+    const fetchRealtimeScores = async () => {
+      setIsConnecting(true);
+      
+      let initialHoldings = [];
+      let portfoliosData = null;
+
+      try {
+        const portRes = await fetch("http://localhost:8000/portfolios");
+        if (portRes.ok) {
+          portfoliosData = await portRes.json();
+        }
+      } catch (err) {
+        console.warn("[API Connect] 포트폴리오 템플릿 로딩 실패, 로컬 폴백 사용:", err);
+      }
+
+      if (portfoliosData && portfoliosData.portfolios) {
+        let targetPort = null;
+        if (band === 'CONSERVATIVE' || band === 'MODERATE_CONSERVATIVE') {
+          targetPort = portfoliosData.portfolios.find(p => p.portfolio_id === 'portfolio_001');
+        } else if (band === 'GROWTH' || band === 'AGGRESSIVE') {
+          targetPort = portfoliosData.portfolios.find(p => p.portfolio_id === 'portfolio_002');
+        } else {
+          targetPort = portfoliosData.portfolios.find(p => p.portfolio_id === 'portfolio_003');
+        }
+
+        if (targetPort) {
+          const totalVal = targetPort.total_portfolio_value;
+          initialHoldings = targetPort.holdings.map(h => ({
+            ticker: h.ticker,
+            name: h.stock_name,
+            weight: Math.round((h.amount / totalVal) * 100),
+            direction: 'down',
+            confidence: 'weak',
+            change: 0.0,
+            evidences: []
+          }));
+        }
+      }
+
+      // 만약 백엔드 로드 실패 시 로컬 정적 폴백 세팅
+      if (initialHoldings.length === 0) {
+        if (band === 'CONSERVATIVE' || band === 'MODERATE_CONSERVATIVE') {
+          initialHoldings = [
+            { ticker: '032830', name: '삼성생명', weight: 26, direction: 'down', confidence: 'medium', change: -0.5, evidences: [] },
+            { ticker: '033780', name: 'KT&G', weight: 25, direction: 'up', confidence: 'weak', change: 0.2, evidences: [] },
+            { ticker: '105560', name: 'KB금융', weight: 25, direction: 'up', confidence: 'medium', change: 1.1, evidences: [] },
+            { ticker: '005380', name: '현대차', weight: 24, direction: 'down', confidence: 'weak', change: -0.2, evidences: [] }
+          ];
+        } else if (band === 'GROWTH' || band === 'AGGRESSIVE') {
+          initialHoldings = [
+            { ticker: '005930', name: '삼성전자', weight: 25, direction: 'down', confidence: 'strong', change: -1.2, evidences: [] },
+            { ticker: '000660', name: 'SK하이닉스', weight: 26, direction: 'up', confidence: 'medium', change: 2.1, evidences: [] },
+            { ticker: '373220', name: 'LG에너지솔루션', weight: 24, direction: 'up', confidence: 'weak', change: 0.5, evidences: [] },
+            { ticker: '035420', name: 'NAVER', weight: 25, direction: 'down', confidence: 'medium', change: -0.8, evidences: [] }
+          ];
+        } else {
+          initialHoldings = [
+            { ticker: '005490', name: 'POSCO홀딩스', weight: 12, direction: 'down', confidence: 'medium', change: -0.4, evidences: [] },
+            { ticker: '068270', name: '셀트리온', weight: 13, direction: 'up', confidence: 'weak', change: 0.3, evidences: [] },
+            { ticker: '055550', name: '신한지주', weight: 12, direction: 'up', confidence: 'medium', change: 1.0, evidences: [] },
+            { ticker: '000270', name: '기아', weight: 12, direction: 'up', confidence: 'weak', change: 0.2, evidences: [] },
+            { ticker: '051910', name: 'LG화학', weight: 13, direction: 'down', confidence: 'medium', change: -0.7, evidences: [] },
+            { ticker: '028260', name: '삼성물산', weight: 12, direction: 'up', confidence: 'weak', change: 0.1, evidences: [] },
+            { ticker: '017670', name: 'SK텔레콤', weight: 13, direction: 'up', confidence: 'medium', change: 0.8, evidences: [] },
+            { ticker: '010950', name: 'S-Oil', weight: 13, direction: 'down', confidence: 'weak', change: -0.3, evidences: [] }
+          ];
+        }
+      }
+
+      // 2. 각 종목별 실시간 리스크 점수 및 근거 뉴스 API 연동
+      const updatedHoldings = await Promise.all(
+        initialHoldings.map(async (stock) => {
+          let updatedStock = { ...stock };
+          
+          // (1) 리스크 예측 스코어 가져오기
+          try {
+            const res = await fetch(`http://localhost:8000/risk-score/${stock.ticker}`);
+            if (res.ok) {
+              const data = await res.json();
+              updatedStock.direction = data.direction;
+              updatedStock.confidence = data.confidence_tier;
+              updatedStock.change = parseFloat(((data.prob_up - 0.5) * 10).toFixed(1));
+            }
+          } catch (err) {
+            console.warn(`[API Connect Fallback] Ticker ${stock.ticker} 스코어 연동 실패:`, err);
+          }
+
+          // (2) 실시간 뉴스/공시 리스크 근거 및 AI 브리핑 가져오기
+          try {
+            const evidenceRes = await fetch(`http://localhost:8000/risk-evidences/${stock.ticker}`);
+            if (evidenceRes.ok) {
+              const evidenceData = await evidenceRes.json();
+              updatedStock.aiBriefing = evidenceData.ai_briefing || "";
+              if (evidenceData.evidences && evidenceData.evidences.length > 0) {
+                updatedStock.evidences = evidenceData.evidences;
+              }
+            }
+          } catch (err) {
+            console.warn(`[API Connect Fallback] Ticker ${stock.ticker} 근거 연동 실패:`, err);
+          }
+
+          return updatedStock;
+        })
+      );
+      setPortfolio(updatedHoldings);
+      setIsConnecting(false);
+    };
+
+    fetchRealtimeScores();
+  }, [profile.target_risk_band]);
 
   // 성향별 리스크 민감도 배수
   const getSensitivityFactor = (band) => {
@@ -186,7 +329,10 @@ export default function ResultsScreen({ theme, profile, onReset, toggleTheme }) 
       }`}>
         <div className="flex items-center gap-4">
           <button 
-            onClick={onReset}
+            onClick={(e) => {
+              e.stopPropagation();
+              onReset();
+            }}
             aria-label="성향 테스트 다시 시작" 
             className={`hover:opacity-80 transition-opacity p-2 cursor-pointer flex items-center justify-center rounded-full ${
               isDark ? 'hover:bg-slate-800 text-[#69dbad]' : 'hover:bg-slate-100 text-[#3eb489]'
@@ -194,7 +340,13 @@ export default function ResultsScreen({ theme, profile, onReset, toggleTheme }) 
           >
             <Icon name="arrowLeft" className="w-5 h-5" />
           </button>
-          <div className="flex items-center gap-2 cursor-pointer" onClick={onReset}>
+          <div 
+            className="flex items-center gap-2 cursor-pointer" 
+            onClick={(e) => {
+              e.stopPropagation();
+              onReset();
+            }}
+          >
             <img src="/images/ants_umbrella_logo.png" alt="로고" className="w-7 h-7 object-contain" />
             <span className={`font-sans text-lg font-black tracking-tight ${isDark ? 'text-[#e2e2e2]' : 'text-[#0f1713]'}`}>
               개미의 우산
@@ -425,13 +577,22 @@ export default function ResultsScreen({ theme, profile, onReset, toggleTheme }) 
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <span className={`px-2.5 py-1 rounded-lg text-xs font-bold font-sans ${
-                        stock.direction === 'down' 
-                          ? 'bg-red-500/10 text-red-500' 
-                          : 'bg-[#3eb489]/10 text-[#3eb489]'
-                      }`}>
-                        전망: {stock.direction === 'down' ? '하락 예상' : '상승 예상'}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold font-sans ${
+                          stock.direction === 'down' 
+                            ? 'bg-red-500/10 text-red-500' 
+                            : 'bg-[#3eb489]/10 text-[#3eb489]'
+                        }`}>
+                          전망: {stock.direction === 'down' ? '하락 예상' : '상승 예상'}
+                        </span>
+                        <div className="group relative cursor-pointer">
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded border border-slate-500/30 text-slate-400 hover:text-slate-200 transition-colors`}>💡원리</span>
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-3 rounded-lg bg-slate-900 border border-slate-700 text-white text-[11px] leading-relaxed opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50 shadow-xl font-sans font-medium text-left">
+                            <strong>전망 예측 원리:</strong><br />
+                            개별 뉴스 기사가 긍정적이더라도, 머신러닝(XGBoost) 모델이 주가 기술 지표, 거래량 변동, 시장의 거시 경제 지표(금리·환율), 그리고 수집된 ESG 리스크 중요도를 종합 연산하여 최종 등락 방향을 산출한 결과입니다.
+                          </div>
+                        </div>
+                      </div>
                       <span className={`px-2.5 py-1 rounded-lg text-xs font-bold font-sans ${
                         isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'
                       }`}>
@@ -439,6 +600,18 @@ export default function ResultsScreen({ theme, profile, onReset, toggleTheme }) 
                       </span>
                     </div>
                   </div>
+
+                  {/* AI 종합 예측 브리핑 카드 */}
+                  {stock.aiBriefing && (
+                    <div className={`p-4 rounded-xl border mb-4 text-xs leading-relaxed font-sans flex gap-3 items-start ${
+                      isDark ? 'bg-indigo-950/25 border-indigo-500/30 text-indigo-300' : 'bg-indigo-50/70 border-indigo-200 text-indigo-800'
+                    }`}>
+                      <span className="text-base flex-shrink-0">🤖</span>
+                      <div className="text-left font-semibold">
+                        {stock.aiBriefing}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="space-y-3">
                     <p className={`font-sans text-xs font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -448,19 +621,47 @@ export default function ResultsScreen({ theme, profile, onReset, toggleTheme }) 
                       {stock.evidences.map((ev, evIdx) => (
                         <div 
                           key={evIdx}
-                          className={`p-3 rounded-xl border flex items-center justify-between text-xs gap-3 ${
+                          className={`p-4 rounded-xl border flex flex-col gap-3 text-xs ${
                             ev.direction === '부정'
                               ? isDark ? 'bg-red-500/5 border-red-500/20 text-red-400' : 'bg-red-50 border-red-200 text-red-800'
                               : isDark ? 'bg-[#3eb489]/5 border-[#3eb489]/20 text-[#69dbad]' : 'bg-emerald-50 border-emerald-200 text-emerald-800'
                           }`}
                         >
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-bold px-2 py-0.5 rounded-full border border-current text-[10px]">
-                              {ev.type} · {ev.category}
-                            </span>
-                            <span className="font-sans leading-relaxed">{ev.title}</span>
+                          {/* 상단 정보 라인 */}
+                          <div className="flex items-center justify-between gap-2 border-b border-current/10 pb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold px-2 py-0.5 rounded-full border border-current text-[10px]">
+                                {ev.type} · {ev.category}
+                              </span>
+                              {ev.severity_emoji && (
+                                <span className="font-sans text-[10px] bg-current/10 px-2 py-0.5 rounded-full font-bold">
+                                  {ev.direction === '부정' ? '위험도' : '상승영향'} {ev.severity_emoji}
+                                </span>
+                              )}
+                            </div>
+                            <a 
+                              href={ev.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="underline hover:opacity-80 cursor-pointer font-sans font-bold flex-shrink-0"
+                            >
+                              원문 보기 ↗
+                            </a>
                           </div>
-                          <span className="flex-shrink-0 underline hover:opacity-80 cursor-pointer font-sans font-bold">확인</span>
+
+                          {/* 기사 텍스트 (줄바꿈 가능, 잘림 해제) */}
+                          <div className="font-sans leading-relaxed text-left break-all whitespace-normal font-medium">
+                            {ev.title}
+                          </div>
+
+                          {/* 초보 나개미 친화형 팁 가이드 */}
+                          {ev.tip && (
+                            <div className={`p-2.5 rounded-lg text-[11px] leading-relaxed font-sans ${
+                              isDark ? 'bg-black/40 text-slate-300' : 'bg-white/80 text-slate-700'
+                            } border border-current/5`}>
+                              {ev.tip}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

@@ -52,12 +52,12 @@
 
 ## Day 3 — ML: XGBoost 학습 & Ablation
 
-- [ ] PRD 4-3 스키마 ④대로 피처 조인 (뉴스 material/immaterial + 보조신호 + 가격/거시)
-- [ ] 라벨 생성: `label_direction_next_day` (다음 거래일 종가가 전일 대비 상승=1/하락=0)
-- [ ] 시계열 분할(look-ahead bias 방지)
-- [ ] XGBoost 학습, Accuracy/AUC-ROC/Brier Score로 평가 (양성비율이 대략 균형이라 PR-AUC/Precision@K는 사용하지 않음)
-- [ ] Ablation 3단(베이스라인→+뉴스카테고리→+뉴스카테고리+보조신호) 실행 및 비교
-- [ ] `daily_risk_score`(PRD 4-3 스키마 ⑤: `direction`, `confidence_tier`) 저장
+- [x] PRD 4-3 스키마 ④대로 피처 조인 (뉴스 material/immaterial + 보조신호 + 가격/거시)
+- [x] 라벨 생성: `label_direction_next_day` (다음 거래일 종가가 전일 대비 상승=1/하락=0)
+- [x] 시계열 분할(look-ahead bias 방지)
+- [x] XGBoost 학습, Accuracy/AUC-ROC/Brier Score로 평가 (양성비율이 대략 균형이라 PR-AUC/Precision@K는 사용하지 않음)
+- [x] Ablation 3단(베이스라인→+뉴스카테고리→+뉴스카테고리+보조신호) 실행 및 비교
+- [x] `daily_risk_score`(PRD 4-3 스키마 ⑤: `direction`, `confidence_tier`) 저장
 
 ## Day 4 — UX 통합 & 발표 준비
 

@@ -12,6 +12,37 @@ export default function Home() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
 
+  // 컴포넌트 마운트 시 localStorage에서 설문 상태 복원 ( Fast Refresh / 핫 리로딩 대응 )
+  useEffect(() => {
+    const savedStep = localStorage.getItem('ants_survey_step');
+    const savedAnswers = localStorage.getItem('ants_survey_answers');
+    const savedIndex = localStorage.getItem('ants_survey_index');
+
+    if (savedStep) setStep(savedStep);
+    if (savedAnswers) {
+      try {
+        setAnswers(JSON.parse(savedAnswers));
+      } catch (e) {
+        setAnswers({});
+      }
+    }
+    if (savedIndex) setCurrentQuestionIndex(Number(savedIndex));
+  }, []);
+
+  // 상태가 변할 때마다 localStorage에 실시간 백업
+  useEffect(() => {
+    if (step === 'INTRO' && Object.keys(answers).length === 0) {
+      // 초기 상태일 때는 로컬스토리지 클리어
+      localStorage.removeItem('ants_survey_step');
+      localStorage.removeItem('ants_survey_answers');
+      localStorage.removeItem('ants_survey_index');
+    } else {
+      localStorage.setItem('ants_survey_step', step);
+      localStorage.setItem('ants_survey_answers', JSON.stringify(answers));
+      localStorage.setItem('ants_survey_index', String(currentQuestionIndex));
+    }
+  }, [step, answers, currentQuestionIndex]);
+
   useEffect(() => {
     const root = document.documentElement;
     if (theme === 'dark') {
@@ -57,15 +88,27 @@ export default function Home() {
   };
 
   const handleCancelSurvey = () => {
+    const ok = window.confirm("진행 중인 성향 진단을 중단하고 인트로 화면으로 돌아가시겠습니까?");
+    if (!ok) return;
+
     setStep('INTRO');
     setCurrentQuestionIndex(0);
     setAnswers({});
+    localStorage.removeItem('ants_survey_step');
+    localStorage.removeItem('ants_survey_answers');
+    localStorage.removeItem('ants_survey_index');
   };
 
   const handleReset = () => {
+    const ok = window.confirm("성향 진단을 처음부터 다시 시작하시겠습니까? 현재 진단 대시보드 내역은 초기화됩니다.");
+    if (!ok) return;
+
     setStep('INTRO');
     setCurrentQuestionIndex(0);
     setAnswers({});
+    localStorage.removeItem('ants_survey_step');
+    localStorage.removeItem('ants_survey_answers');
+    localStorage.removeItem('ants_survey_index');
   };
 
   const currentProfile = calculateRiskProfile(answers);

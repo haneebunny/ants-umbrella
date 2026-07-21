@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
     results = []
     start_date = "20230101"
-    end_date = "20251231"
+    end_date = "20260721"
     print(f"주요 종목({len(sample_tickers)}개) {start_date} ~ {end_date} DART 주요사항보고서 수집 시작...")
 
     for idx, ticker in enumerate(sample_tickers, 1):

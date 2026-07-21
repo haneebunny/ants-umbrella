@@ -14,4 +14,9 @@
 | 2026-07-21 | Antigravity | scripts 오타 교정 안내 및 join_features.py의 데이터를 절대 경로로 수정하여 정상 작동 조치 |
 | 2026-07-21 | Antigravity | 로컬 폴더명을 scripts로 원복함에 따라 스크립트 내부 경로 탐색 및 변수 명칭을 scripts로 재조정하여 정상 작동 유지 |
 | 2026-07-21 | Antigravity | Mac libomp 라이브러리 미설치로 인한 XGBoost 로딩 실패 오류 조치 및 train_xgboost.py 절대경로 수정 완료 |
-| 2026-07-21 | Antigravity | main 최신 변경사항 pull 수신 및 AGENTS.md 규격에 따라 collect_dart.py를 backend/data_sources/ 디렉토리로 이동 |
+| 2026-07-21 | Antigravity | 최신 main 브랜치 동기화, OpenDART 고유번호 다운로더 및 FinanceDataReader 업종 매핑 오류 조치 완료 |
+| 2026-07-21 | Antigravity | 데이터 유효성 검증(validate_incoming_data.py), 피처 병합(join_features.py), XGBoost 학습 및 3단 Ablation 검증, MongoDB 연결 복구 및 JSON Mock DB 폴백 설계, FastAPI /risk-score/{ticker} DB 조회 API 구현 완료 |
+| 2026-07-21 | Antigravity | portfolio.json 데이터 연동을 위한 백엔드 /portfolios API 구현 및 프론트엔드 target_risk_band 기반 동적 포트폴리오 로딩 및 실시간 리스크 API 패치 연동 완료 |
+| 2026-07-21 | Antigravity | 설문 상태 localStorage 백업/복원 연동으로 핫 리로딩 시 결과 초기화 방지 및 리셋 컨펌 팝업 및 이벤트 전파 차단 구현 완료 |
+| 2026-07-21 | Antigravity | 주식 초보자 나개미 페르소나에 맞춰 리스크 강도(이모지), 한줄 해설 가이드 팁 생성, 기사 전문 줄바꿈 해제 및 종합 예측 원리 💡 툴팁 UI 보강 완료 |
+| 2026-07-21 | Antigravity | AI 종합 예측 브리핑(ai_briefing) 백엔드 연산 및 프론트 최상단 고정 카드 구현, 공시 세부유형(무상/유상 등) 초보 팁 세분화, 고품질 뉴스 수집 튜닝 완료 |
