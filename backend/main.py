@@ -13,7 +13,7 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    return {"status": "ok", "message": "sesacdang API server is running!"}
+    return {"status": "ok", "message": "ants-umbrella API server is running!"}
 
 @app.get("/api/health")
 def health_check():
