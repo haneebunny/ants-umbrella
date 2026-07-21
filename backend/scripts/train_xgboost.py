@@ -8,8 +8,14 @@ NEWS_CATEGORY = PRICE_ONLY + ["category_material_value", "category_immaterial_va
 FULL = NEWS_CATEGORY + ["capital_event_flag", "delisting_related_flag"]
 
 def evaluate(df: pd.DataFrame, feature_cols: list[str], label_col: str = "label_direction_next_day"):
-    df = df.sort_values("date")  # 시계열 정렬 (look-ahead bias 방지)
-    X, y = df[feature_cols], df[label_col]
+    # 피처 및 라벨에 결측치가 없는 데이터만 필터링하여 스코어 계산 안정성 확보
+    df_clean = df.dropna(subset=feature_cols + [label_col])
+    df_clean = df_clean.sort_values("date")  # 시계열 정렬 (look-ahead bias 방지)
+    
+    X, y = df_clean[feature_cols], df_clean[label_col]
+
+    if len(df_clean) < 10:
+        return {"accuracy": float("nan"), "auc_roc": float("nan"), "brier": float("nan")}
 
     tscv = TimeSeriesSplit(n_splits=3)
     accs, aucs, briers = [], [], []
@@ -18,7 +24,7 @@ def evaluate(df: pd.DataFrame, feature_cols: list[str], label_col: str = "label_
         X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
         y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
 
-        model = XGBClassifier(n_estimators=100, max_depth=3, eval_metric="logloss")
+        model = XGBClassifier(n_estimators=100, max_depth=3, eval_metric="logloss", random_state=42)
         model.fit(X_train, y_train)
 
         prob = model.predict_proba(X_test)[:, 1]
@@ -38,11 +44,17 @@ if __name__ == "__main__":
     import os
     scripts_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(os.path.dirname(scripts_dir))
-    data_path = os.path.join(project_root, "data", "ml_ready_dummy.csv")
+    data_path = os.path.join(project_root, "data", "ml_ready_real.csv")
     
     df = pd.read_csv(data_path, parse_dates=["date"])
 
-    print("=== Ablation 1: 베이스라인 (가격 피처만) ===")
+    print("=== y 라벨(label_direction_next_day) 분포 및 불균형 분석 ===")
+    counts = df["label_direction_next_day"].value_counts(dropna=False)
+    ratios = df["label_direction_next_day"].value_counts(normalize=True, dropna=False) * 100
+    for val, cnt in counts.items():
+        print(f" - 클래스 {val}: {cnt}건 ({ratios[val]:.2f}%)")
+
+    print("\n=== Ablation 1: 베이스라인 (가격 피처만) ===")
     print(evaluate(df, PRICE_ONLY))
 
     print("\n=== Ablation 2: +뉴스카테고리 신호 ===")

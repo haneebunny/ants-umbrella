@@ -26,7 +26,8 @@ def get_base_rate(start: str, end: str) -> pd.DataFrame:
 def get_fx_rate(start: str, end: str) -> pd.DataFrame:
     # 731Y001: 시장평균환율(원/달러 등)
     df = api.get_statistic_search(
-        통계표코드="731Y001", 주기="D", 검색시작일자=start, 검색종료일자=end,
+        통계표코드="731Y003", 주기="D", 검색시작일자=start, 검색종료일자=end,
+        통계항목코드1="0000002"
     )
     return df[["시점", "값"]].rename(columns={"시점": "date", "값": "macro_fx"})
 
@@ -35,9 +36,14 @@ if __name__ == "__main__":
     # print(find_stat_code("기준금리"))
     # print(find_stat_code("환율"))
 
-    rate = get_base_rate("20260101", "20260721")
-    fx = get_fx_rate("20260101", "20260721")
+    rate = get_base_rate("20230102", "20260721")
+    fx = get_fx_rate("20230102", "20260721")
 
     macro = rate.merge(fx, on="date", how="outer").sort_values("date")
     macro.to_csv("data/macro_features.csv", index=False, encoding="utf-8-sig")
     print(macro.tail(10))
+
+    # 먼저 원/달러 항목코드가 뭔지 직접 찾기 (하드코딩 금지, 매번 다를 수 있음)
+    items = api.get_statistic_item_list(통계표코드="731Y001")
+    print(items[items["통계항목명"].str.contains("미국", na=False)])
+    # 여기서 나온 실제 통계항목코드를 아래 get_fx_rate에 통계항목코드1로 추가
