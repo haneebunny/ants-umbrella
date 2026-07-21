@@ -76,7 +76,7 @@ export default function ResultsScreen({ theme, profile, onReset, toggleTheme }) 
       weather = 'thunder';
       iconName = 'zap';
       label = '번개';
-      desc = '경보! 포트폴리오 내 다수 종목에서 중대 하락 위험(Material Risk) 요인이 복합적으로 감지되어 번개가 치는 날씨입니다. 성향 대비 포트폴리오의 종합 리스크 강도가 높게 나타나고 있습니다.';
+      desc = '경보! 포트폴리오 내 다수 종목에서 중대 하락 위험 요인이 복합적으로 감지되어 번개가 치는 날씨입니다. 성향 대비 포트폴리오의 종합 리스크 강도가 높게 나타나고 있습니다.';
       bgColor = isDark 
         ? 'from-[#3c1d1d] to-[#0d0f0f]' 
         : 'from-[#fce8e6] to-[#f4f9f7]';
