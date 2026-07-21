@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 export default function AssetChart({ theme, weights }) {
   const isDark = theme === 'dark';
-  const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [hoveredCategory, setHoveredCategory] = useState(null);
 
   const activeWeights = weights.filter(w => w.weight > 0);
   const size = 180;
@@ -16,6 +16,7 @@ export default function AssetChart({ theme, weights }) {
     return { ...asset, offset };
   });
 
+  const activeHoveredAsset = activeWeights.find(w => w.category === hoveredCategory);
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-center gap-6 py-2">
@@ -25,17 +26,17 @@ export default function AssetChart({ theme, weights }) {
             cx={center}
             cy={center}
             r={radius}
-            fill="transparent"
+            fill="none"
             stroke={isDark ? '#282a2a' : '#e0e9e4'}
             strokeWidth={strokeWidth - 4}
             className="transition-colors duration-300"
           />
 
-          {activeWeightsWithOffsets.map((asset, idx) => {
+          {activeWeightsWithOffsets.map((asset) => {
             const strokeDasharray = `${(asset.weight / 100) * circumference} ${circumference}`;
             const strokeDashoffset = -((asset.offset / 100) * circumference);
 
-            const isHovered = hoveredIndex === idx;
+            const isHovered = hoveredCategory === asset.category;
 
             return (
               <circle
@@ -43,14 +44,14 @@ export default function AssetChart({ theme, weights }) {
                 cx={center}
                 cy={center}
                 r={radius}
-                fill="transparent"
+                fill="none"
                 stroke={asset.color}
                 strokeWidth={isHovered ? strokeWidth + 4 : strokeWidth}
                 strokeDasharray={strokeDasharray}
                 strokeDashoffset={strokeDashoffset}
                 strokeLinecap="butt"
-                onMouseEnter={() => setHoveredIndex(idx)}
-                onMouseLeave={() => setHoveredIndex(null)}
+                onMouseEnter={() => setHoveredCategory(asset.category)}
+                onMouseLeave={() => setHoveredCategory(null)}
                 className="transition-all duration-300 cursor-pointer"
                 style={{
                   filter: isDark && isHovered ? `drop-shadow(0 0 6px ${asset.color})` : 'none',
@@ -63,22 +64,22 @@ export default function AssetChart({ theme, weights }) {
 
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           <span className={`font-mono text-2xl font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-            {hoveredIndex !== null ? `${activeWeights[hoveredIndex].weight}%` : '100%'}
+            {activeHoveredAsset ? `${activeHoveredAsset.weight}%` : '100%'}
           </span>
           <span className="font-mono text-[9px] tracking-wider text-slate-500 uppercase font-bold mt-1">
-            {hoveredIndex !== null ? activeWeights[hoveredIndex].category : '포트폴리오'}
+            {activeHoveredAsset ? activeHoveredAsset.category : '포트폴리오'}
           </span>
         </div>
       </div>
 
       <div className="flex-1 space-y-3 w-full sm:w-auto">
-        {activeWeights.map((asset, idx) => {
-          const isHovered = hoveredIndex === idx;
+        {weights.map((asset) => {
+          const isHovered = hoveredCategory === asset.category;
           return (
             <div 
               key={asset.category}
-              onMouseEnter={() => setHoveredIndex(idx)}
-              onMouseLeave={() => setHoveredIndex(null)}
+              onMouseEnter={() => setHoveredCategory(asset.category)}
+              onMouseLeave={() => setHoveredCategory(null)}
               className={`p-2.5 rounded-xl transition-all flex items-center justify-between border cursor-pointer ${
                 isHovered 
                   ? isDark 
