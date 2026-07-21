@@ -47,3 +47,19 @@ Thumbs.db
 *.njsproj
 *.sln
 *.swp
+
+# Runtime Local Data (Excluding setup & mapping files)
+data/macro_features.csv
+data/ml_ready_dummy.csv
+data/ml_ready_real.csv
+data/mock_db_daily_risk_score.json
+data/news_features_day2.csv
+data/news_features_dummy.csv
+data/price_features_dummy.csv
+data/price_features_labeled.csv
+data/price_features_raw.csv
+data/raw_news_collected.csv
+data/supplementary_signals.csv
+
+.python-version
+frontend/temp_design.html
