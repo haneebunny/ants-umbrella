@@ -76,7 +76,7 @@ export default function ResultsScreen({ theme, profile, onReset, toggleTheme }) 
       weather = 'thunder';
       iconName = 'zap';
       label = '번개';
-      desc = '경보! 포트폴리오 내 다수 종목에서 중대 하락 위험(Material Risk) 요인이 복합적으로 감지되어 번개가 치는 날씨입니다. 성향 대비 포트폴리오의 종합 리스크 강도가 높게 나타나고 있습니다.';
+      desc = '경보! 포트폴리오 내 다수 종목에서 중대 하락 위험 요인이 복합적으로 감지되어 번개가 치는 날씨입니다. 성향 대비 포트폴리오의 종합 리스크 강도가 높게 나타나고 있습니다.';
       bgColor = isDark 
         ? 'from-[#3c1d1d] to-[#0d0f0f]' 
         : 'from-[#fce8e6] to-[#f4f9f7]';
@@ -250,14 +250,13 @@ export default function ResultsScreen({ theme, profile, onReset, toggleTheme }) 
         {activeTab === 'ATMOSPHERE' && (
           <div className="space-y-8 animate-fadeIn">
             {/* 상단 타이틀 */}
-            <section className="space-y-2">
+            <section className="space-y-3">
               <div className="flex items-center gap-2">
                 <span className={`font-sans text-[10px] tracking-wider font-bold px-2.5 py-1 rounded-lg ${
                   isDark ? 'bg-[#69dbad]/10 text-[#69dbad] border border-[#69dbad]/20' : 'bg-[#3eb489]/10 text-[#3eb489] border border-[#3eb489]/20'
                 }`}>
                   실시간 포트폴리오 진단
                 </span>
-                <span className="text-slate-500 text-xs font-mono font-bold">터미널 ID: RF-294-X</span>
               </div>
               <h1 className={`font-sans text-2xl md:text-3xl font-black tracking-tight leading-tight ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
                 오늘 나의 포트폴리오 기상도는 <span className={currentAtmosphere.textColor}>[{currentAtmosphere.label}]</span> 상태입니다
@@ -395,12 +394,14 @@ export default function ResultsScreen({ theme, profile, onReset, toggleTheme }) 
         {/* 2. 위험 레이더 탭 (RADAR) */}
         {activeTab === 'RADAR' && (
           <div className="space-y-8 animate-fadeIn">
-            <section className="space-y-2">
-              <span className={`font-sans text-[10px] tracking-wider font-bold px-2.5 py-1 rounded-lg ${
-                isDark ? 'bg-[#69dbad]/10 text-[#69dbad] border border-[#69dbad]/20' : 'bg-[#3eb489]/10 text-[#3eb489]/20'
-              }`}>
-                종목별 위험 레이더
-              </span>
+            <section className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className={`font-sans text-[10px] tracking-wider font-bold px-2.5 py-1 rounded-lg ${
+                  isDark ? 'bg-[#69dbad]/10 text-[#69dbad] border border-[#69dbad]/20' : 'bg-[#3eb489]/10 text-[#3eb489] border border-[#3eb489]/20'
+                }`}>
+                  종목별 위험 레이더
+                </span>
+              </div>
               <h1 className={`font-sans text-2xl md:text-3xl font-black tracking-tight ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
                 오늘 보유 종목의 위협 신호 분석
               </h1>
@@ -474,12 +475,14 @@ export default function ResultsScreen({ theme, profile, onReset, toggleTheme }) 
         {activeTab === 'ASSETS' && (
           <div className="space-y-8 animate-fadeIn">
             {/* 타이틀 */}
-            <section className="space-y-2">
-              <span className={`font-sans text-[10px] tracking-wider font-bold px-2.5 py-1 rounded-lg ${
-                isDark ? 'bg-[#69dbad]/10 text-[#69dbad] border border-[#69dbad]/20' : 'bg-[#3eb489]/10 text-[#3eb489] border border-[#3eb489]/20'
-              }`}>
-                투자성향 분석 결과
-              </span>
+            <section className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className={`font-sans text-[10px] tracking-wider font-bold px-2.5 py-1 rounded-lg ${
+                  isDark ? 'bg-[#69dbad]/10 text-[#69dbad] border border-[#69dbad]/20' : 'bg-[#3eb489]/10 text-[#3eb489] border border-[#3eb489]/20'
+                }`}>
+                  투자성향 분석 결과
+                </span>
+              </div>
               <h1 className={`font-sans text-2xl md:text-3xl font-black tracking-tight ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
                 체질 진단 기준 <span className={isDark ? 'text-[#69dbad]' : 'text-[#3eb489] bg-[#3eb489]/5 border border-[#3eb489]/15 px-2 py-0.5 rounded-lg'}>[{profile.titleKo}]</span> 성향입니다
               </h1>
@@ -890,12 +893,14 @@ export default function ResultsScreen({ theme, profile, onReset, toggleTheme }) 
         {/* 4. 위험 알림 탭 (ALERTS) */}
         {activeTab === 'ALERTS' && (
           <div className="space-y-8 animate-fadeIn">
-            <section className="space-y-2">
-              <span className={`font-sans text-[10px] tracking-wider font-bold px-2.5 py-1 rounded-lg ${
-                isDark ? 'bg-[#69dbad]/10 text-[#69dbad] border border-[#69dbad]/20' : 'bg-[#3eb489]/10 text-[#3eb489] border border-[#3eb489]/20'
-              }`}>
-                긴급 위험 알림 피드
-              </span>
+            <section className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className={`font-sans text-[10px] tracking-wider font-bold px-2.5 py-1 rounded-lg ${
+                  isDark ? 'bg-[#69dbad]/10 text-[#69dbad] border border-[#69dbad]/20' : 'bg-[#3eb489]/10 text-[#3eb489] border border-[#3eb489]/20'
+                }`}>
+                  긴급 위험 알림 피드
+                </span>
+              </div>
               <h1 className={`font-sans text-2xl md:text-3xl font-black tracking-tight ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
                 실시간 자본이벤트 및 중대 공시 경보
               </h1>
@@ -997,7 +1002,7 @@ export default function ResultsScreen({ theme, profile, onReset, toggleTheme }) 
       </main>
 
       {/* 하단 플로팅 네비게이션 바 (수직 패딩 정렬 수정 및 한글화 적용) */}
-      <nav className={`fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-4 pb-6 pt-3 backdrop-blur-xl md:max-w-md md:left-1/2 md:-translate-x-1/2 md:bottom-4 md:rounded-full md:shadow-2xl transition-all ${
+      <nav className={`fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-4 py-3 backdrop-blur-xl md:max-w-md md:left-1/2 md:-translate-x-1/2 md:bottom-4 md:rounded-full md:shadow-2xl transition-all ${
         isDark 
           ? 'bg-[#1e2020]/90 border-t border-white/5 md:border border-slate-700' 
           : 'bg-white/95 border-t border-[#3eb489]/15 md:border md:border-[#3eb489]/20 soft-shadow-light'
@@ -1016,7 +1021,7 @@ export default function ResultsScreen({ theme, profile, onReset, toggleTheme }) 
                 setActiveTab(tab.id);
                 showToast(`[${tab.label}] 탭으로 이동합니다.`);
               }}
-              className={`flex flex-col items-center justify-center py-2 px-3 rounded-2xl transition-all cursor-pointer ${
+              className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl transition-all cursor-pointer ${
                 isActive 
                   ? isDark 
                     ? 'bg-[#3eb489]/10 text-[#69dbad] font-bold' 
