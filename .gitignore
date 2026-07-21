@@ -1,0 +1,49 @@
+# Python (Virtual Environment & Cache)
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+htmlcov/
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Node (Next.js)
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# Environment Variables (Sensitive data)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.json
+
+# OS & Editors
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
