@@ -95,55 +95,9 @@ export default function IntroScreen({ theme, onStart, toggleTheme }) {
         </div>
       </header>
 
-      {/* Side Navigation Anchor */}
-      <nav className={`fixed left-0 top-16 h-[calc(100vh-64px)] w-64 flex flex-col z-40 transition-colors duration-300 hidden lg:flex ${
-        isDark 
-          ? 'bg-[#0d0f0f] border-r border-[#3d4943]' 
-          : 'bg-[#f4f9f7]/50 backdrop-blur-md border-r border-[#3eb489]/20'
-      }`}>
-        <div className="p-6 flex items-center gap-2">
-          <img src="/images/ants_umbrella_logo.png" alt="로고" className="w-7 h-7 object-contain" />
-          <div>
-            <span className={`font-sans text-lg font-black tracking-tight ${isDark ? 'text-[#e2e2e2]' : 'text-[#0f1713]'}`}>
-              개미의 우산
-            </span>
-            <p className="font-mono text-[10px] text-slate-500 mt-0.5">Terminal Operational</p>
-          </div>
-        </div>
-
-        <div className="flex-1 px-4 space-y-1">
-          <div className={`flex items-center gap-3 px-4 py-3 rounded font-medium text-xs font-mono opacity-50 ${isDark ? 'text-white' : 'text-slate-800'}`}>
-            <Icon name="terminal" className="w-4 h-4" />
-            <span>METRICS TERMINAL</span>
-          </div>
-          <div className={`flex items-center gap-3 px-4 py-3 rounded font-bold text-xs font-mono border-l-4 ${
-            isDark 
-              ? 'text-[#69dbad] bg-[#69dbad]/5 border-[#69dbad]' 
-              : 'text-[#3eb489] bg-[#3eb489]/5 border-[#3eb489]'
-          }`}>
-            <Icon name="shield" className="w-4 h-4" />
-            <span>RISK ASSESSMENT</span>
-          </div>
-        </div>
-
-        <div className={`p-4 border-t ${isDark ? 'border-[#3d4943]' : 'border-[#3eb489]/20'}`}>
-          <div className="flex items-center gap-3 px-3 py-2">
-            <div className={`w-8 h-8 rounded flex items-center justify-center ${
-              isDark ? 'bg-[#69dbad]/10 border border-[#69dbad]/30' : 'bg-[#3eb489]/10 border border-[#3eb489]/30'
-            }`}>
-              <span className={`font-mono text-xs font-bold ${isDark ? 'text-[#69dbad]' : 'text-[#3eb489]'}`}>OP</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="font-mono text-[11px] font-bold">SYSTEM_OP</span>
-              <span className="text-[9px] text-slate-500 uppercase font-mono">AUTHENTICATED</span>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       {/* Main Workspace */}
-      <main className="min-h-screen pt-24 pb-16 lg:pl-64 flex items-center justify-center relative z-10 px-6">
-        <div className="w-full max-w-4xl text-center">
+      <main className="min-h-screen pt-24 pb-16 flex items-center justify-center relative z-10 px-6 w-full max-w-5xl mx-auto">
+        <div className="w-full text-center">
           
           {/* Umbrella Illustration */}
           <div className="mb-10 relative inline-block">
@@ -259,7 +213,7 @@ export default function IntroScreen({ theme, onStart, toggleTheme }) {
       </main>
 
       {/* Footer */}
-      <footer className={`fixed bottom-0 left-0 lg:left-64 right-0 h-12 flex justify-between items-center px-6 z-30 transition-all text-[10px] font-mono ${
+      <footer className={`fixed bottom-0 left-0 right-0 h-12 flex justify-between items-center px-6 z-30 transition-all text-[10px] font-mono ${
         isDark 
           ? 'bg-[#0d0f0f]/90 border-t border-[#3d4943] text-slate-500' 
           : 'bg-[#f4f9f7]/90 backdrop-blur-md border-t border-[#3eb489]/20 text-slate-600 font-bold'

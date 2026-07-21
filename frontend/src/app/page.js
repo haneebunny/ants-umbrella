@@ -83,6 +83,7 @@ export default function Home() {
       {step === 'SURVEY' && (
         <SurveyScreen
           theme={theme}
+          toggleTheme={toggleTheme}
           questions={QUESTIONS}
           currentQuestionIndex={currentQuestionIndex}
           answers={answers}

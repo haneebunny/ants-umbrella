@@ -3,6 +3,7 @@ import Icon from './Icon';
 
 export default function SurveyScreen({
   theme,
+  toggleTheme,
   questions,
   currentQuestionIndex,
   answers,
@@ -71,20 +72,42 @@ export default function SurveyScreen({
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2 font-mono text-xs">
-          <span className={`hidden sm:inline-block px-2.5 py-1 rounded-lg ${
-            isDark 
-              ? 'bg-slate-800 text-[#69dbad]' 
-              : 'bg-[#3eb489]/10 border border-[#3eb489]/20 text-[#3eb489] font-bold'
-          }`}>
-            PHASE {String(currentQuestionIndex + 1).padStart(2, '0')}
-          </span>
-          <div className={`w-8 h-8 rounded-full overflow-hidden border ${isDark ? 'border-[#3d4943]' : 'border-[#3eb489]/20'}`}>
-            <img 
-              className="w-full h-full object-cover" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNY5NDw88xhiYKkv9zCStz5DeMSn1z9x8zbDEx8Rmtv-n1RzKTRZ9dW9UhzlRHyZVWZoZQWIgGrILxwoqhuvl-E2ALQKOZP4takWWeAs8l5pY1um27lbAj3JMxxbpdMPhrhgxjN7zloMUtTXtAR3HY8bp-VPpO8U9XXb_gIZoBe67AWv-AiR0mdCPjITnxwgaskhC0aJ-adj7QC2z6MT6ZzfiNq2r4kW_S-EELFtuFBRT-0TbmZOpqIw" 
-              alt="Avatar"
-            />
+        <div className="flex items-center gap-4">
+          <button
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+            className={`w-14 h-7 rounded-full p-1 transition-colors duration-300 cursor-pointer relative flex items-center ${
+              isDark 
+                ? 'bg-zinc-800 border border-[#3d4943]' 
+                : 'bg-emerald-100 border border-[#3eb489]/20 soft-shadow-light'
+            }`}
+          >
+            <div 
+              className={`w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 transform ${
+                isDark 
+                  ? 'translate-x-7 bg-[#3eb489] text-[#002115]' 
+                  : 'translate-x-0 bg-amber-500 text-white'
+              }`}
+            >
+              {isDark ? <Icon name="moon" className="w-3.5 h-3.5" /> : <Icon name="sun" className="w-3.5 h-3.5" />}
+            </div>
+          </button>
+
+          <div className="flex items-center gap-2 font-mono text-xs">
+            <span className={`hidden sm:inline-block px-2.5 py-1 rounded-lg ${
+              isDark 
+                ? 'bg-slate-800 text-[#69dbad]' 
+                : 'bg-[#3eb489]/10 border border-[#3eb489]/20 text-[#3eb489] font-bold'
+            }`}>
+              질문 {String(currentQuestionIndex + 1).padStart(2, '0')}
+            </span>
+            <div className={`w-8 h-8 rounded-full overflow-hidden border ${isDark ? 'border-[#3d4943]' : 'border-[#3eb489]/20'}`}>
+              <img 
+                className="w-full h-full object-cover" 
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNY5NDw88xhiYKkv9zCStz5DeMSn1z9x8zbDEx8Rmtv-n1RzKTRZ9dW9UhzlRHyZVWZoZQWIgGrILxwoqhuvl-E2ALQKOZP4takWWeAs8l5pY1um27lbAj3JMxxbpdMPhrhgxjN7zloMUtTXtAR3HY8bp-VPpO8U9XXb_gIZoBe67AWv-AiR0mdCPjITnxwgaskhC0aJ-adj7QC2z6MT6ZzfiNq2r4kW_S-EELFtuFBRT-0TbmZOpqIw" 
+                alt="Avatar"
+              />
+            </div>
           </div>
         </div>
       </header>
@@ -93,12 +116,12 @@ export default function SurveyScreen({
       <div className={`fixed top-16 w-full z-40 px-6 py-4 transition-all ${
         isDark ? 'bg-[#0d0f0f]/90' : 'bg-[#f4f9f7]/90 backdrop-blur-md border-b border-[#3eb489]/10'
       }`}>
-        <div className="max-w-xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <div className="flex justify-between items-end mb-2">
-            <span className={`font-mono text-[10px] tracking-widest uppercase font-bold ${
+            <span className={`font-sans text-[10px] tracking-wider font-bold ${
               isDark ? 'text-[#69dbad]' : 'text-[#3eb489] bg-[#3eb489]/5 px-2 py-0.5 rounded'
             }`}>
-              Assessment Progress
+              투자성향 진단 진행도
             </span>
             <span className="font-mono text-xs text-slate-500 font-bold">
               <span className={`font-bold ${isDark ? 'text-[#69dbad]' : 'text-[#3eb489]'}`}>
@@ -124,8 +147,8 @@ export default function SurveyScreen({
       </div>
 
       {/* Main Content */}
-      <main className="flex-grow w-full max-w-xl px-6 pt-36 pb-32 z-10">
-        <div className="space-y-8">
+      <main className="flex-grow w-full max-w-4xl px-6 pt-36 pb-32 z-10">
+        <div className="space-y-8 max-w-2xl mx-auto">
           
           {/* Question Header */}
           <div className="space-y-4">
@@ -138,7 +161,7 @@ export default function SurveyScreen({
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#3eb489] opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#3eb489]"></span>
               </span>
-              <span className={`font-mono text-[9px] font-black uppercase ${isDark ? 'text-[#69dbad]' : 'text-[#3eb489]'}`}>
+              <span className={`font-sans text-[10px] font-bold ${isDark ? 'text-[#69dbad]' : 'text-[#3eb489]'}`}>
                 {currentQuestion.phase}
               </span>
             </div>
@@ -224,7 +247,7 @@ export default function SurveyScreen({
           ? 'bg-[#0d0f0f]/80 border-[#3d4943]/40' 
           : 'bg-[#f4f9f7]/80 border-[#3eb489]/15'
       }`}>
-        <div className="w-full max-w-xl flex items-center gap-4">
+        <div className="w-full max-w-4xl flex items-center gap-4">
           <button
             onClick={onPrev}
             className={`px-6 py-4 rounded-xl font-bold text-sm transition-all cursor-pointer ${
