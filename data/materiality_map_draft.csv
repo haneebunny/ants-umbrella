@@ -1,0 +1,56 @@
+sasb_sector,news_category,is_material
+Consumer Goods,ESG,1
+Consumer Goods,실적·재무,1
+Consumer Goods,산업·사업동향,0
+Consumer Goods,문화·마케팅,0
+Consumer Goods,기타,0
+Extractives & Minerals Processing,ESG,1
+Extractives & Minerals Processing,실적·재무,1
+Extractives & Minerals Processing,산업·사업동향,0
+Extractives & Minerals Processing,문화·마케팅,0
+Extractives & Minerals Processing,기타,0
+Financials,ESG,1
+Financials,실적·재무,1
+Financials,산업·사업동향,0
+Financials,문화·마케팅,0
+Financials,기타,0
+Food & Beverage,ESG,1
+Food & Beverage,실적·재무,1
+Food & Beverage,산업·사업동향,0
+Food & Beverage,문화·마케팅,0
+Food & Beverage,기타,0
+Health Care,ESG,1
+Health Care,실적·재무,1
+Health Care,산업·사업동향,0
+Health Care,문화·마케팅,0
+Health Care,기타,0
+Infrastructure,ESG,1
+Infrastructure,실적·재무,1
+Infrastructure,산업·사업동향,0
+Infrastructure,문화·마케팅,0
+Infrastructure,기타,0
+Renewable Resources & Alternative Energy,ESG,1
+Renewable Resources & Alternative Energy,실적·재무,1
+Renewable Resources & Alternative Energy,산업·사업동향,0
+Renewable Resources & Alternative Energy,문화·마케팅,0
+Renewable Resources & Alternative Energy,기타,0
+Resource Transformation,ESG,1
+Resource Transformation,실적·재무,1
+Resource Transformation,산업·사업동향,0
+Resource Transformation,문화·마케팅,0
+Resource Transformation,기타,0
+Services,ESG,1
+Services,실적·재무,1
+Services,산업·사업동향,0
+Services,문화·마케팅,0
+Services,기타,0
+Technology & Communications,ESG,1
+Technology & Communications,실적·재무,1
+Technology & Communications,산업·사업동향,0
+Technology & Communications,문화·마케팅,0
+Technology & Communications,기타,0
+Transportation,ESG,1
+Transportation,실적·재무,1
+Transportation,산업·사업동향,0
+Transportation,문화·마케팅,0
+Transportation,기타,0

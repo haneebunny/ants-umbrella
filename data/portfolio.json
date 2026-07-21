@@ -1,0 +1,144 @@
+{
+  "user_id": "user_investor_01",
+  "portfolios": [
+    {
+      "portfolio_id": "portfolio_001",
+      "portfolio_name": "1번 [안정추구형] 대형 우량주 & 전통 배당·방어",
+      "target_budget": 40000000,
+      "total_portfolio_value": 39920000,
+      "currency": "KRW",
+      "holdings": [
+        {
+          "ticker": "032830",
+          "stock_name": "삼성생명",
+          "quantity": 120,
+          "average_price": 85000,
+          "amount": 10200000
+        },
+        {
+          "ticker": "033780",
+          "stock_name": "KT&G",
+          "quantity": 100,
+          "average_price": 98000,
+          "amount": 9800000
+        },
+        {
+          "ticker": "105560",
+          "stock_name": "KB금융",
+          "quantity": 120,
+          "average_price": 82000,
+          "amount": 9840000
+        },
+        {
+          "ticker": "005380",
+          "stock_name": "현대차",
+          "quantity": 40,
+          "average_price": 252000,
+          "amount": 10080000
+        }
+      ]
+    },
+    {
+      "portfolio_id": "portfolio_002",
+      "portfolio_name": "2번 [성장·테크 집중형] 대한민국 주도주",
+      "target_budget": 15000000,
+      "total_portfolio_value": 15020000,
+      "currency": "KRW",
+      "holdings": [
+        {
+          "ticker": "005930",
+          "stock_name": "삼성전자",
+          "quantity": 50,
+          "average_price": 76000,
+          "amount": 3800000
+        },
+        {
+          "ticker": "000660",
+          "stock_name": "SK하이닉스",
+          "quantity": 20,
+          "average_price": 195000,
+          "amount": 3900000
+        },
+        {
+          "ticker": "373220",
+          "stock_name": "LG에너지솔루션",
+          "quantity": 10,
+          "average_price": 360000,
+          "amount": 3600000
+        },
+        {
+          "ticker": "035420",
+          "stock_name": "NAVER",
+          "quantity": 22,
+          "average_price": 169000,
+          "amount": 3718000
+        }
+      ]
+    },
+    {
+      "portfolio_id": "portfolio_003",
+      "portfolio_name": "3번 [복합 분산형] SASB 업종 다각화 8선",
+      "target_budget": 8000000,
+      "total_portfolio_value": 8089000,
+      "currency": "KRW",
+      "holdings": [
+        {
+          "ticker": "005490",
+          "stock_name": "POSCO홀딩스",
+          "quantity": 3,
+          "average_price": 310000,
+          "amount": 930000
+        },
+        {
+          "ticker": "068270",
+          "stock_name": "셀트리온",
+          "quantity": 6,
+          "average_price": 175000,
+          "amount": 1050000
+        },
+        {
+          "ticker": "055550",
+          "stock_name": "신한지주",
+          "quantity": 20,
+          "average_price": 48000,
+          "amount": 960000
+        },
+        {
+          "ticker": "000270",
+          "stock_name": "기아",
+          "quantity": 9,
+          "average_price": 110000,
+          "amount": 990000
+        },
+        {
+          "ticker": "051910",
+          "stock_name": "LG화학",
+          "quantity": 3,
+          "average_price": 340000,
+          "amount": 1020000
+        },
+        {
+          "ticker": "028260",
+          "stock_name": "삼성물산",
+          "quantity": 7,
+          "average_price": 145000,
+          "amount": 1015000
+        },
+        {
+          "ticker": "017670",
+          "stock_name": "SK텔레콤",
+          "quantity": 18,
+          "average_price": 56000,
+          "amount": 1008000
+        },
+        {
+          "ticker": "010950",
+          "stock_name": "S-Oil",
+          "quantity": 16,
+          "average_price": 70000,
+          "amount": 1116000
+        }
+      ]
+    }
+  ]
+}
