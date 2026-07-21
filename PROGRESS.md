@@ -7,3 +7,6 @@
 | 2026-07-21 | Antigravity | 서비스명을 '개미의 우산'으로 변경하고 다크/라이트모드 토글을 해/달 모양 스위치 토글로 개선 |
 | 2026-07-21 | Antigravity | 서비스 로고 이미지를 삽입하고, 로고/텍스트 클릭 시 홈으로 이동하도록 네비게이션 개선 및 favicon 연동 |
 | 2026-07-21 | Antigravity | pyproject.toml TOML 문법 오류 해결 및 Poetry 2.x 패키지 모드(package-mode = false) 비활성화 설정 추가 |
+| 2026-07-21 | Antigravity | AssetChart 호버 감지 오류 수정, 인트로 사이드바 제거 및 성향조사 레이아웃 최대 너비 확장으로 일관된 1컬럼 대시보드 구조 완성 |
+| 2026-07-21 | Antigravity | 투자 기상도(Atmosphere), 위험 레이더(Radar), 보유 자산(Assets), 위험 알림(Alerts) 4개 탭 스위칭 대시보드 구현 및 포트폴리오 비중 조절 시 실시간 날씨 연동 기능 추가, 하단 내비게이션바 패딩 보정 및 UI 전체 한글 통일 완료 |
+| 2026-07-21 | Antigravity | 데이터 수집 스크립트 4개(collect_dart, collect_macro, collect_price, news)를 backend/scripts/ 디렉터리로 이동하여 관리 구조 단일화 |
