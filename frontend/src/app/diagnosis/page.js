@@ -2,16 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from '../hooks/useTheme';
 import Header from '../components/layout/Header';
 import Icon from '../components/Icon';
 import { DEMO_PROFILE, riskRadar as mockRiskRadar } from '../data/mockData';
 
 export default function DiagnosisPage() {
   const router = useRouter();
-  const [theme, setTheme] = useState('light');
+  const { isDark, toggleTheme } = useTheme();
   const [profile, setProfile] = useState(DEMO_PROFILE);
-  const isDark = theme === 'dark';
-  const toggleTheme = () => setTheme(p => p === 'dark' ? 'light' : 'dark');
 
   useEffect(() => {
     const saved = localStorage.getItem('ants_result_profile');
@@ -19,12 +18,6 @@ export default function DiagnosisPage() {
       try { setProfile(JSON.parse(saved)); } catch { /* noop */ }
     }
   }, []);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle('dark', theme === 'dark');
-    root.classList.toggle('light', theme === 'light');
-  }, [theme]);
 
   // 성향 기반 허용 위험 수준 (0~100)
   const bandToTolerance = {
@@ -44,14 +37,14 @@ export default function DiagnosisPage() {
   const sCfg = statusCfg[riskStatus];
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-300 ${isDark ? 'bg-[#0d0f0d] text-[#e2e2e2]' : 'bg-[#f5f6f4] text-[#0f1713]'}`}>
+    <div className={`min-h-screen w-full transition-colors duration-300 ${isDark ? 'bg-[#0d0f0d] text-[#e2e2e2]' : 'bg-[#f0f2f0] text-[#0f1713]'}`}>
       <Header isDark={isDark} toggleTheme={toggleTheme} showBack title="위험 진단" />
 
       <main className="pt-14 pb-10 px-4 max-w-2xl mx-auto">
         {/* 단계 표시 */}
         <div className="pt-6 pb-4 flex items-center gap-2">
           <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${isDark ? 'bg-[#3eb489]/15 text-[#69dbad]' : 'bg-[#3eb489]/10 text-[#3eb489]'}`}>
-            <span className="w-4 h-4 rounded-full bg-current opacity-100 flex items-center justify-center text-white text-[9px] font-black" style={{backgroundColor: isDark ? '#69dbad' : '#3eb489', color: '#fff'}}>1</span>
+            <span className="w-4 h-4 rounded-full flex items-center justify-center text-white text-[9px] font-black" style={{backgroundColor: isDark ? '#69dbad' : '#3eb489'}}>1</span>
             위험 레이더
           </div>
           <Icon name="arrowRight" className={`w-3.5 h-3.5 ${isDark ? 'text-slate-600' : 'text-slate-300'}`} />
@@ -70,40 +63,28 @@ export default function DiagnosisPage() {
             </h1>
           </div>
 
-          {/* 판정 배지 */}
           <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-black border ${sCfg.bg} ${sCfg.border} ${sCfg.color}`}>
             <Icon name={riskStatus === 'safe' ? 'shieldCheck' : riskStatus === 'caution' ? 'alertTriangle' : 'alertCircle'} className="w-4 h-4" />
             {sCfg.label} — 성향 {riskStatus === 'safe' ? '허용 범위 내' : riskStatus === 'caution' ? '한계 근접' : '초과'}
           </div>
 
-          {/* 게이지 영역 */}
           <div className="space-y-4">
-            {/* 사용자 성향 허용치 */}
             <div>
               <div className="flex justify-between text-xs mb-1.5">
                 <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>내 성향 위험 허용치</span>
                 <span className={`font-black font-mono ${isDark ? 'text-[#69dbad]' : 'text-[#3eb489]'}`}>{userTolerance}점</span>
               </div>
               <div className={`h-3 rounded-full ${isDark ? 'bg-white/5' : 'bg-slate-100'}`}>
-                <div
-                  className="h-full rounded-full bg-[#3eb489] transition-all duration-700"
-                  style={{ width: `${userTolerance}%` }}
-                />
+                <div className="h-full rounded-full bg-[#3eb489] transition-all duration-700" style={{ width: `${userTolerance}%` }} />
               </div>
             </div>
-            {/* 현재 포트폴리오 위험 */}
             <div>
               <div className="flex justify-between text-xs mb-1.5">
                 <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>현재 포트폴리오 위험</span>
                 <span className={`font-black font-mono ${sCfg.color}`}>{portfolioRisk}점</span>
               </div>
               <div className={`h-3 rounded-full ${isDark ? 'bg-white/5' : 'bg-slate-100'}`}>
-                <div
-                  className={`h-full rounded-full transition-all duration-700 ${
-                    riskStatus === 'safe' ? 'bg-[#3eb489]' : riskStatus === 'caution' ? 'bg-amber-400' : 'bg-red-500'
-                  }`}
-                  style={{ width: `${portfolioRisk}%` }}
-                />
+                <div className={`h-full rounded-full transition-all duration-700 ${riskStatus === 'safe' ? 'bg-[#3eb489]' : riskStatus === 'caution' ? 'bg-amber-400' : 'bg-red-500'}`} style={{ width: `${portfolioRisk}%` }} />
               </div>
             </div>
           </div>
@@ -113,13 +94,10 @@ export default function DiagnosisPage() {
           </p>
         </div>
 
-        {/* 다음 단계 버튼 */}
         <button
           onClick={() => router.push('/diagnosis/weather')}
           className={`mt-6 w-full py-4 rounded-2xl text-sm font-black flex items-center justify-center gap-2 transition-all ${
-            isDark
-              ? 'bg-[#3eb489] text-[#0a1f14] hover:bg-[#69dbad]'
-              : 'bg-[#3eb489] text-white hover:bg-[#2d966e] shadow-[0_4px_20px_rgba(62,180,137,0.3)]'
+            isDark ? 'bg-[#3eb489] text-[#0a1f14] hover:bg-[#69dbad]' : 'bg-[#3eb489] text-white hover:bg-[#2d966e] shadow-[0_4px_20px_rgba(62,180,137,0.3)]'
           }`}
         >
           다음: 오늘 내 포트폴리오 날씨 확인

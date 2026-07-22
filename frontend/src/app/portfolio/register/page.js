@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from '../../hooks/useTheme';
 import Header from '../../components/layout/Header';
 import Icon from '../../components/Icon';
 
@@ -26,17 +27,9 @@ const SAMPLE_STOCKS = [
 
 export default function PortfolioRegisterPage() {
   const router = useRouter();
-  const [theme, setTheme] = useState('light');
+  const { isDark, toggleTheme } = useTheme();
   const [search, setSearch] = useState('');
   const [holdings, setHoldings] = useState([]);
-  const isDark = theme === 'dark';
-  const toggleTheme = () => setTheme(p => p === 'dark' ? 'light' : 'dark');
-
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle('dark', theme === 'dark');
-    root.classList.toggle('light', theme === 'light');
-  }, [theme]);
 
   const filtered = SAMPLE_STOCKS.filter(s =>
     (s.name.includes(search) || s.ticker.includes(search)) &&
