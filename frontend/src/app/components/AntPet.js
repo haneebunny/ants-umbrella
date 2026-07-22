@@ -6,7 +6,7 @@ import Image from 'next/image';
 export default function AntPet({ weather, portfolio }) {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
-  const [isVisible, setIsVisible] = useState(true); // 숨기기 기능 상태
+  const [isSleeping, setIsSleeping] = useState(false); // 반투명 흔적 취침 모드 상태
   
   // 드래그 위치 제어 상태
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -14,23 +14,24 @@ export default function AntPet({ weather, portfolio }) {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [hasMoved, setHasMoved] = useState(false); // 클릭과 드래그 오동작 방지
 
-  // 날씨 상태에 따른 이미지 매핑 (사용자 지시: mimi_0 제외, mimi_1~4 매핑)
+  // 날씨 상태에 따른 이미지 매핑 (사용자 지정 사양 반영)
   const getPetImage = (w) => {
     switch (w) {
       case 'sunny':
-        return '/images/mimi/mimi_2.png'; // 맑음: 썬캡 무지개 개미
+        return '/images/mimi/mimi_1.png'; // 맑음: mimi_1
       case 'cloudy':
-        return '/images/mimi/mimi_3.png'; // 구름/흐림: 손 흔드는 개미
+        return '/images/mimi/mimi_2.png'; // 구름/흐림: mimi_2
       case 'rainy':
-        return '/images/mimi/mimi_4.png'; // 비: 우비 입은 개미
+        return '/images/mimi/mimi_3.png'; // 비: mimi_3
       case 'thunder':
-        return '/images/mimi/mimi_1.png'; // 천둥번개: 먹구름 아래 시무룩 개미
+        return '/images/mimi/mimi_4.png'; // 천둥번개: mimi_4
       default:
-        return '/images/mimi/mimi_3.png';
+        return '/images/mimi/mimi_1.png';
     }
   };
 
-  // 나개미 페르소나에 부합하도록 직관적이고 부드러운 맑음/흐림/비/천둥번개 멘트 매핑 (버그 수정: stock.name 활용)
+
+  // 나개미 페르소나에 부합하도록 직관적이고 부드러운 맑음/흐림/비/천둥번개 멘트 매핑
   useEffect(() => {
     if (!portfolio || portfolio.length === 0) {
       setMessage('반가워요! 주식 초보 나개미를 위한 우산 비서입니다. 종목을 등록하시면 분석을 시작할게요 🐜');
@@ -75,7 +76,7 @@ export default function AntPet({ weather, portfolio }) {
     }
     // 4. 맑음 (sunny)
     else {
-      setMessage('☀️ 와! 오늘은 포트폴리오 날씨가 아주 쨍쨍해요! 모든 종목이 평온하니 기분 좋게 지켜보셔도 좋겠어요 🐜');
+      setMessage('☀️ 와! 오늘의 포트폴리오 날씨가 아주 쨍쨍해요! 모든 종목이 평온하니 기분 좋게 지켜보셔도 좋겠어요 🐜');
     }
   }, [weather, portfolio]);
 
@@ -92,7 +93,7 @@ export default function AntPet({ weather, portfolio }) {
     const newX = e.clientX - dragStart.x;
     const newY = e.clientY - dragStart.y;
     
-    // 최소 3픽셀 이상 움직였을 때만 드래그로 간주 (단순 클릭 클릭 시 흔들림에 의한 드래그 오판정 방어)
+    // 최소 3픽셀 이상 움직였을 때만 드래그로 간주
     if (Math.abs(newX - position.x) > 3 || Math.abs(newY - position.y) > 3) {
       setHasMoved(true);
     }
@@ -105,14 +106,7 @@ export default function AntPet({ weather, portfolio }) {
     try {
       e.target.releasePointerCapture(e.pointerId);
     } catch (err) {}
-    
-    // 마우스를 거의 움직이지 않고 뗐을 때만 '말풍선 열고 닫기' 클릭으로 판정
-    if (!hasMoved) {
-      setIsOpen(!isOpen);
-    }
   };
-
-  if (!isVisible) return null;
 
   return (
     <div 
@@ -122,63 +116,94 @@ export default function AntPet({ weather, portfolio }) {
         transition: isDragging ? 'none' : 'transform 0.15s ease-out'
       }}
     >
-      {/* 말풍선 UI */}
-      <div 
-        className={`mb-4 max-w-[280px] p-4 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-emerald-500/30 text-zinc-800 dark:text-zinc-100 text-sm font-medium shadow-xl transition-all duration-300 transform soft-shadow-light ${
-          isOpen 
-            ? 'opacity-100 translate-y-0 scale-100' 
-            : 'opacity-0 translate-y-4 scale-95 pointer-events-none'
-        }`}
-      >
-        <div className="relative">
-          <p className="leading-relaxed whitespace-pre-wrap pr-1">{message}</p>
-          
-          {/* 하단 사라지기 링크 버튼 */}
-          <div className="mt-3 pt-2 border-t border-zinc-100 dark:border-zinc-800 flex justify-end">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsVisible(false);
-              }}
-              className="text-[11px] text-zinc-400 hover:text-rose-500 cursor-pointer transition-colors flex items-center gap-0.5"
-            >
-              <span>❌ 이제 사라져.</span>
-            </button>
+      {isSleeping ? (
+        /* 반투명한 취침 흔적 개미 (드래그 가능, 클릭 시 원래 크기로 깨어남) */
+        <div
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={(e) => {
+            handlePointerUp(e);
+            if (!hasMoved) {
+              setIsSleeping(false);
+              setIsOpen(true); // 깨어날 때 말풍선도 즉시 켜기
+            }
+          }}
+          className="relative w-10 h-10 flex items-center justify-center cursor-pointer pointer-events-auto rounded-full bg-emerald-500/10 dark:bg-emerald-500/5 border border-emerald-500/20 opacity-30 hover:opacity-100 hover:scale-110 active:scale-95 transition-all duration-200 soft-shadow-light"
+          title="개미 비서 깨우기"
+          style={{ touchAction: 'none' }}
+        >
+          <span className="text-xl">🐜</span>
+          {/* 잔잔한 소환 유도 펄스 링 */}
+          <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-20 animate-ping"></span>
+        </div>
+      ) : (
+        /* 원래의 개미 펫과 말풍선 */
+        <>
+          {/* 말풍선 UI */}
+          <div 
+            className={`mb-4 max-w-[280px] p-4 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-emerald-500/30 text-zinc-800 dark:text-zinc-100 text-sm font-medium shadow-xl transition-all duration-300 transform soft-shadow-light ${
+              isOpen 
+                ? 'opacity-100 translate-y-0 scale-100' 
+                : 'opacity-0 translate-y-4 scale-95 pointer-events-none'
+            }`}
+          >
+            <div className="relative">
+              <p className="leading-relaxed whitespace-pre-wrap pr-1">{message}</p>
+              
+              {/* 하단 사라지기(취침모드 전환) 링크 버튼 */}
+              <div className="mt-3 pt-2 border-t border-zinc-100 dark:border-zinc-800 flex justify-end">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsSleeping(true);
+                    setIsOpen(false);
+                  }}
+                  className="text-[11px] text-zinc-400 hover:text-rose-500 cursor-pointer transition-colors flex items-center gap-0.5 pointer-events-auto"
+                >
+                  <span>❌ 이제 사라져.</span>
+                </button>
+              </div>
+
+              {/* 말풍선 꼬리 */}
+              <div className="absolute right-6 -bottom-5 w-0 h-0 border-8 border-transparent border-t-white/95 dark:border-t-zinc-900/95"></div>
+              <div className="absolute right-6 -bottom-[21px] w-0 h-0 border-8 border-transparent border-t-emerald-500/30 -z-10"></div>
+            </div>
           </div>
 
-          {/* 말풍선 꼬리 */}
-          <div className="absolute right-6 -bottom-5 w-0 h-0 border-8 border-transparent border-t-white/95 dark:border-t-zinc-900/95"></div>
-          <div className="absolute right-6 -bottom-[21px] w-0 h-0 border-8 border-transparent border-t-emerald-500/30 -z-10"></div>
-        </div>
-      </div>
-
-      {/* 둥둥 뜨는 펫 캐릭터 (드래그 이벤트 매핑) */}
-      <div 
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        className={`relative w-24 h-24 cursor-grab active:cursor-grabbing select-none ${
-          isDragging ? '' : 'animate-float'
-        } transition-transform duration-200 hover:scale-105 active:scale-95`}
-        title="마우스로 드래그해서 위치를 변경하고, 클릭해서 대화를 시작해봐요!"
-        style={{ touchAction: 'none' }}
-      >
-        <Image 
-          src={getPetImage(weather)} 
-          alt="Ant Pet" 
-          width={96}
-          height={96}
-          className="object-contain pointer-events-none"
-          priority
-        />
-        {/* 알림 경보 배지 */}
-        {!isOpen && (weather === 'thunder' || weather === 'rainy') && (
-          <span className="absolute top-1 right-1 flex h-3.5 w-3.5 pointer-events-none">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-rose-500"></span>
-          </span>
-        )}
-      </div>
+          {/* 둥둥 뜨는 펫 캐릭터 */}
+          <div 
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={(e) => {
+              handlePointerUp(e);
+              if (!hasMoved) {
+                setIsOpen(!isOpen);
+              }
+            }}
+            className={`relative w-24 h-24 cursor-grab active:cursor-grabbing select-none ${
+              isDragging ? '' : 'animate-float'
+            } transition-transform duration-200 hover:scale-105 active:scale-95 pointer-events-auto`}
+            title="마우스로 드래그해서 위치를 변경하고, 클릭해서 대화를 시작해봐요!"
+            style={{ touchAction: 'none' }}
+          >
+            <Image 
+              src={getPetImage(weather)} 
+              alt="Ant Pet" 
+              width={96}
+              height={96}
+              className="object-contain pointer-events-none"
+              priority
+            />
+            {/* 알림 경보 배지 */}
+            {!isOpen && (weather === 'thunder' || weather === 'rainy') && (
+              <span className="absolute top-1 right-1 flex h-3.5 w-3.5 pointer-events-none">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-rose-500"></span>
+              </span>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
