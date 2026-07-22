@@ -42,7 +42,7 @@ export default function Home() {
       <Header isDark={isDark} toggleTheme={toggleTheme} alertCount={alertCount} />
 
       {/* ── 메인 콘텐츠 (최대폭 고정, 중앙 정렬) ── */}
-      <main className="pt-14 pb-12 px-4 lg:px-6 max-w-5xl mx-auto">
+      <main className="pt-14 pb-12 px-4 lg:px-6 max-w-7xl mx-auto">
 
         {/* 게스트 CTA (데모 모드에서만) */}
         {isDemo && (
@@ -57,28 +57,27 @@ export default function Home() {
           <WeatherBanner weather={overallWeather} isDark={isDark} />
         </div>
 
-        {/* ── 2열 그리드 ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+        {/* ── 비균형 3열 그리드 (4 : 5 : 3 = 12) ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
 
-          {/* ┌── 왼쪽 열 ──┐ */}
-          <div className="flex flex-col gap-4">
-            {/* 섹션 2: 코스닥 미니 지수 */}
-            <KosdaqMiniChart index={kosdaqIndex} isDark={isDark} />
-
-            {/* 섹션 4: 내 투자성향 */}
-            <ProfileBadge profile={profile} isDemoMode={isDemo} isDark={isDark} />
-
-            {/* 섹션 3: 보유 자산 요약 (도넛 차트) */}
+          {/* ┌── 왼쪽 (4칸) — 보유 자산 도넛 ──┐ */}
+          <div className="lg:col-span-4 flex flex-col gap-4">
             <AssetSummaryCard summary={assetSummary} isDark={isDark} />
           </div>
 
-          {/* ┌── 오른쪽 열 ──┐ */}
-          <div className="flex flex-col gap-4">
-            {/* 섹션 5: 종목별 날씨 목록 */}
+          {/* ┌── 중간 (5칸) — 종목별 날씨 ──┐ */}
+          <div className="lg:col-span-5 flex flex-col gap-4">
             <StockWeatherList stocks={stockWeatherList} isDark={isDark} />
           </div>
 
+          {/* ┌── 오른쪽 (3칸, 좁음) — 코스닥 + 투자성향 ──┐ */}
+          <div className="lg:col-span-3 flex flex-col gap-4">
+            <KosdaqMiniChart index={kosdaqIndex} isDark={isDark} />
+            <ProfileBadge profile={profile} isDemoMode={isDemo} isDark={isDark} />
+          </div>
+
         </div>
+
       </main>
 
       {/* 나개미 캐릭터 플로팅 */}

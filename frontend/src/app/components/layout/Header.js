@@ -32,12 +32,14 @@ export default function Header({ isDark, toggleTheme, alertCount = 0, showBack =
     <>
       {/* ── 헤더 바 ── */}
       <header
-        className={`flex justify-between items-center px-5 h-14 w-full fixed top-0 z-50 transition-all ${
+        className={`flex items-center w-full fixed top-0 z-50 transition-all ${
           isDark
             ? 'bg-[#0d0f0d]/90 backdrop-blur-md border-b border-[#222422]'
             : 'bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm'
         }`}
       >
+        {/* 헤더 내부 컨텐츠를 본문 max-width에 맞춤 */}
+        <div className="flex justify-between items-center h-14 w-full max-w-7xl mx-auto px-4 lg:px-6">
         {/* 좌측 */}
         <div className="flex items-center gap-3">
           {showBack ? (
@@ -119,6 +121,7 @@ export default function Header({ isDark, toggleTheme, alertCount = 0, showBack =
               }
             </div>
           </button>
+        </div>
         </div>
       </header>
 

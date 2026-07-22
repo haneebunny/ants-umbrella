@@ -24,7 +24,7 @@ export default function ProfileBadge({ profile, isDemoMode = false, isDark }) {
 
   return (
     <div
-      className={`rounded-2xl border p-4 ${
+      className={`rounded-2xl border p-3 ${
         isDark
           ? `bg-[#141615] ${cfg.darkBorder} border`
           : `${cfg.bg} ${cfg.border} border`
@@ -45,9 +45,9 @@ export default function ProfileBadge({ profile, isDemoMode = false, isDark }) {
       </div>
 
       {/* 성향명 */}
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-2xl">{cfg.emoji}</span>
-        <p className={`text-lg font-black ${isDark ? cfg.darkColor : cfg.color}`}>
+      <div className="flex items-center gap-1.5 mb-2.5">
+        <span className="text-lg">{cfg.emoji}</span>
+        <p className={`text-base font-black ${isDark ? cfg.darkColor : cfg.color}`}>
           {cfg.label}
         </p>
       </div>

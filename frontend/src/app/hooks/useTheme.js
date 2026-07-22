@@ -5,25 +5,22 @@ import { useState, useEffect, useCallback } from 'react';
 const STORAGE_KEY = 'ants_theme';
 
 /**
- * 앱 전역 테마 훅
- * - localStorage에 저장해 페이지 전환 시에도 테마 유지
- * - 초기값: 'light'
+ * 초기값을 즉시 SSR-safe하게 읽어 flicker 방지
+ * layout.js의 인라인 스크립트가 이미 <html>에 클래스를 적용해 두므로
+ * useState 초기값도 localStorage에서 읽어 일치시킨다.
  */
+function getInitialTheme() {
+  if (typeof window === 'undefined') return 'light'; // SSR
+  return localStorage.getItem(STORAGE_KEY) === 'dark' ? 'dark' : 'light';
+}
+
 export function useTheme() {
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState(getInitialTheme);
 
-  // 마운트 시 저장된 테마 복원
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === 'dark' || saved === 'light') {
-      setTheme(saved);
-    }
-  }, []);
-
-  // 테마 변경 시 DOM + localStorage 동기화
+  // 테마 변경 시 DOM 클래스 + localStorage 동기화
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.toggle('dark', theme === 'dark');
+    root.classList.toggle('dark',  theme === 'dark');
     root.classList.toggle('light', theme === 'light');
     localStorage.setItem(STORAGE_KEY, theme);
   }, [theme]);

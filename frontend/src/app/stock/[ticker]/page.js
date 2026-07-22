@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { useParams } from 'next/navigation';
-import { useTheme } from '../../../hooks/useTheme';
-import Header from '../../../components/layout/Header';
-import Icon from '../../../components/Icon';
+import { useTheme } from '../../hooks/useTheme';
+import Header from '../../components/layout/Header';
+import Icon from '../../components/Icon';
 
 // 종목별 상세 Mock 데이터
 const STOCK_DATA = {
