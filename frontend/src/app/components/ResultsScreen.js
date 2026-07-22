@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Icon from './Icon';
 import AssetChart from './AssetChart';
+import AntPet from './AntPet';
+
 
 export default function ResultsScreen({ theme, profile, onReset, toggleTheme }) {
   const isDark = theme === 'dark';
@@ -1201,6 +1203,10 @@ export default function ResultsScreen({ theme, profile, onReset, toggleTheme }) 
         </footer>
 
       </main>
+
+      {/* 날씨 연동 플로팅 개미 비서 펫 */}
+      <AntPet weather={currentAtmosphere.weather} portfolio={portfolio} />
+
 
       {/* 하단 플로팅 네비게이션 바 (수직 패딩 정렬 수정 및 한글화 적용) */}
       <nav className={`fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-4 py-3 backdrop-blur-xl md:max-w-md md:left-1/2 md:-translate-x-1/2 md:bottom-4 md:rounded-full md:shadow-2xl transition-all ${

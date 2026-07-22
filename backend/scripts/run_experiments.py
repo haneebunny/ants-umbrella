@@ -162,7 +162,47 @@ if __name__ == "__main__":
         print("  👉 [피처 기여도 Top 3]:")
         for k, v in imp3.head(3).items():
             print(f"     * {k}: {v:.4f}")
-            
+
+    print("\n==================================================")
+    print("🧪 [추가 실험 4] 안정 지향형 (n_estimators=100, max_depth=2, lr=0.05)")
+    print("==================================================")
+    res4, imp4 = run_ml_experiment(df_exp2, FULL_FEATURES, n_estimators=100, max_depth=2, learning_rate=0.05)
+    if res4:
+        print(f"  👉 [성능] Accuracy: {res4['accuracy']:.4f} | AUC-ROC: {res4['auc_roc']:.4f} | Brier Loss: {res4['brier']:.4f}")
+        print("  👉 [피처 기여도 Top 3]:")
+        for k, v in imp4.head(3).items():
+            print(f"     * {k}: {v:.4f}")
+
+    print("\n==================================================")
+    print("🧪 [추가 실험 5] 나무 확장형 (n_estimators=200, max_depth=3, lr=0.01)")
+    print("==================================================")
+    res5, imp5 = run_ml_experiment(df_exp2, FULL_FEATURES, n_estimators=200, max_depth=3, learning_rate=0.01)
+    if res5:
+        print(f"  👉 [성능] Accuracy: {res5['accuracy']:.4f} | AUC-ROC: {res5['auc_roc']:.4f} | Brier Loss: {res5['brier']:.4f}")
+        print("  👉 [피처 기여도 Top 3]:")
+        for k, v in imp5.head(3).items():
+            print(f"     * {k}: {v:.4f}")
+
+    print("\n==================================================")
+    print("🧪 [추가 실험 6] 보수적 학습형 (n_estimators=300, max_depth=2, lr=0.05)")
+    print("==================================================")
+    res6, imp6 = run_ml_experiment(df_exp2, FULL_FEATURES, n_estimators=300, max_depth=2, learning_rate=0.05)
+    if res6:
+        print(f"  👉 [성능] Accuracy: {res6['accuracy']:.4f} | AUC-ROC: {res6['auc_roc']:.4f} | Brier Loss: {res6['brier']:.4f}")
+        print("  👉 [피처 기여도 Top 3]:")
+        for k, v in imp6.head(3).items():
+            print(f"     * {k}: {v:.4f}")
+
+    print("\n==================================================")
+    print("🧪 [추가 실험 7] 과적합 위험 테스트 (n_estimators=150, max_depth=6, lr=0.1)")
+    print("==================================================")
+    res7, imp7 = run_ml_experiment(df_exp2, FULL_FEATURES, n_estimators=150, max_depth=6, learning_rate=0.1)
+    if res7:
+        print(f"  👉 [성능] Accuracy: {res7['accuracy']:.4f} | AUC-ROC: {res7['auc_roc']:.4f} | Brier Loss: {res7['brier']:.4f}")
+        print("  👉 [피처 기여도 Top 3]:")
+        for k, v in imp7.head(3).items():
+            print(f"     * {k}: {v:.4f}")
+
     print("\n💡 [실험 가이드]:")
     print("  - run_experiments.py 파일의 134라인에서 n_estimators, max_depth, learning_rate 값을 직접 바꿔보며 결과를 관찰하세요!")
     print("  - 피처 중요도를 보면서 기여도가 너무 낮은 피처는 지우거나, 더 유용한 피처를 생성해 결합해 보세요.")
