@@ -206,3 +206,81 @@ if __name__ == "__main__":
     print("\n💡 [실험 가이드]:")
     print("  - run_experiments.py 파일의 134라인에서 n_estimators, max_depth, learning_rate 값을 직접 바꿔보며 결과를 관찰하세요!")
     print("  - 피처 중요도를 보면서 기여도가 너무 낮은 피처는 지우거나, 더 유용한 피처를 생성해 결합해 보세요.")
+
+
+    print("\n==================================================")
+    print("🧪 [실험 8] Max depth = 8")
+    print("==================================================")
+    # 과적합을 막기 위해 깊이(max_depth)를 2로 줄이고, 나무 개수(n_estimators)를 150개로 늘린 튜닝
+    res8, imp8 = run_ml_experiment(df_exp2, FULL_FEATURES, n_estimators=150, max_depth=8, learning_rate=0.05)
+
+    if res8:
+        print(f"  👉 [성능] Accuracy: {res8['accuracy']:.4f} | AUC-ROC: {res8['auc_roc']:.4f} | Brier Loss: {res8['brier']:.4f}")
+        print("  👉 [피처 기여도 Top 3]:")
+        for k, v in imp8.head(3).items():
+            print(f"     * {k}: {v:.4f}") 
+
+    print("\n==================================================")
+    print("🧪 [실험 9] 학습률을 낮춰 트리가 느린 템포로 미세하게 학습하게 함")
+    print("==================================================")
+    
+    # 추가 실험 9
+    res9, imp9 = run_ml_experiment(df_exp2, FULL_FEATURES, n_estimators=350, max_depth=3, learning_rate=0.005)
+
+
+    if res9:
+        print(f"  👉 [성능] Accuracy: {res9['accuracy']:.4f} | AUC-ROC: {res9['auc_roc']:.4f} | Brier Loss: {res9['brier']:.4f}")
+        print("  👉 [피처 기여도 Top 3]:")
+        for k, v in imp9.head(3).items():
+            print(f"     * {k}: {v:.4f}") 
+
+
+    res9, imp9 = run_ml_experiment(df_exp2, FULL_FEATURES, n_estimators=300, max_depth=5, learning_rate=0.005)
+
+
+    if res9:
+        print(f"  👉 [성능] Accuracy: {res9['accuracy']:.4f} | AUC-ROC: {res9['auc_roc']:.4f} | Brier Loss: {res9['brier']:.4f}")
+        print("  👉 [피처 기여도 Top 3]:")
+        for k, v in imp9.head(3).items():
+            print(f"     * {k}: {v:.4f}") 
+
+    
+    res9, imp9 = run_ml_experiment(df_exp2, FULL_FEATURES, n_estimators=300, max_depth=8, learning_rate=0.005)
+
+
+
+    if res9:
+        print(f"  👉 [성능] Accuracy: {res9['accuracy']:.4f} | AUC-ROC: {res9['auc_roc']:.4f} | Brier Loss: {res9['brier']:.4f}")
+        print("  👉 [피처 기여도 Top 3]:")
+        for k, v in imp9.head(3).items():
+            print(f"     * {k}: {v:.4f}") 
+
+    res9, imp9 = run_ml_experiment(df_exp2, FULL_FEATURES, n_estimators=400, max_depth=6, learning_rate=0.005)
+
+
+
+
+    if res9:
+        print(f"  👉 [성능] Accuracy: {res9['accuracy']:.4f} | AUC-ROC: {res9['auc_roc']:.4f} | Brier Loss: {res9['brier']:.4f}")
+        print("  👉 [피처 기여도 Top 3]:")
+        for k, v in imp9.head(3).items():
+            print(f"     * {k}: {v:.4f}")
+
+    res9, imp9 = run_ml_experiment(df_exp2, FULL_FEATURES, n_estimators=350, max_depth=6, learning_rate=0.005)
+
+
+
+    if res9:
+        print(f"  👉 [성능] Accuracy: {res9['accuracy']:.4f} | AUC-ROC: {res9['auc_roc']:.4f} | Brier Loss: {res9['brier']:.4f}")
+        print("  👉 [피처 기여도 Top 3]:")
+        for k, v in imp10.head(3).items():
+             print(f"     * {k}: {v:.4f}")
+
+    res9, imp9 = run_ml_experiment(df_exp2, FULL_FEATURES, n_estimators=600, max_depth=6, learning_rate=0.005)
+
+
+    if res9:
+        print(f"  👉 [성능] Accuracy: {res9['accuracy']:.4f} | AUC-ROC: {res9['auc_roc']:.4f} | Brier Loss: {res9['brier']:.4f}")
+        print("  👉 [피처 기여도 Top 3]:")
+        for k, v in imp9.head(3).items():
+             print(f"     * {k}: {v:.4f}")
