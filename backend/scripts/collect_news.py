@@ -28,16 +28,31 @@ HEADERS = {
     "X-NCP-APIGW-API-KEY": NCP_API_KEY,
 }
 
-# 7개 대표 종목 수집
-TARGET_COMPANIES = [
-    "삼성전자",
-    "SK하이닉스",
-    "LG에너지솔루션",
-    "카카오",
-    "NAVER",
-    "현대차",
-    "POSCO홀딩스",
-]
+# 7개 대표 종목 수집 대신 포트폴리오(portfolio.json)에서 중복 없이 동적으로 추출
+import json
+
+def get_portfolio_companies() -> list[str]:
+    portfolio_path = PROJECT_ROOT / "data" / "portfolio.json"
+    if not portfolio_path.exists():
+        # 파일이 없을 경우 기본 7대 종목 반환
+        return ["삼성전자", "SK하이닉스", "LG에너지솔루션", "카카오", "NAVER", "현대차", "POSCO홀딩스"]
+        
+    try:
+        with open(portfolio_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        companies = set()
+        for port in data.get("portfolios", []):
+            for holding in port.get("holdings", []):
+                name = holding.get("stock_name")
+                if name:
+                    companies.add(name)
+        return list(companies)
+    except Exception as e:
+        print(f"[WARN] portfolio.json 파싱 실패 ({e}). 기본 종목으로 대체합니다.")
+        return ["삼성전자", "SK하이닉스", "LG에너지솔루션", "카카오", "NAVER", "현대차", "POSCO홀딩스"]
+
+TARGET_COMPANIES = get_portfolio_companies()
+
 
 MAX_PER_COMPANY = 50      # 종목당 최대 수집 건수 (과호출 및 비용 절약)
 REQUEST_SLEEP_SEC = 0.3
