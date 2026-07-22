@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -36,7 +36,6 @@ export default function OnboardingPage() {
     if (currentQuestionIndex < QUESTIONS.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
-      // 설문 완료 → profile 계산 후 localStorage 저장 → 포트폴리오 등록으로 이동
       const profile = calculateRiskProfile(answers);
       localStorage.setItem('ants_result_profile', JSON.stringify(profile));
       router.push('/portfolio/register');
@@ -60,7 +59,6 @@ export default function OnboardingPage() {
           toggleTheme={toggleTheme}
         />
       )}
-
       {step === 'SURVEY' && (
         <SurveyScreen
           theme={theme}

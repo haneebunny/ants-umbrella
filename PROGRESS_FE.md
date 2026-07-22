@@ -34,3 +34,8 @@
 | 2026-07-22 | Antigravity | WeatherBanner: 날씨별 애니메이션 배경 추가 — 맑음(태양광선), 구름(drift), 비(rain streaks), 번개(flash) |
 | 2026-07-22 | Antigravity | WeatherBanner: 색상 전면 강화 — 맑음(금빛), 구름(인디고), 비(시안), 번개(로즈) 3-stop 그라디언트 |
 | 2026-07-22 | Antigravity | WeatherBanner: 텍스트·버튼·AI근거 배경을 흰색/반투명으로 통일, 가독성 개선 |
+| 2026-07-22 | Antigravity | onboarding/page.js UTF-8 인코딩 깨짐 수정 (Turbopack build 오류 해결) |
+| 2026-07-22 | Antigravity | 서브 페이지 4개(위험진단·알림·포트폴리오·투자성향재진단) max-w-2xl → max-w-4xl로 확대 |
+| 2026-07-22 | Antigravity | 홈 그리드 최종 조정 — grid-cols-11, 보유자산 5칸 / 종목날씨 4칸 / 우측 2칸 |
+| 2026-07-22 | Antigravity | StockWeatherList: 헤더의 "위험 진단 보기" 버튼 제거 |
+| 2026-07-22 | Antigravity | WeatherBanner: "위험진단" 버튼 크기·색상 강화 (solid bg-white/90, shadow, font-black) |

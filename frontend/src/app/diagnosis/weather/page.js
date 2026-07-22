@@ -81,7 +81,7 @@ export default function DiagnosisWeatherPage() {
     <div className={`min-h-screen w-full transition-colors duration-300 ${isDark ? 'bg-[#0d0f0d] text-[#e2e2e2]' : 'bg-[#f5f6f4] text-[#0f1713]'}`}>
       <Header isDark={isDark} toggleTheme={toggleTheme} showBack title="위험 진단" />
 
-      <main className="pt-14 pb-10 px-4 max-w-2xl mx-auto">
+      <main className="pt-14 pb-10 px-4 max-w-4xl mx-auto">
         {/* 단계 표시 */}
         <div className="pt-6 pb-4 flex items-center gap-2">
           <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${isDark ? 'bg-white/5 text-slate-500' : 'bg-white text-slate-400 border border-slate-200'}`}>

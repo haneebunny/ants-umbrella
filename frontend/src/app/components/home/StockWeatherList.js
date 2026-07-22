@@ -27,21 +27,12 @@ export default function StockWeatherList({ stocks = [], isDark }) {
       }`}
     >
       {/* 섹션 헤더 */}
-      <div className={`flex items-center justify-between px-5 py-3.5 border-b ${
+      <div className={`flex items-center px-5 py-3.5 border-b ${
         isDark ? 'border-white/5' : 'border-slate-50'
       }`}>
         <p className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
           종목별 날씨
         </p>
-        <a
-          href="/diagnosis"
-          className={`text-[10px] font-bold flex items-center gap-1 ${
-            isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'
-          }`}
-        >
-          위험 진단 보기
-          <Icon name="arrowRight" className="w-3 h-3" />
-        </a>
       </div>
 
       {/* 종목 목록 */}

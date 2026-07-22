@@ -235,10 +235,10 @@ export default function WeatherBanner({ weather, isDark }) {
 
             <a
               href="/diagnosis"
-              className="text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1 transition-colors backdrop-blur-sm bg-white/20 text-white hover:bg-white/30"
+              className="text-xs font-black px-4 py-2 rounded-full flex items-center gap-1.5 transition-all bg-white/90 text-[#0f1713] hover:bg-white shadow-md hover:shadow-lg active:scale-95"
             >
               위험 진단
-              <Icon name="arrowRight" className="w-3 h-3" />
+              <Icon name="arrowRight" className="w-3.5 h-3.5" />
             </a>
           </div>
 
