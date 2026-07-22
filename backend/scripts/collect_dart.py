@@ -62,7 +62,8 @@ def build_supplementary_signals(corp_code: str, stock_code: str, bgn_de: str, en
 
 if __name__ == "__main__":
     import pathlib
-    base_dir = pathlib.Path(__file__).resolve().parent.parent
+    base_dir = pathlib.Path(__file__).resolve().parent.parent.parent
+    
     corp_map_path = base_dir / "data" / "corp_code_map.csv"
     
     corp_map = pd.read_csv(corp_map_path, dtype=str)
