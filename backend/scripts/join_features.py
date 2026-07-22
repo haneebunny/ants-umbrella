@@ -106,7 +106,7 @@ if __name__ == "__main__":
     )
     
     result.to_csv(out_path, index=False)
-    print(f"[SUCCESS] {len(result)}행의 통합 피처 데이터셋이 성공적으로 생성되었습니다 ➔ {out_path}\n")
+    print(f"[SUCCESS] {len(result)}행의 통합 피처 데이터셋이 성공적으로 생성되었습니다 -> {out_path}\n")
     
     # 컬럼별 결측치 비율 산출
     print("=== 각 피처 컬럼별 결측치(NaN) 비율 ===")
