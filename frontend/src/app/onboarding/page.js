@@ -1,31 +1,18 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from '../hooks/useTheme';
 import IntroScreen from '../components/IntroScreen';
 import SurveyScreen from '../components/SurveyScreen';
 import { QUESTIONS, calculateRiskProfile } from '../components/questions';
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [theme, setTheme] = useState('dark');
+  const { theme, isDark, toggleTheme } = useTheme();
   const [step, setStep] = useState('INTRO');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
-
-  // 테마 클래스 적용
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      root.classList.remove('light');
-    } else {
-      root.classList.add('light');
-      root.classList.remove('dark');
-    }
-  }, [theme]);
-
-  const toggleTheme = () => setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
 
   const handleStartSurvey = () => {
     setStep('SURVEY');

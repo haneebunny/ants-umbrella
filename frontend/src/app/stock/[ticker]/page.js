@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useParams } from 'next/navigation';
-import Header from '../../../components/layout/Header';
-import Icon from '../../../components/Icon';
+import { useTheme } from '../../hooks/useTheme';
+import Header from '../../components/layout/Header';
+import Icon from '../../components/Icon';
 
 // 종목별 상세 Mock 데이터
 const STOCK_DATA = {
@@ -63,15 +64,7 @@ const WEATHER_CFG = {
 
 export default function StockDetailPage() {
   const { ticker } = useParams();
-  const [theme, setTheme] = useState('light');
-  const isDark = theme === 'dark';
-  const toggleTheme = () => setTheme(p => p === 'dark' ? 'light' : 'dark');
-
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle('dark', theme === 'dark');
-    root.classList.toggle('light', theme === 'light');
-  }, [theme]);
+  const { isDark, toggleTheme } = useTheme();
 
   const stock = STOCK_DATA[ticker] || DEFAULT_STOCK;
   const wCfg = WEATHER_CFG[stock.weather] || WEATHER_CFG.cloudy;

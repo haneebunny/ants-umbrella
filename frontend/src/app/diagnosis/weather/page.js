@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from '../../hooks/useTheme';
 import Header from '../../components/layout/Header';
 import Icon from '../../components/Icon';
 import { DEMO_PROFILE, kosdaqIndex } from '../../data/mockData';
@@ -51,10 +52,8 @@ const DEFAULT_PORTFOLIO = [
 
 export default function DiagnosisWeatherPage() {
   const router = useRouter();
-  const [theme, setTheme] = useState('light');
+  const { isDark, toggleTheme } = useTheme();
   const [profile, setProfile] = useState(DEMO_PROFILE);
-  const isDark = theme === 'dark';
-  const toggleTheme = () => setTheme(p => p === 'dark' ? 'light' : 'dark');
 
   useEffect(() => {
     const saved = localStorage.getItem('ants_result_profile');
@@ -62,12 +61,6 @@ export default function DiagnosisWeatherPage() {
       try { setProfile(JSON.parse(saved)); } catch { /* noop */ }
     }
   }, []);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle('dark', theme === 'dark');
-    root.classList.toggle('light', theme === 'light');
-  }, [theme]);
 
   const atmosphere = useMemo(
     () => calculateWeather(DEFAULT_PORTFOLIO, profile?.target_risk_band || 'BALANCED'),

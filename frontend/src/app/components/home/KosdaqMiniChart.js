@@ -28,7 +28,7 @@ export default function KosdaqMiniChart({ index, isDark }) {
 
   return (
     <div
-      className={`rounded-2xl border p-4 flex flex-col gap-3 ${
+      className={`rounded-2xl border p-3 flex flex-col gap-2 ${
         isDark
           ? 'bg-[#141615] border-white/5'
           : 'bg-white border-slate-100 shadow-sm'
@@ -39,7 +39,7 @@ export default function KosdaqMiniChart({ index, isDark }) {
           <p className={`text-[10px] font-bold tracking-wider uppercase ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
             코스닥
           </p>
-          <p className={`text-2xl font-black font-mono leading-tight ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+          <p className={`text-xl font-black font-mono leading-tight ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
             {currentPrice.toFixed(2)}
           </p>
         </div>

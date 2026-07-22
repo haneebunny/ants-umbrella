@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useTheme } from '../hooks/useTheme';
 import Header from '../components/layout/Header';
 import Icon from '../components/Icon';
 
@@ -19,15 +20,7 @@ const LEVEL_CFG = {
 };
 
 export default function AlertsPage() {
-  const [theme, setTheme] = useState('light');
-  const isDark = theme === 'dark';
-  const toggleTheme = () => setTheme(p => p === 'dark' ? 'light' : 'dark');
-
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle('dark', theme === 'dark');
-    root.classList.toggle('light', theme === 'light');
-  }, [theme]);
+  const { isDark, toggleTheme } = useTheme();
 
   return (
     <div className={`min-h-screen w-full transition-colors duration-300 ${isDark ? 'bg-[#0d0f0d] text-[#e2e2e2]' : 'bg-[#f5f6f4] text-[#0f1713]'}`}>
