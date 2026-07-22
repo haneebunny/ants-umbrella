@@ -23,3 +23,6 @@
 | 2026-07-22 | Antigravity | ML/DL 실험용 샌드박스 스크립트(run_experiments.py) 및 비전공자용 팀 가이드 문서(TEAM_ROLE_GUIDE.md) 추가 |
 | 2026-07-22 | Antigravity | Poetry 캐시 권한 에러 우회(Cache_new) 조치 및 process_news_features.py pkl 피클 로더 변경, Gemini API 키 예외 처리 보완 후 뉴스 피처 생성 정상 완료 |
 | 2026-07-22 | Antigravity | collect_dart.py(3단계), collect_price.py(4단계), generate_labels.py(5단계), collect_macro.py(6단계) 순차 실행 완료 및 join_features.py로 최종 병합 - ml_ready_real.csv(13824행, 14컬럼) 생성 완료 |
+| 2026-07-22 | Antigravity | 날씨 연동형 인터랙티브 플로팅 개미 펫 (AntPet) UI 컴포넌트 개발 및 대시보드 연동 완료 |
+
+
