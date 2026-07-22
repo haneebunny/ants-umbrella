@@ -57,21 +57,21 @@ export default function Home() {
           <WeatherBanner weather={overallWeather} isDark={isDark} />
         </div>
 
-        {/* ── 비균형 3열 그리드 (4 : 5 : 3 = 12) ── */}
+        {/* ── 비균형 3열 그리드 (6 : 4 : 2 = 12) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
 
-          {/* ┌── 왼쪽 (4칸) — 보유 자산 도넛 ──┐ */}
-          <div className="lg:col-span-4 flex flex-col gap-4">
+          {/* ┌── 왼쪽 (6칸) — 보유 자산 도넛 ──┐ */}
+          <div className="lg:col-span-6 flex flex-col gap-4">
             <AssetSummaryCard summary={assetSummary} isDark={isDark} />
           </div>
 
-          {/* ┌── 중간 (5칸) — 종목별 날씨 ──┐ */}
-          <div className="lg:col-span-5 flex flex-col gap-4">
+          {/* ┌── 중간 (4칸) — 종목별 날씨 ──┐ */}
+          <div className="lg:col-span-4 flex flex-col gap-4">
             <StockWeatherList stocks={stockWeatherList} isDark={isDark} />
           </div>
 
-          {/* ┌── 오른쪽 (3칸, 좁음) — 코스닥 + 투자성향 ──┐ */}
-          <div className="lg:col-span-3 flex flex-col gap-4">
+          {/* ┌── 오른쪽 (2칸, 좁음) — 코스닥 + 투자성향 ──┐ */}
+          <div className="lg:col-span-2 flex flex-col gap-4">
             <KosdaqMiniChart index={kosdaqIndex} isDark={isDark} />
             <ProfileBadge profile={profile} isDemoMode={isDemo} isDark={isDark} />
           </div>

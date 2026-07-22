@@ -35,9 +35,10 @@ export default function AssetSummaryCard({ summary, isDark }) {
           <p className={`text-[10px] font-bold tracking-wider uppercase ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
             보유 자산
           </p>
-          <p className={`text-2xl font-black font-mono leading-tight ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-            ₩{formatted}
-          </p>
+          <div className={`flex items-baseline gap-1 mt-3`}>
+            <span className={`text-lg font-black font-mono ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>₩</span>
+            <span className={`text-2xl font-black font-mono leading-tight ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>{formatted}</span>
+          </div>
         </div>
         <div className="flex flex-col items-end gap-1">
           <span
