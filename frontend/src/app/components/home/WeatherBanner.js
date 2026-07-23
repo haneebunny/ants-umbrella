@@ -10,56 +10,60 @@ const WEATHER_CONFIG = {
     label: '맑음',
     text: 'text-amber-600',
     darkText: 'text-[#ffda6a]',
-    /* 라이트 */ bgFrom: '#ff9e0c', bgMid: '#ffb700', bgTo: '#ffe066',
-    /* 다크   */ darkBgFrom: '#3d1c00', darkBgMid: '#5c2e00', darkBgTo: '#7a3d00',
+    bgFrom: '#fbbf24', bgMid: '#fde047', bgTo: '#fef9c3',
+    darkBgFrom: '#451a03', darkBgMid: '#78350f', darkBgTo: '#92400e',
+    radial: 'radial-gradient(ellipse at 80% 20%, rgba(255,245,100,0.6) 0%, transparent 65%)',
     border: 'border-amber-400/60',
-    darkBorder: 'border-amber-800/50',
+    darkBorder: 'border-amber-700/50',
     accent: '#f59e0b',
     darkAccent: '#ffda6a',
-    textOnBg: 'text-amber-900',
-    darkTextOnBg: 'text-[#ffda6a]',
+    textOnBg: 'text-amber-950',
+    subLabelOnBg: 'text-amber-800',
   },
   cloudy: {
     icon: 'cloud',
     label: '구름',
     text: 'text-indigo-600',
     darkText: 'text-[#a5b4fc]',
-    bgFrom: '#6366f1', bgMid: '#818cf8', bgTo: '#c7d2fe',
-    darkBgFrom: '#1e1b4b', darkBgMid: '#2e2b69', darkBgTo: '#1a1a3e',
-    border: 'border-indigo-400/60',
+    bgFrom: '#818cf8', bgMid: '#a5b4fc', bgTo: '#e0e7ff',
+    darkBgFrom: '#1e1b4b', darkBgMid: '#312e81', darkBgTo: '#1e1b4b',
+    radial: 'radial-gradient(ellipse at 75% 25%, rgba(165,130,255,0.55) 0%, transparent 60%)',
+    border: 'border-indigo-300/60',
     darkBorder: 'border-indigo-700/50',
     accent: '#6366f1',
     darkAccent: '#a5b4fc',
-    textOnBg: 'text-indigo-900',
-    darkTextOnBg: 'text-[#c7d2fe]',
+    textOnBg: 'text-indigo-950',
+    subLabelOnBg: 'text-indigo-800',
   },
   rainy: {
     icon: 'cloudRain',
     label: '비',
-    text: 'text-cyan-600',
+    text: 'text-sky-600',
     darkText: 'text-[#67e8f9]',
-    bgFrom: '#0284c7', bgMid: '#0ea5e9', bgTo: '#67e8f9',
-    darkBgFrom: '#042f4b', darkBgMid: '#063f63', darkBgTo: '#0a4f7a',
-    border: 'border-cyan-400/60',
+    bgFrom: '#38bdf8', bgMid: '#7dd3fc', bgTo: '#e0f2fe',
+    darkBgFrom: '#042f4b', darkBgMid: '#0c4a6e', darkBgTo: '#083344',
+    radial: 'radial-gradient(ellipse at 20% 80%, rgba(100,210,255,0.55) 0%, transparent 60%)',
+    border: 'border-sky-300/60',
     darkBorder: 'border-cyan-800/50',
     accent: '#06b6d4',
     darkAccent: '#67e8f9',
-    textOnBg: 'text-cyan-950',
-    darkTextOnBg: 'text-[#a5f3fc]',
+    textOnBg: 'text-sky-950',
+    subLabelOnBg: 'text-sky-800',
   },
   thunder: {
     icon: 'zap',
     label: '번개',
     text: 'text-rose-600',
     darkText: 'text-[#fca5a5]',
-    bgFrom: '#9f1239', bgMid: '#e11d48', bgTo: '#fb7185',
-    darkBgFrom: '#450a0a', darkBgMid: '#7f1d1d', darkBgTo: '#991b1b',
-    border: 'border-rose-400/60',
+    bgFrom: '#fb7185', bgMid: '#fda4af', bgTo: '#ffe4e6',
+    darkBgFrom: '#4c0519', darkBgMid: '#881337', darkBgTo: '#431407',
+    radial: 'radial-gradient(ellipse at 85% 15%, rgba(255,150,160,0.55) 0%, transparent 55%)',
+    border: 'border-rose-300/60',
     darkBorder: 'border-rose-800/50',
     accent: '#f43f5e',
     darkAccent: '#fca5a5',
     textOnBg: 'text-rose-950',
-    darkTextOnBg: 'text-[#fecdd3]',
+    subLabelOnBg: 'text-rose-800',
   },
 };
 
@@ -185,6 +189,11 @@ const weatherKeyframes = `
   0%, 100% { r: 90; opacity: 0.7; }
   50%       { r: 100; opacity: 1; }
 }
+@keyframes weatherShimmer {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
 `;
 
 /**
@@ -195,9 +204,15 @@ export default function WeatherBanner({ weather, isDark }) {
   const cfg = WEATHER_CONFIG[status] || WEATHER_CONFIG.sunny;
   const Decor = DECOR[status] || SunnyDecor;
 
-  const bgStyle = isDark
-    ? { background: `linear-gradient(135deg, ${cfg.darkBgFrom} 0%, ${cfg.darkBgMid || cfg.darkBgFrom} 50%, ${cfg.darkBgTo} 100%)` }
-    : { background: `linear-gradient(135deg, ${cfg.bgFrom} 0%, ${cfg.bgMid || cfg.bgTo} 50%, ${cfg.bgTo} 100%)` };
+  const bgLinear = isDark
+    ? `linear-gradient(135deg, ${cfg.darkBgFrom} 0%, ${cfg.darkBgMid || cfg.darkBgFrom} 50%, ${cfg.darkBgTo} 100%)`
+    : `linear-gradient(135deg, ${cfg.bgFrom} 0%, ${cfg.bgMid || cfg.bgTo} 45%, ${cfg.bgTo} 100%)`;
+
+  const bgStyle = {
+    background: bgLinear,
+    backgroundSize: '200% auto',
+    animation: 'weatherShimmer 8s ease-in-out infinite alternate',
+  };
 
   return (
     <>
@@ -206,6 +221,14 @@ export default function WeatherBanner({ weather, isDark }) {
         className={`relative rounded-2xl border overflow-hidden p-5 transition-all ${isDark ? cfg.darkBorder : cfg.border}`}
         style={bgStyle}
       >
+        {/* radial 광원 오버레이 */}
+        {cfg.radial && (
+          <div
+            className="absolute inset-0 pointer-events-none z-0"
+            style={{ background: cfg.radial }}
+          />
+        )}
+
         {/* 날씨 배경 데코 */}
         <Decor isDark={isDark} />
 
@@ -224,10 +247,14 @@ export default function WeatherBanner({ weather, isDark }) {
                 />
               </div>
               <div>
-                <p className="text-[10px] font-bold tracking-wider uppercase text-white/60">
+                <p className={`text-[10px] font-bold tracking-wider uppercase ${
+                  isDark ? 'text-white/60' : cfg.subLabelOnBg
+                }`}>
                   오늘 내 포트폴리오 날씨
                 </p>
-                <p className={`text-2xl font-black leading-tight ${isDark ? 'text-white' : 'text-white'}`}>
+                <p className={`text-2xl font-medium leading-tight ${
+                  isDark ? 'text-white' : cfg.textOnBg
+                }`}>
                   {cfg.label}
                 </p>
               </div>
@@ -246,9 +273,11 @@ export default function WeatherBanner({ weather, isDark }) {
           {weather?.summary && weather.summary.length > 0 && (
             <div
               className="rounded-xl p-3.5 space-y-2 backdrop-blur-sm"
-              style={{ background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.25)' }}
+              style={{ background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.45)' }}
             >
-              <p className="text-[10px] font-black uppercase tracking-widest mb-2 text-white/60">
+              <p className={`text-[10px] font-black uppercase tracking-widest mb-2 ${
+                isDark ? 'text-white/60' : cfg.subLabelOnBg
+              }`}>
                 AI 판단 근거
               </p>
               {weather.summary.map((line, i) => (
@@ -257,7 +286,9 @@ export default function WeatherBanner({ weather, isDark }) {
                     className="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0"
                     style={{ background: isDark ? cfg.darkAccent : cfg.accent }}
                   />
-                  <p className="text-xs leading-relaxed text-white/80">
+                  <p className={`text-xs leading-relaxed ${
+                    isDark ? 'text-white/80' : cfg.textOnBg
+                  }`}>
                     {line}
                   </p>
                 </div>

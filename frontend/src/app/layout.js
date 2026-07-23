@@ -1,19 +1,25 @@
-import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import { Outfit, Noto_Sans_KR, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+/* ─── Google Fonts ─── */
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  display: "swap",
+});
+
+const notoSansKr = Noto_Sans_KR({
+  variable: "--font-noto-kr",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "700", "900"],
+  display: "swap",
 });
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
-});
-
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
-  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata = {
@@ -44,7 +50,7 @@ export default function RootLayout({ children }) {
     <html
       lang="ko"
       suppressHydrationWarning
-      className={`${inter.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable} h-full antialiased light`}
+      className={`${outfit.variable} ${notoSansKr.variable} ${jetbrainsMono.variable} h-full antialiased light`}
     >
       {/* dangerouslySetInnerHTML 사용: 인라인 스크립트로 첫 렌더 전 테마 주입 */}
       <head>
