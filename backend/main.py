@@ -13,6 +13,45 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 1. 포트폴리오 업종(Sector) 데이터 로드 및 초기화
+SECTOR_MAP = {}
+try:
+    import pandas as pd
+    from pathlib import Path
+    project_root = Path(__file__).resolve().parent.parent
+    ml_data_path = project_root / "data" / "ml_ready_real.csv"
+    if ml_data_path.exists():
+        df_ml = pd.read_csv(ml_data_path, dtype={"ticker": str})
+        SECTOR_MAP = df_ml.groupby("ticker")["sector"].first().to_dict()
+        print(f"[INFO] SECTOR_MAP 로드 완료 (종목 수: {len(SECTOR_MAP)})")
+    else:
+        print("[WARN] ml_ready_real.csv 파일이 없어 SECTOR_MAP 로드를 생략합니다.")
+except Exception as e:
+    print(f"[WARN] SECTOR_MAP 로드 실패: {e}")
+
+# 2. get_hit_rate 통계 조회 도우미 함수 정의
+def get_hit_rate(industry: str, news_category: str, direction: str, is_material: int) -> dict:
+    try:
+        stats_collection = get_collection("event_study_stats")
+        row = stats_collection.find_one({
+            "industry": industry,
+            "news_category": news_category,
+            "direction": direction,
+            "is_material": is_material
+        })
+        if not row or not row.get("reliable"):
+            return {"hit_rate": None, "sample_size": None, "badge": "데이터 축적 중"}
+        
+        # PRD 표준에 맞춰 hit_rate(0~1 사이 값)를 소수점 둘째 자리까지 반올림
+        return {
+            "hit_rate": round(float(row["hit_rate"]), 2),
+            "sample_size": int(row["sample_size"]),
+            "badge": None
+        }
+    except Exception as e:
+        print(f"[WARN] get_hit_rate 조회 에러: {e}")
+        return {"hit_rate": None, "sample_size": None, "badge": "데이터 축적 중"}
+
 @app.get("/")
 def read_root():
     return {"status": "ok", "message": "ants-umbrella API server is running!"}
@@ -32,6 +71,31 @@ def get_risk_score(ticker: str):
         
         # MongoDB 내부 _id 필드 제거
         doc.pop("_id", None)
+        
+        # 업종 및 오늘 뉴스 신호 카테고리/방향/material 여부 조회하여 과거 사례 적중률 추가
+        industry = SECTOR_MAP.get(ticker)
+        
+        esg_collection = get_collection("esg_events")
+        # 오늘 날짜(스코어의 date) 기준 가장 최신의 뉴스 신호 조회
+        news_doc = esg_collection.find_one(
+            {"ticker": ticker, "date": {"$lte": str(doc["date"])}},
+            sort=[("date", -1)]
+        )
+        
+        hit_data = {"hit_rate": None, "sample_size": None, "badge": "데이터 축적 중"}
+        
+        if news_doc and industry:
+            hit_data = get_hit_rate(
+                industry=industry,
+                news_category=news_doc.get("news_category"),
+                direction=news_doc.get("news_direction"),
+                is_material=int(news_doc.get("is_material", 0))
+            )
+            
+        doc["hit_rate"] = hit_data.get("hit_rate")
+        doc["sample_size"] = hit_data.get("sample_size")
+        doc["badge"] = hit_data.get("badge")
+        
         return doc
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"데이터베이스 조회 에러: {str(e)}")

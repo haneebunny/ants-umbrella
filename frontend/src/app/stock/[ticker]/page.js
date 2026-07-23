@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from 'react';
 import { useParams } from 'next/navigation';
@@ -83,7 +83,7 @@ export default function StockDetailPage() {
   const lineColor = isDark ? (isUp ? '#69dbad' : '#ff8b8b') : (isUp ? '#3eb489' : '#ef4444');
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-300 ${isDark ? 'bg-[#0d0f0d] text-[#e2e2e2]' : 'bg-[#f5f6f4] text-[#0f1713]'}`}>
+    <div className={`min-h-screen w-full transition-colors duration-300 ${isDark ? 'bg-[#080b08] text-[#e2e2e2]' : 'bg-[#f5f6f4] text-[#0f1713]'}`}>
       <Header isDark={isDark} toggleTheme={toggleTheme} showBack title={stock.name} />
 
       <main className="pt-14 pb-10 px-4 max-w-2xl mx-auto space-y-4">
@@ -106,7 +106,7 @@ export default function StockDetailPage() {
           </div>
 
           {/* 주가 그래프 — 상세 페이지에만 노출 */}
-          <div className={`rounded-2xl border p-5 mb-4 ${isDark ? 'bg-[#141615] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+          <div className={`rounded-2xl border p-5 mb-4 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
             <p className={`text-[10px] font-bold uppercase tracking-wider mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
               최근 7거래일 주가
             </p>
@@ -131,7 +131,7 @@ export default function StockDetailPage() {
           </div>
 
           {/* 보유 정보 */}
-          <div className={`rounded-2xl border p-5 mb-4 grid grid-cols-3 gap-4 ${isDark ? 'bg-[#141615] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+          <div className={`rounded-2xl border p-5 mb-4 grid grid-cols-3 gap-4 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
             {[
               { label: '보유 비중', value: `${stock.weight}%` },
               { label: '전망', value: isUp ? '상승' : '하락', color: isUp ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : 'text-red-500' },
@@ -146,7 +146,7 @@ export default function StockDetailPage() {
 
           {/* 위험 근거 */}
           {stock.evidences && stock.evidences.length > 0 && (
-            <div className={`rounded-2xl border p-5 mb-4 ${isDark ? 'bg-[#141615] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+            <div className={`rounded-2xl border p-5 mb-4 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
               <p className={`text-xs font-black mb-3 ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>위험 근거</p>
               <div className="space-y-2">
                 {stock.evidences.map((ev, i) => (

@@ -14,7 +14,7 @@ price_df["ticker"] = price_df["ticker"].str.zfill(6)
 if "sector" in price_df.columns:
     price_df = price_df.drop(columns=["sector"])
 
-# 16개 핵심 포트폴리오 종목에 대한 정적 업종(섹터) 정보 백업 (FDR 404 에러 대비)
+# 16개 핵심 포트폴리오 종목에 대한 정적 업종(섹터) 정보 백업 (FDR 404 에러 및 네트워크 단절 대비)
 DEFAULT_SECTORS = {
     '005930': '전기전자',  # 삼성전자
     '000660': '전기전자',  # SK하이닉스
@@ -35,16 +35,47 @@ DEFAULT_SECTORS = {
     '105560': '금융업'     # KB금융
 }
 
+import requests, json
+from datetime import datetime, timedelta
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+    'Referer': 'https://data.krx.co.kr/contents/MDC/MDI/outerLoader/index.cmd'
+}
+url = 'http://data.krx.co.kr/comm/bldAttendant/executeForResourceBundle.cmd?baseName=krx.mdc.i18n.component&key=B128.bld'
 try:
-    listing = fdr.StockListing("KRX")
-    if not listing.empty:
-        sector_map = listing[["Code", "Industry"]].rename(columns={"Code": "ticker", "Industry": "sector"})
-        sector_map["ticker"] = sector_map["ticker"].astype(str).str.zfill(6)
-    else:
-        raise ValueError("Empty listing")
+    r = requests.get(url, headers=headers)
+    j = json.loads(r.text)
+    date_str = j['result']['output'][0]['max_work_dt']
+    base_date = datetime.strptime(date_str, '%Y%m%d')
 except Exception as e:
-    print(f"[WARN] FinanceDataReader 업종 수집 실패 ({e}). 백업 사전으로 대체합니다.")
-    sector_map = pd.DataFrame(list(DEFAULT_SECTORS.items()), columns=["ticker", "sector"])
+    print(f"Error fetching latest KRX date: {e}")
+    base_date = datetime.now()
+
+df = None
+for i in range(15):
+    target_date = (base_date - timedelta(days=i)).strftime('%Y-%m-%d')
+    csv_url = f'https://raw.githubusercontent.com/FinanceData/fdr_krx_data_cache/refs/heads/master/data/listing/desc/{target_date}.csv'
+    try:
+        res = requests.head(csv_url, timeout=5)
+        if res.status_code == 200:
+            df = pd.read_csv(csv_url, index_col=0, dtype={'Code': str})
+            print(f"  [INFO] KRX 업종 맵핑 캐시 로드 성공 ({target_date})")
+            break
+    except Exception:
+        continue
+
+if df is None:
+    try:
+        print("  [WARNING] 로컬 fallback 탐색 실패, fdr.StockListing(KRX-DESC) 시도")
+        df = fdr.StockListing("KRX-DESC")
+        sector_map = df[["Code", "Industry"]].rename(columns={"Code": "ticker", "Industry": "sector"})
+        sector_map["ticker"] = sector_map["ticker"].astype(str).str.zfill(6)
+    except Exception as e:
+        print(f"  [ERROR] fdr.StockListing 실패 ({e}). 정적 백업 사전으로 대체합니다.")
+        sector_map = pd.DataFrame(list(DEFAULT_SECTORS.items()), columns=["ticker", "sector"])
+else:
+    sector_map = df[["Code", "Industry"]].rename(columns={"Code": "ticker", "Industry": "sector"})
+    sector_map["ticker"] = sector_map["ticker"].astype(str).str.zfill(6)
 
 price_df = price_df.merge(sector_map, on="ticker", how="left")
 price_df.to_csv(price_csv_path, index=False)
