@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -78,7 +78,7 @@ export default function DiagnosisWeatherPage() {
   }).join(' ');
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-300 ${isDark ? 'bg-[#0d0f0d] text-[#e2e2e2]' : 'bg-[#f5f6f4] text-[#0f1713]'}`}>
+    <div className={`min-h-screen w-full transition-colors duration-300 ${isDark ? 'bg-[#080b08] text-[#e2e2e2]' : 'bg-[#f5f6f4] text-[#0f1713]'}`}>
       <Header isDark={isDark} toggleTheme={toggleTheme} showBack title="위험 진단" />
 
       <main className="pt-14 pb-10 px-4 max-w-4xl mx-auto">
@@ -96,7 +96,7 @@ export default function DiagnosisWeatherPage() {
         </div>
 
         {/* 날씨 + 보조 그래프 카드 */}
-        <div className={`rounded-2xl border p-6 space-y-6 ${isDark ? 'bg-[#141615] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+        <div className={`rounded-2xl border p-6 space-y-6 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
           <div>
             <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>오늘 내 포트폴리오 날씨</p>
             <h1 className={`text-xl font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
@@ -151,7 +151,7 @@ export default function DiagnosisWeatherPage() {
         </div>
 
         {/* 종목 요약 리스트 */}
-        <div className={`mt-4 rounded-2xl border overflow-hidden ${isDark ? 'bg-[#141615] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+        <div className={`mt-4 rounded-2xl border overflow-hidden ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
           <div className={`px-5 py-3 border-b text-xs font-black ${isDark ? 'border-white/5 text-white' : 'border-slate-50 text-[#0f1713]'}`}>
             종목별 위험 요약
           </div>

@@ -30,8 +30,8 @@ export default function KosdaqMiniChart({ index, isDark }) {
     <div
       className={`rounded-2xl border p-3 flex flex-col gap-2 ${
         isDark
-          ? 'bg-[#141615] border-white/5'
-          : 'bg-white border-slate-100 shadow-sm'
+          ? 'bg-[#1e2220] border-white/5 card-glow-dark'
+          : 'bg-white border-slate-100 shadow-sm card-glow-light'
       }`}
     >
       <div className="flex items-center justify-between">

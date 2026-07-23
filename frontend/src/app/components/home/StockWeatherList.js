@@ -185,7 +185,7 @@ export default function StockWeatherList({ stocks = [], isDark }) {
   return (
     <>
       <div className={`rounded-2xl border overflow-hidden ${
-        isDark ? 'bg-[#141615] border-white/5' : 'bg-white border-slate-100 shadow-sm'
+        isDark ? 'bg-[#1e2220] border-white/5 card-glow-dark' : 'bg-white border-slate-100 shadow-sm card-glow-light'
       }`}>
         {/* 헤더 */}
         <div className={`flex items-center px-5 py-3.5 border-b ${isDark ? 'border-white/5' : 'border-slate-50'}`}>

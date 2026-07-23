@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from 'react';
 import { useTheme } from '../hooks/useTheme';
@@ -23,7 +23,7 @@ export default function AlertsPage() {
   const { isDark, toggleTheme } = useTheme();
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-300 ${isDark ? 'bg-[#0d0f0d] text-[#e2e2e2]' : 'bg-[#f5f6f4] text-[#0f1713]'}`}>
+    <div className={`min-h-screen w-full transition-colors duration-300 ${isDark ? 'bg-[#080b08] text-[#e2e2e2]' : 'bg-[#f5f6f4] text-[#0f1713]'}`}>
       <Header isDark={isDark} toggleTheme={toggleTheme} showBack title="위험 알림" />
 
       <main className="pt-14 pb-10 px-4 max-w-4xl mx-auto">
@@ -34,7 +34,7 @@ export default function AlertsPage() {
           </p>
         </div>
 
-        <div className={`rounded-2xl border overflow-hidden ${isDark ? 'bg-[#141615] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+        <div className={`rounded-2xl border overflow-hidden ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
           {MOCK_ALERTS.map((alert, idx) => {
             const cfg = LEVEL_CFG[alert.level];
             const isLast = idx === MOCK_ALERTS.length - 1;

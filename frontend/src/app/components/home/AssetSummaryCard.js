@@ -222,7 +222,7 @@ export default function AssetSummaryCard({ summary, radarScores, isDark, weather
 
   return (
     <div className={`rounded-2xl border p-5 transition-all duration-300 ${
-      isDark ? `bg-[#141615] ${border}` : `bg-white ${border} shadow-sm`
+      isDark ? `bg-[#1e2220] ${border} card-glow-dark` : `bg-white ${border} shadow-sm card-glow-light`
     }`}>
       {/* ── 헤더 ── */}
       <div className="flex items-center justify-between mb-4">

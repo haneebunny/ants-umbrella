@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -58,7 +58,7 @@ export default function PortfolioRegisterPage() {
   };
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-300 ${isDark ? 'bg-[#0d0f0d] text-[#e2e2e2]' : 'bg-[#f5f6f4] text-[#0f1713]'}`}>
+    <div className={`min-h-screen w-full transition-colors duration-300 ${isDark ? 'bg-[#080b08] text-[#e2e2e2]' : 'bg-[#f5f6f4] text-[#0f1713]'}`}>
       <Header isDark={isDark} toggleTheme={toggleTheme} showBack title="포트폴리오 등록" />
 
       <main className="pt-14 pb-10 px-4 max-w-4xl mx-auto">
@@ -70,7 +70,7 @@ export default function PortfolioRegisterPage() {
         </div>
 
         {/* 종목 검색 */}
-        <div className={`rounded-2xl border p-4 mb-4 ${isDark ? 'bg-[#141615] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+        <div className={`rounded-2xl border p-4 mb-4 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
           <p className={`text-xs font-black mb-3 ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>종목 검색</p>
           <div className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 ${isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'}`}>
             <Icon name="search" className={`w-4 h-4 flex-shrink-0 ${isDark ? 'text-slate-500' : 'text-slate-400'}`} />
@@ -107,7 +107,7 @@ export default function PortfolioRegisterPage() {
 
         {/* 등록된 종목 목록 */}
         {holdings.length > 0 && (
-          <div className={`rounded-2xl border overflow-hidden mb-4 ${isDark ? 'bg-[#141615] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+          <div className={`rounded-2xl border overflow-hidden mb-4 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
             <div className={`px-5 py-3.5 border-b ${isDark ? 'border-white/5' : 'border-slate-50'}`}>
               <p className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
                 등록된 종목 ({holdings.length}개)

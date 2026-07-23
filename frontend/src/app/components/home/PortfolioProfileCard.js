@@ -32,8 +32,8 @@ export default function PortfolioProfileCard({
     <div
       className={`rounded-2xl border p-3 flex flex-col gap-2.5 ${
         isDark
-          ? `bg-[#141615] ${cfg.darkBorder} border`
-          : `${cfg.bg} ${cfg.border} border`
+          ? `bg-[#1e2220] ${cfg.darkBorder} border card-glow-dark`
+          : `${cfg.bg} ${cfg.border} border card-glow-light`
       }`}
     >
 
