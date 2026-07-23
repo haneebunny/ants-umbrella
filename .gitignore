@@ -63,3 +63,6 @@ data/supplementary_signals.csv
 
 .python-version
 frontend/temp_design.html
+data/*.log
+data/raw/
+data/processed/

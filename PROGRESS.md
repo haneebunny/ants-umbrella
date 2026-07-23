@@ -24,5 +24,14 @@
 | 2026-07-22 | Antigravity | Poetry 캐시 권한 에러 우회(Cache_new) 조치 및 process_news_features.py pkl 피클 로더 변경, Gemini API 키 예외 처리 보완 후 뉴스 피처 생성 정상 완료 |
 | 2026-07-22 | Antigravity | collect_dart.py(3단계), collect_price.py(4단계), generate_labels.py(5단계), collect_macro.py(6단계) 순차 실행 완료 및 join_features.py로 최종 병합 - ml_ready_real.csv(13824행, 14컬럼) 생성 완료 |
 | 2026-07-22 | Antigravity | 날씨 연동형 인터랙티브 플로팅 개미 펫 (AntPet) UI 컴포넌트 개발 및 대시보드 연동 완료 |
-
+| 2026-07-22 | Antigravity | compare_features.py의 Pylance/Pyright 임포트 경로 문제(Cannot find module run_experiments)를 sys.path 추가 방식으로 해결 |
+| 2026-07-22 | Antigravity | join_features.py의 merged 변수 UnboundLocalError 해결 및 compare_features.py의 unreachable 비교 코드 수정 |
+| 2026-07-22 | Antigravity | collect_news.py에 날짜순 정렬 및 페이징 파라미터(최대 500개)를 도입하여 과거 뉴스 수집량 대폭 확대 |
+| 2026-07-22 | Antigravity | 전체 수집, 전처리, 학습, 평가 파이프라인 단일 구동 및 로그 파일 저장을 자동화하는 run_pipeline.py 개발 완료 |
+| 2026-07-22 | Antigravity | 뉴스 검색어 쿼리 다각화, 주말 뉴스 월요일 롤포워드 로직, SBERT 임베딩 중복 제거 데이터셋 연동 및 타임존 안전 병합 연산 고도화 완료 |
+| 2026-07-22 | Antigravity | 로컬 자원 부족 크래시 예방을 위한 Google Colab 통합 ML 파이프라인 구동 노트북(colab_pipeline.ipynb) 생성 |
+| 2026-07-22 | Antigravity | UTF-8 강제 모드 설정으로 cp949 인코딩 에러 우회 적용 및 run_experiments.py 기본 실험 가동 완료 |
+| 2026-07-22 | Antigravity | run_experiments.py에 4가지 추가 하이퍼파라미터 튜닝 조합(실험 4~7) 확장 구현 및 결과 지표 수집 |
+| 2026-07-22 | Antigravity | 수집된 7가지 실험의 지표(Accuracy, AUC-ROC, Brier Loss) 및 피처 기여도 분석 결과를 토대로 data_analysis_definition.md (데이터 분석 정의서) 최종 작성 완료 |
+| 2026-07-22 | Antigravity | 깃 충돌 방지를 위해 ROADMAP.md 수정본을 롤백하고, B 파트 전용 로드맵 파일인 ROADMAP_B.md를 신규 생성하여 로드맵 이력 관리 |
 

@@ -25,13 +25,32 @@ def build_ml_rows(news_csv, price_csv, macro_csv, supplementary_csv, corp_code_m
     supp["ticker"] = normalize_ticker(supp["ticker"])
 
     # 날짜 컬럼 datetime 변환
-    news["date"] = pd.to_datetime(news["date"]).dt.normalize()
+    try:
+        # 뉴스 날짜가 타임존 정보가 포함된 경우 KST로 변환 후 타임존 정보 제거(naive)
+        news["date"] = pd.to_datetime(news["date"], utc=True).dt.tz_convert("Asia/Seoul").dt.tz_localize(None).dt.normalize()
+    except Exception:
+        news["date"] = pd.to_datetime(news["date"], errors="coerce").dt.normalize()
+
     price["date"] = pd.to_datetime(price["date"])
     # macro_features.csv 날짜 컬럼 형식(정수형 YYYYMMDD 또는 문자열 YYYY-MM-DD)을 안전하게 datetime64로 변환
     macro["date"] = pd.to_datetime(macro["date"].astype(str), format="%Y%m%d", errors="coerce").fillna(
         pd.to_datetime(macro["date"], errors="coerce")
     )
-    supp["date"] = pd.to_datetime(supp["date"])
+    
+    try:
+        supp["date"] = pd.to_datetime(supp["date"], utc=True).dt.tz_convert("Asia/Seoul").dt.tz_localize(None).dt.normalize()
+    except Exception:
+        supp["date"] = pd.to_datetime(supp["date"], errors="coerce")
+
+    # 주말(토요일 5, 일요일 6) 뉴스의 날짜를 다음주 월요일로 롤포워드
+    weekday_news = news["date"].dt.weekday
+    news.loc[weekday_news == 5, "date"] += pd.Timedelta(days=2) # 토요일 -> 월요일
+    news.loc[weekday_news == 6, "date"] += pd.Timedelta(days=1) # 일요일 -> 월요일
+
+    # 보조신호(supp) 날짜도 동일하게 롤포워드
+    weekday_supp = supp["date"].dt.weekday
+    supp.loc[weekday_supp == 5, "date"] += pd.Timedelta(days=2)
+    supp.loc[weekday_supp == 6, "date"] += pd.Timedelta(days=1)
 
     # direction(긍정/부정)을 수치화하고 severity와 곱함
     news["signed_value"] = news["news_severity"] * news["news_direction"].map(
@@ -45,7 +64,22 @@ def build_ml_rows(news_csv, price_csv, macro_csv, supplementary_csv, corp_code_m
         .rename(columns={1: "category_material_value", 0: "category_immaterial_value"})
         .reset_index()
     )
-    
+
+    # 기존 daily_news 집계 코드 아래에 추가
+    news["is_esg"] = (news["news_category"] == "ESG").astype(int)
+
+    daily_esg = (
+        news[news["is_material"] == 1]
+        .groupby(["ticker", "date", "is_esg"])["signed_value"]
+        .sum()
+        .unstack(fill_value=0)
+        .rename(columns={1: "esg_material_value", 0: "non_esg_material_value"})
+        .reset_index()
+    )
+    for col in ["esg_material_value", "non_esg_material_value"]:
+        if col not in daily_esg.columns:
+            daily_esg[col] = 0.0
+
     # 컬럼 누락 방지 방어 코드
     for col in ["category_material_value", "category_immaterial_value"]:
         if col not in daily_news.columns:
@@ -63,6 +97,12 @@ def build_ml_rows(news_csv, price_csv, macro_csv, supplementary_csv, corp_code_m
     # 마스터 가격 테이블에 거시/뉴스/보조신호 병합
     merged = price.merge(macro, on="date", how="left")
     merged = merged.merge(daily_news, on=["ticker", "date"], how="left")
+    
+    # ESG 세부 집계 병합
+    merged = merged.merge(daily_esg, on=["ticker", "date"], how="left")
+    merged[["esg_material_value", "non_esg_material_value"]] = (
+        merged[["esg_material_value", "non_esg_material_value"]].fillna(0.0)
+    )
     
     # 뉴스가 없는 날은 리스크 누적치 0으로 채움
     merged[["category_material_value", "category_immaterial_value"]] = merged[
@@ -107,6 +147,8 @@ if __name__ == "__main__":
     
     result.to_csv(out_path, index=False)
     print(f"[SUCCESS] {len(result)}행의 통합 피처 데이터셋이 성공적으로 생성되었습니다 -> {out_path}\n")
+    
+
     
     # 컬럼별 결측치 비율 산출
     print("=== 각 피처 컬럼별 결측치(NaN) 비율 ===")
