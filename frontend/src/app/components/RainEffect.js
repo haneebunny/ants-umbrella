@@ -2,23 +2,37 @@
 
 import React, { useMemo } from 'react';
 
+// 의사 난수(Deterministic Pseudo-Random) 함수 - React 19 Pure Component 규칙 준수
+function seededRandom(seed) {
+  const x = Math.sin(seed * 9999 + 1) * 10000;
+  return x - Math.floor(x);
+}
+
 /**
  * 세로 방향 기준 15도 각도로 기울어진 가늘고 날렵한 대각선 비 내림 이펙트
  */
 export default function RainEffect({ weatherStatus, isDark }) {
   const isRaining = weatherStatus === 'rainy' || weatherStatus === 'thunder';
 
-  // 55개의 가늘고 날렵한 빗방울 (1.0초 ~ 1.8초 속도)
+  // 55개의 가늘고 날렵한 빗방울 (Pure Component 규칙 준수)
   const raindrops = useMemo(() => {
-    return Array.from({ length: 55 }).map((_, i) => ({
-      id: i,
-      left: `${(i * 1.8 + Math.random() * 2.0).toFixed(1)}%`,
-      delay: `${(Math.random() * 2.0).toFixed(2)}s`,
-      duration: `${(1.0 + Math.random() * 0.8).toFixed(2)}s`,
-      height: `${Math.floor(22 + Math.random() * 25)}px`,
-      opacity: (0.5 + Math.random() * 0.35).toFixed(2),
-      width: Math.random() > 0.5 ? '1.5px' : '1.0px',
-    }));
+    return Array.from({ length: 55 }).map((_, i) => {
+      const r1 = seededRandom(i * 1.1 + 1);
+      const r2 = seededRandom(i * 2.3 + 2);
+      const r3 = seededRandom(i * 3.7 + 3);
+      const r4 = seededRandom(i * 4.9 + 4);
+      const r5 = seededRandom(i * 5.3 + 5);
+
+      return {
+        id: i,
+        left: `${(i * 1.8 + r1 * 2.0).toFixed(1)}%`,
+        delay: `${(r2 * 2.0).toFixed(2)}s`,
+        duration: `${(1.0 + r3 * 0.8).toFixed(2)}s`,
+        height: `${Math.floor(22 + r4 * 25)}px`,
+        opacity: (0.5 + r5 * 0.35).toFixed(2),
+        width: r1 > 0.5 ? '1.5px' : '1.0px',
+      };
+    });
   }, []);
 
   if (!isRaining) return null;

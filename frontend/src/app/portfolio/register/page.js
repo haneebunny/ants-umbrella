@@ -115,13 +115,11 @@ export default function PortfolioRegisterPage() {
     return { ...h, pct, color: PIE_COLORS[i % PIE_COLORS.length] };
   });
 
-  // SVG 도넛 경로 계산
-  let cumulativeAngle = 0;
-  const piePaths = pieSegments.map((seg) => {
+  // SVG 도넛 경로 계산 (React 19 Immutability 규칙 준수)
+  const piePaths = pieSegments.reduce((acc, seg) => {
     const angle = (seg.pct / 100) * 360;
-    const startAngle = cumulativeAngle;
-    const endAngle = cumulativeAngle + angle;
-    cumulativeAngle = endAngle;
+    const startAngle = acc.angle;
+    const endAngle = acc.angle + angle;
 
     const r = 40;
     const cx = 50, cy = 50;
@@ -136,8 +134,11 @@ export default function PortfolioRegisterPage() {
       ? `M ${cx} ${cy - r} A ${r} ${r} 0 1 1 ${cx - 0.01} ${cy - r}`
       : `M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`;
 
-    return { ...seg, d };
-  });
+    return {
+      angle: endAngle,
+      paths: [...acc.paths, { ...seg, d }]
+    };
+  }, { angle: 0, paths: [] }).paths;
 
   return (
     <div className={`min-h-screen w-full transition-colors duration-300 ${isDark ? 'bg-[#080b08] text-[#e2e2e2]' : 'bg-[#f5f6f4] text-[#0f1713]'}`}>
