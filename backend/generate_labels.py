@@ -3,13 +3,10 @@ from pathlib import Path
 import pandas as pd
 
 
-INPUT_PATH = Path(
-    "data/processed/price_features_raw.csv"
-)
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-OUTPUT_PATH = Path(
-    "data/processed/price_features_labeled.csv"
-)
+INPUT_PATH = PROJECT_ROOT / "data" / "processed" / "price_features_raw.csv"
+OUTPUT_PATH = PROJECT_ROOT / "data" / "price_features_labeled.csv"
 
 
 def add_labels(price_feature_path: Path) -> pd.DataFrame:

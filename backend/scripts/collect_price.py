@@ -9,25 +9,55 @@ import pandas as pd
 from pykrx import stock
 
 
+import json
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+
 START_DATE = "20230101"
 END_DATE = "20260720"
-
 
 # KOSPI 지수 코드
 MARKET_INDEX_TICKER = "1001"
 
-TARGET_STOCKS = {
-    "373220": "LG에너지솔루션",
-    "000660": "SK하이닉스",
-    "005380": "현대차",
-    "005930": "삼성전자",
-    "005490": "POSCO홀딩스",
-    "035720": "카카오",
-    "035420": "NAVER",
-}
+def get_portfolio_stocks() -> dict[str, str]:
+    portfolio_path = PROJECT_ROOT / "data" / "portfolio.json"
+    if not portfolio_path.exists():
+        return {
+            "373220": "LG에너지솔루션",
+            "000660": "SK하이닉스",
+            "005380": "현대차",
+            "005930": "삼성전자",
+            "005490": "POSCO홀딩스",
+            "035720": "카카오",
+            "035420": "NAVER",
+        }
+    try:
+        with open(portfolio_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        stocks = {}
+        for port in data.get("portfolios", []):
+            for holding in port.get("holdings", []):
+                ticker = holding.get("ticker")
+                name = holding.get("stock_name")
+                if ticker and name:
+                    stocks[ticker] = name
+        return stocks
+    except Exception as e:
+        print(f"[WARN] portfolio.json 파싱 실패 ({e}). 기본 종목으로 대체합니다.")
+        return {
+            "373220": "LG에너지솔루션",
+            "000660": "SK하이닉스",
+            "005380": "현대차",
+            "005930": "삼성전자",
+            "005490": "POSCO홀딩스",
+            "035720": "카카오",
+            "035420": "NAVER",
+        }
 
-RAW_DIR = Path("data/raw")
-PROCESSED_DIR = Path("data/processed")
+TARGET_STOCKS = get_portfolio_stocks()
+
+RAW_DIR = PROJECT_ROOT / "data" / "raw"
+PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 
 
 def prepare_directories() -> None:

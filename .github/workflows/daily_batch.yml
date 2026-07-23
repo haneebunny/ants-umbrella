@@ -1,0 +1,51 @@
+name: Daily ESG Risk Scoring Pipeline
+
+on:
+  schedule:
+    # 매일 한국 시간 새벽 5시 (UTC 20시)에 실행
+    - cron: '0 20 * * *'
+  workflow_dispatch: # GitHub 웹 UI에서 수동 실행할 수 있는 버튼 활성화
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+
+    - name: Cache Poetry dependencies
+      uses: actions/cache@v4
+      with:
+        path: backend/.venv
+        key: ${{ runner.os }}-poetry-${{ hashFiles('backend/poetry.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-poetry-
+
+    - name: Install dependencies
+      run: |
+        cd backend
+        poetry install --no-interaction
+
+    - name: Run ESG pipeline
+      env:
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        NCP_API_KEY_ID: ${{ secrets.NCP_API_KEY_ID }}
+        NCP_API_KEY: ${{ secrets.NCP_API_KEY }}
+        DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      run: |
+        cd backend
+        poetry run python scripts/run_pipeline.py

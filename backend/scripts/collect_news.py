@@ -54,7 +54,7 @@ def get_portfolio_companies() -> list[str]:
 TARGET_COMPANIES = get_portfolio_companies()
 
 
-MAX_PER_COMPANY = 50      # 종목당 최대 수집 건수 (과호출 및 비용 절약)
+MAX_PER_COMPANY = 500      # 종목당 최대 수집 건수 (날짜순으로 페이징하여 과거 데이터를 모음)
 REQUEST_SLEEP_SEC = 0.3
 
 def clean_text(raw: str) -> str:
@@ -62,29 +62,38 @@ def clean_text(raw: str) -> str:
     text = html.unescape(text)
     return text.strip()
 
-def fetch_news_for_company(company: str, display: int = 50) -> list[dict]:
-    params = {
-        "query": company,
-        "display": min(display, 100),
-        "start": 1,
-        "sort": "sim",  # 정확도순으로 변경하여 영양가 높은 대형 뉴스 위주 수집
-    }
-    resp = requests.get(NEWS_API_URL, headers=HEADERS, params=params, timeout=10)
-    resp.raise_for_status()
-    items = resp.json().get("items", [])
-
+def fetch_news_for_company(company: str, display: int = 500) -> list[dict]:
     rows = []
-    for item in items:
-        # description 대신 중간이 잘리지 않는 title(기사 헤드라인 제목)을 핵심 텍스트로 채택
-        title = clean_text(item.get("title", ""))
-        if not title:
-            continue
-        rows.append({
-            "text": title,
-            "company": company,
-            "source_link": item.get("originallink") or item.get("link"),
-            "pub_date": item.get("pubDate"),
-        })
+    # 네이버 API는 display 최대 100, start 최대 1000까지 가능합니다.
+    for start in range(1, display + 1, 100):
+        params = {
+            "query": f"{company} ESG | 리스크 | 지배구조 | 소송 | 실적 | 영업이익 | 계약 | 수주",
+            "display": 100,
+            "start": start,
+            "sort": "date",  # 날짜순(최신순)으로 과거 데이터를 더 많이 수집
+        }
+        try:
+            resp = requests.get(NEWS_API_URL, headers=HEADERS, params=params, timeout=10)
+            resp.raise_for_status()
+            items = resp.json().get("items", [])
+            if not items:
+                break
+            
+            for item in items:
+                title = clean_text(item.get("title", ""))
+                if not title:
+                    continue
+                rows.append({
+                    "text": title,
+                    "company": company,
+                    "source_link": item.get("originallink") or item.get("link"),
+                    "pub_date": item.get("pubDate"),
+                })
+            time.sleep(REQUEST_SLEEP_SEC)
+        except Exception as e:
+            print(f"    [오류 - start {start}]: {e}")
+            break
+            
     return rows
 
 def main():
