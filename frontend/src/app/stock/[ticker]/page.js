@@ -10,6 +10,21 @@ import RainEffect from '../../components/RainEffect';
 
 // 종목별 상세 Mock 데이터 (모든 포트폴리오 종목망 망라)
 const STOCK_DATA = {
+  '005930': { name: '삼성전자', weather: 'sunny', direction: 'up', confidence: 'strong', change: 1.5, weight: 25,
+    evidences: [{ type: '산업', direction: '긍정', title: 'HBM 메모리 공급 확대 및 메모리 반도체 실적 개선', date: '2026.07.23' }],
+    sparkline: [74000, 74500, 75200, 74800, 75500, 76000, 76800],
+    aiBriefing: '글로벌 AI 반도체 수요 폭증에 따른 HBM 공급 확대로 실적 회복세가 뚜렷합니다. 주가 안정성이 유지되는 대표 우량주입니다.',
+  },
+  '005380': { name: '현대차', weather: 'sunny', direction: 'up', confidence: 'medium', change: 0.9, weight: 18,
+    evidences: [{ type: '재무', direction: '긍정', title: '북미 하이브리드/전기차 판매 호조 및 주주환원 확대', date: '2026.07.23' }],
+    sparkline: [240000, 242000, 245000, 243000, 248000, 251000, 254000],
+    aiBriefing: '하이브리드 라인업의 호조와 고부가가치 RV 판매 증가로 견고한 영업이익률을 유지하고 있습니다.',
+  },
+  '035420': { name: 'NAVER', weather: 'cloudy', direction: 'down', confidence: 'weak', change: -0.5, weight: 15,
+    evidences: [{ type: '산업', direction: '부정', title: '플랫폼 커머스 경쟁 심화 및 마케팅비증가', date: '2026.07.21' }],
+    sparkline: [175000, 173000, 172000, 174000, 171000, 170000, 169500],
+    aiBriefing: 'C-커머스 공세와 검색 광고 성장세 둔화가 단기 부담 요인이나, 생성형 AI 서비스 가시화로 중장기 모멘텀이 상존합니다.',
+  },
   '055550': { name: '신한지주', weather: 'sunny', direction: 'up', confidence: 'medium', change: 1.0, weight: 16,
     evidences: [{ type: '재무', direction: '긍정', title: '금리 방어선 유지 및 대출 포트폴리오 성장세 지속', date: '2026.07.23' }],
     sparkline: [47200, 47500, 47800, 47600, 48100, 48400, 48900],
