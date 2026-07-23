@@ -56,3 +56,6 @@ class DailyRiskScore(BaseModel):
     direction: Literal["up", "down"]
     confidence_tier: Literal["weak", "medium", "strong"]
     model_version: str
+    hit_rate: Optional[float] = None
+    sample_size: Optional[int] = None
+    badge: Optional[str] = None
