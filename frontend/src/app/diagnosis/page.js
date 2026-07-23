@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -38,9 +38,10 @@ export default function DiagnosisPage() {
 
   return (
     <div className={`min-h-screen w-full transition-colors duration-300 ${isDark ? 'bg-[#080b08] text-[#e2e2e2]' : 'bg-[#f0f2f0] text-[#0f1713]'}`}>
-      <Header isDark={isDark} toggleTheme={toggleTheme} showBack title="위험 진단" />
+      <Header isDark={isDark} toggleTheme={toggleTheme} title="위험 진단" />
 
-      <main className="pt-14 pb-10 px-4 max-w-4xl mx-auto">
+      <main className="pt-14 pb-10 px-4 max-w-4xl lg:ml-60 lg:w-[calc(100%-240px)]">
+
         {/* 단계 표시 */}
         <div className="pt-6 pb-4 flex items-center gap-2">
           <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${isDark ? 'bg-[#3eb489]/15 text-[#69dbad]' : 'bg-[#3eb489]/10 text-[#3eb489]'}`}>

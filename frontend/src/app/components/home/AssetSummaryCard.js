@@ -26,11 +26,11 @@ const WEATHER_PALETTES = {
 
 // ── 레이더 5대 축 정의 ──────────────────────────────────────────
 const RADAR_AXES = [
-  { key: 'sectorDiv',    label: '업종\n다각화' },
-  { key: 'stockSpread',  label: '종목\n분산도' },
-  { key: 'volatilityFit',label: '변동성\n적합도' },
-  { key: 'capStability', label: '시총\n안정성' },
-  { key: 'esgRisk',      label: 'ESG\n안전도' },
+  { key: 'sectorDiv',    label: '업종\n다각화', desc: '금융·IT·철강 등 특정 산업군에 자산이 쏠리지 않고 분산된 정도' },
+  { key: 'stockSpread',  label: '종목\n분산도', desc: '특정 1~2개 종목에 자금이 몰리지 않고 고르게 나뉜 투자 비중' },
+  { key: 'volatilityFit',label: '변동성\n적합도', desc: '고객님의 투자 위험 성향 대비 포트폴리오 주가 변동 폭의 적합성' },
+  { key: 'capStability', label: '시총\n안정성', desc: '대형 우량주 비중 기반의 재무 펀더멘털 및 주가 하방 안정성' },
+  { key: 'esgRisk',      label: 'ESG\n안전도', desc: 'E(환경)·S(사회)·G(지배구조) 사법/공시 리스크 노출도가 낮고 안전한 정도' },
 ];
 
 const N = RADAR_AXES.length;
@@ -63,6 +63,7 @@ const RADAR_COLORS = {
 };
 
 function RadarChart({ scores, weatherStatus, isDark }) {
+  const [hoveredAx, setHoveredAx] = useState(null);
   const rings = [0.25, 0.5, 0.75, 1];
   const radarColor = RADAR_COLORS[weatherStatus] || RADAR_COLORS.sunny;
   const axisColor  = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.10)';
@@ -76,7 +77,7 @@ function RadarChart({ scores, weatherStatus, isDark }) {
   const perimeterApprox = R * 2 * Math.PI;
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center gap-2">
       <svg viewBox="0 0 220 220" className="w-full max-w-[280px]" style={{ overflow: 'visible' }}>
         {/* 배경 링 — 안쪽일수록 진하게 (depth 그라디언트) */}
         {rings.map((r, ri) => (
@@ -124,57 +125,119 @@ function RadarChart({ scores, weatherStatus, isDark }) {
           }}
         />
 
-        {/* 데이터 점 */}
-        {dataPoints.map((pt, i) => (
-          <circle
-            key={i}
-            cx={pt.x.toFixed(1)} cy={pt.y.toFixed(1)}
-            r="3.5"
-            fill={dotColor}
-            stroke={isDark ? '#0d0f0d' : '#fff'}
-            strokeWidth="1.5"
-            style={{ filter: `drop-shadow(0 0 4px ${dotColor})` }}
-          />
-        ))}
+        {/* 각 축별 시각적 밸런스 옵티컬 오프셋 정의 */}
+        {/* Index 0: 업종 다각화(약간 아래로 +6px), Index 1: 종목 분산도(우측 바깥 +10px), Index 4: ESG 안전도(좌측 바깥 -10px) */}
+        {dataPoints.map((pt, i) => {
+          const ax = RADAR_AXES[i];
+          const score = scores[ax.key] ?? 0;
+          
+          const axisOffsets = [
+            { r: R + 26, offsetY: 6,   offsetX: 0 },   // 0: 업종 다각화 (상단 center, 약간 내림)
+            { r: R + 44, offsetY: -2,  offsetX: 6 },   // 1: 종목 분산도 (우측상단, 4px 왼쪽으로 이동)
+            { r: R + 28, offsetY: -3,  offsetX: 8 },   // 2: 변동성 적합도 (우측하단)
+            { r: R + 28, offsetY: -3,  offsetX: -8 },  // 3: 시총 안정성 (좌측하단)
+            { r: R + 44, offsetY: -2,  offsetX: -10 }, // 4: ESG 안전도 (좌측상단, 바깥으로 벌림)
+          ];
 
-        {/* 축 레이블 */}
-        {outerPoints.map((pt, i) => {
-          const labelR = R + 28;
-          const lp = polarToXY((360 / N) * i, labelR);
-          const lines = RADAR_AXES[i].label.split('\n');
+
+
+
+          const off = axisOffsets[i] || { r: R + 36, offsetX: 0, offsetY: 0 };
+          const lpRaw = polarToXY((360 / N) * i, off.r);
+          const lp = {
+            x: lpRaw.x + off.offsetX,
+            y: lpRaw.y + off.offsetY,
+          };
+
+          const isHovered = hoveredAx?.key === ax.key;
+          const labelText = `${score}점 ${ax.label.replace('\n', ' ')}`;
+          const badgeWidth = Math.max(76, labelText.length * 9.5);
+
           return (
-            <text
-              key={i}
-              x={lp.x.toFixed(1)} y={(lp.y - (lines.length - 1) * 5).toFixed(1)}
-              textAnchor="middle"
-              fontSize="11"
-              fill={labelColor}
-              fontFamily="inherit"
+            <g
+              key={ax.key}
+              className="cursor-pointer group"
+              onMouseEnter={() => setHoveredAx(ax)}
+              onMouseLeave={() => setHoveredAx(null)}
+              onClick={() => setHoveredAx(isHovered ? null : ax)}
             >
-              {lines.map((ln, li) => (
-                <tspan key={li} x={lp.x.toFixed(1)} dy={li === 0 ? 0 : 13}>{ln}</tspan>
-              ))}
-            </text>
+              {/* 데이터 점 (호버 시 확대 & 글로우) */}
+              <circle
+                cx={pt.x.toFixed(1)} cy={pt.y.toFixed(1)}
+                r={isHovered ? "5" : "3.5"}
+                fill={dotColor}
+                stroke={isDark ? '#0d0f0d' : '#fff'}
+                strokeWidth="1.5"
+                style={{ filter: `drop-shadow(0 0 5px ${dotColor})` }}
+              />
+
+              {/* 옵션 3: 글자 뒤 반투명 글래스 뱃지 배경 (Text Backplate) */}
+              <rect
+                x={(lp.x - badgeWidth / 2).toFixed(1)}
+                y={(lp.y - 10).toFixed(1)}
+                width={badgeWidth.toFixed(1)}
+                height="20"
+                rx="10"
+                fill={isDark ? 'rgba(15, 20, 17, 0.88)' : 'rgba(255, 255, 255, 0.92)'}
+                stroke={isHovered ? dotColor : (isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.10)')}
+                strokeWidth="1"
+                className="transition-all duration-200"
+                style={{
+                  filter: isHovered ? `drop-shadow(0 0 6px ${dotColor})` : 'none',
+                }}
+              />
+
+              {/* 꼭짓점 스마트 뱃지 텍스트 (점수 + 지표명) */}
+              <text
+                x={lp.x.toFixed(1)} y={(lp.y + 0.5).toFixed(1)}
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontSize="10.5"
+                fontFamily="inherit"
+              >
+                <tspan fontWeight="900" fill={dotColor}>{score}점 </tspan>
+                <tspan fontWeight="700" fill={isHovered ? (isDark ? '#fff' : '#0f1713') : labelColor}>
+                  {ax.label.replace('\n', ' ')}
+                </tspan>
+              </text>
+            </g>
           );
         })}
+
+
       </svg>
 
-      {/* 점수 범례 */}
-      <div className="grid grid-cols-5 gap-x-2 gap-y-1 w-full px-1">
-        {RADAR_AXES.map(ax => (
-          <div key={ax.key} className="flex flex-col items-center">
-            <span className="text-[11px] font-black" style={{ color: dotColor }}>
-              {scores[ax.key] ?? 0}
+      {/* ── ℹ️ 툴팁 스마트 해설 카드 (가독성을 위해 글씨 크기 12px로 확대) ── */}
+      {hoveredAx ? (
+        <div className={`w-full p-3 rounded-xl border transition-all animate-fadeIn ${
+          isDark
+            ? 'bg-zinc-800/90 border-emerald-500/40 text-slate-200 shadow-xl'
+            : 'bg-white border-emerald-500/30 text-slate-800 shadow-md'
+        }`}>
+          <div className="flex items-center justify-between mb-1">
+            <span className={`font-black text-xs ${isDark ? 'text-[#69dbad]' : 'text-[#2d966e]'}`}>
+              {hoveredAx.label.replace('\n', ' ')} ({scores[hoveredAx.key] ?? 0}점)
             </span>
-            <span className={`text-[10px] text-center leading-tight ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
-              {ax.label.replace('\n', ' ')}
-            </span>
+            <span className={`text-[10px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>ℹ️ 지표 스마트 해설</span>
           </div>
-        ))}
-      </div>
+          <p className={`text-[12px] leading-relaxed font-medium ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+            {hoveredAx.desc}
+          </p>
+        </div>
+      ) : (
+        <div className={`w-full p-2.5 rounded-xl text-[11px] text-center transition-all ${
+          isDark ? 'text-slate-400 bg-white/5 border border-white/5' : 'text-slate-500 bg-slate-50 border border-slate-200'
+        }`}>
+          <span>💡 각 항목 지표를 마우스로 건드리면 상세 해설이 나타납니다</span>
+        </div>
+      )}
+
+
+
     </div>
   );
 }
+
 
 /**
  * 보유 자산 요약 카드 (도넛 ↔ 레이더 탭 전환)

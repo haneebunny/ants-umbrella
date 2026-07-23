@@ -1,4 +1,4 @@
-import { Outfit, Noto_Sans_KR, JetBrains_Mono } from "next/font/google";
+﻿import { Outfit, Noto_Sans_KR, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 /* ─── Google Fonts ─── */

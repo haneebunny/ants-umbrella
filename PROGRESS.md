@@ -78,3 +78,5 @@
 | 2026-07-23 | Antigravity | 오프라인 환경 대응을 위한 HF API 패스트 페일(Fast-fail) 모드를 process_news_features.py에 도입하여 1300여건의 뉴스 분석 속도를 수 시간에서 1분 이내로 단축 |
 | 2026-07-23 | Antigravity | 이벤트 스터디 통계 집계 스크립트(evnet_study.py) 개발: 회사명-종목코드 매칭, MongoDB Atlas 연결, (ticker, date) 인덱스 충돌 방지 로직 적용 및 55건 통계 데이터 적재 완료 |
 | 2026-07-23 | Antigravity | schemas.py 및 main.py 수정: /risk-score/{ticker} API 응답에 과거 적중률(hit_rate), 사례 수(sample_size), Fallback 배지(badge) 필드 추가 연동 완료 |
+| 2026-07-23 | Antigravity | 데스크톱 좌측 메뉴 고정, 관심주식 10개 확장 위젯, 레이더 다각형 글래스 뱃지 & 옵티컬 밸런스, 15도 각도 대각선 비 배경 애니메이션(RainEffect), 메뉴 이동 페이지 뒤로가기 버튼 제거 및 대시보드 풀스크린 레이아웃 완성 |
+

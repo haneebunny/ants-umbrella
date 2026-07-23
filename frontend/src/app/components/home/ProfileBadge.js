@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import Icon from '../Icon';
@@ -26,7 +26,7 @@ export default function ProfileBadge({ profile, isDemoMode = false, isDark }) {
     <div
       className={`rounded-2xl border p-3 ${
         isDark
-          ? `bg-[#141615] ${cfg.darkBorder} border`
+          ? `bg-[#1e2220] ${cfg.darkBorder} border`
           : `${cfg.bg} ${cfg.border} border`
       }`}
     >
