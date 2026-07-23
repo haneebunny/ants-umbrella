@@ -1,6 +1,7 @@
 # scripts/collect_macro.py
 import os
 import pandas as pd
+from pathlib import Path
 from dotenv import load_dotenv
 from PublicDataReader import Ecos
 
@@ -36,11 +37,16 @@ if __name__ == "__main__":
     # print(find_stat_code("기준금리"))
     # print(find_stat_code("환율"))
 
+    PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+    OUTPUT_PATH = PROJECT_ROOT / "data" / "macro_features.csv"
+
     rate = get_base_rate("20230102", "20260721")
     fx = get_fx_rate("20230102", "20260721")
 
     macro = rate.merge(fx, on="date", how="outer").sort_values("date")
-    macro.to_csv("data/macro_features.csv", index=False, encoding="utf-8-sig")
+    
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    macro.to_csv(OUTPUT_PATH, index=False, encoding="utf-8-sig")
     print(macro.tail(10))
 
     # 먼저 원/달러 항목코드가 뭔지 직접 찾기 (하드코딩 금지, 매번 다를 수 있음)

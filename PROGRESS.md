@@ -21,6 +21,8 @@
 | 2026-07-21 | Antigravity | 주식 초보자 나개미 페르소나에 맞춰 리스크 강도(이모지), 한줄 해설 가이드 팁 생성, 기사 전문 줄바꿈 해제 및 종합 예측 원리 💡 툴팁 UI 보강 완료 |
 | 2026-07-21 | Antigravity | AI 종합 예측 브리핑(ai_briefing) 백엔드 연산 및 프론트 최상단 고정 카드 구현, 공시 세부유형(무상/유상 등) 초보 팁 세분화, 고품질 뉴스 수집 튜닝 완료 |
 | 2026-07-22 | Antigravity | ML/DL 실험용 샌드박스 스크립트(run_experiments.py) 및 비전공자용 팀 가이드 문서(TEAM_ROLE_GUIDE.md) 추가 |
+| 2026-07-22 | Antigravity | Poetry 캐시 권한 에러 우회(Cache_new) 조치 및 process_news_features.py pkl 피클 로더 변경, Gemini API 키 예외 처리 보완 후 뉴스 피처 생성 정상 완료 |
+| 2026-07-22 | Antigravity | collect_dart.py(3단계), collect_price.py(4단계), generate_labels.py(5단계), collect_macro.py(6단계) 순차 실행 완료 및 join_features.py로 최종 병합 - ml_ready_real.csv(13824행, 14컬럼) 생성 완료 |
 | 2026-07-22 | Antigravity | 날씨 연동형 인터랙티브 플로팅 개미 펫 (AntPet) UI 컴포넌트 개발 및 대시보드 연동 완료 |
 | 2026-07-22 | Antigravity | compare_features.py의 Pylance/Pyright 임포트 경로 문제(Cannot find module run_experiments)를 sys.path 추가 방식으로 해결 |
 | 2026-07-22 | Antigravity | join_features.py의 merged 변수 UnboundLocalError 해결 및 compare_features.py의 unreachable 비교 코드 수정 |

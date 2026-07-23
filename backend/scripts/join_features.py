@@ -146,7 +146,7 @@ if __name__ == "__main__":
     )
     
     result.to_csv(out_path, index=False)
-    print(f"[SUCCESS] {len(result)}행의 통합 피처 데이터셋이 성공적으로 생성되었습니다 ➔ {out_path}\n")
+    print(f"[SUCCESS] {len(result)}행의 통합 피처 데이터셋이 성공적으로 생성되었습니다 -> {out_path}\n")
     
 
     

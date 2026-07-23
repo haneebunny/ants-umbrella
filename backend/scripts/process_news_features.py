@@ -5,10 +5,20 @@ from pathlib import Path
 import sys
 import os
 import re
+import time
 from datetime import datetime
-import torch
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
-from sentence_transformers import SentenceTransformer, util
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Google GenAI SDK
+try:
+    from google import genai
+    from pydantic import BaseModel
+    from typing import Literal
+except ImportError:
+    print("[WARN] google-genai 패키지가 없습니다. Gemini API 연동이 제한될 수 있습니다.")
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(PROJECT_ROOT / "backend"))
@@ -39,11 +49,34 @@ COMPANY_TO_SASB = {
     'KB금융': 'Financials'
 }
 
-def semantic_deduplicate(df: pd.DataFrame, sbert_model, threshold: float = 0.82) -> pd.DataFrame:
-    """
-    각 기업(company)별로 SBERT 문장 임베딩과 코사인 유사도를 연산하여,
-    설정한 threshold(유사도 기준) 이상의 중복 이벤트를 제거합니다.
-    """
+# ---------- HuggingFace Inference API 설정 ----------
+HF_TOKEN = os.getenv("HF_TOKEN")
+if not HF_TOKEN:
+    print("[WARN] HF_TOKEN 환경변수가 설정되지 않았습니다. HuggingFace Inference API 요청이 실패할 수 있습니다.")
+
+def query_huggingface_api(payload, model_id):
+    api_url = f"https://api-inference.huggingface.co/models/{model_id}"
+    headers = {"Authorization": f"Bearer {HF_TOKEN}"}
+    
+    for attempt in range(5):
+        try:
+            response = requests.post(api_url, headers=headers, json=payload, timeout=30)
+            if response.status_code == 200:
+                return response.json()
+            elif response.status_code == 503:
+                estimated_time = response.json().get("estimated_time", 5.0)
+                print(f"⏳ HuggingFace 모델 {model_id} 로딩 중... {estimated_time}초 대기 후 재시도 (시도 {attempt+1}/5)")
+                time.sleep(estimated_time)
+            else:
+                print(f"[WARN] HF API 오류 ({response.status_code}): {response.text}")
+                time.sleep(2)
+        except Exception as e:
+            print(f"[WARN] HF API 예외 발생: {e}")
+            time.sleep(2)
+    raise RuntimeError(f"HuggingFace Inference API 호출 최종 실패: {model_id}")
+
+# ---------- SBERT 세만틱 중복 제거 (API 기반) ----------
+def semantic_deduplicate(df: pd.DataFrame, threshold: float = 0.82) -> pd.DataFrame:
     if df.empty:
         return df
         
@@ -57,26 +90,38 @@ def semantic_deduplicate(df: pd.DataFrame, sbert_model, threshold: float = 0.82)
             
         titles = group["text"].fillna("").astype(str).tolist()
         
-        # 문장을 임베딩 벡터로 변환
-        embeddings = sbert_model.encode(titles, convert_to_tensor=True)
-        
-        # 코사인 유사도 매트릭스 계산
-        sim_matrix = util.cos_sim(embeddings, embeddings).cpu().numpy()
-        
-        selected_in_group = []
-        for i in range(len(group)):
-            is_duplicate = False
-            for j in selected_in_group:
-                if sim_matrix[i, j] >= threshold:
-                    is_duplicate = True
-                    break
-            if not is_duplicate:
-                selected_in_group.append(i)
-                keep_indices.append(group.loc[i, "index"])
+        try:
+            # SBERT 임베딩 수신
+            embeddings = query_huggingface_api({"inputs": titles}, "snunlp/KR-SBERT-V40K-klueNLI-augSTS")
+            if not isinstance(embeddings, list) or len(embeddings) == 0:
+                raise ValueError("올바르지 않은 임베딩 응답 형식")
                 
+            emb_arr = np.array(embeddings)
+            
+            # 코사인 유사도 연산
+            norms = np.linalg.norm(emb_arr, axis=1, keepdims=True)
+            norms[norms == 0] = 1e-9
+            normalized_emb = emb_arr / norms
+            sim_matrix = np.dot(normalized_emb, normalized_emb.T)
+            
+            selected_in_group = []
+            for i in range(len(group)):
+                is_duplicate = False
+                for j in selected_in_group:
+                    if sim_matrix[i, j] >= threshold:
+                        is_duplicate = True
+                        break
+                if not is_duplicate:
+                    selected_in_group.append(i)
+                    keep_indices.append(group.loc[i, "index"])
+        except Exception as e:
+            print(f"[WARN] '{company}' SBERT 중복 제거 중 에러 발생: {e}. 안전을 위해 중복 제거 없이 진행합니다.")
+            keep_indices.extend(group["index"].tolist())
+            
     print(f"✂️ SBERT 세만틱 중복 제거 완료: {len(df)}건 -> {len(keep_indices)}건")
     return df.loc[keep_indices].reset_index(drop=True)
 
+# ---------- MongoDB 적재 (Upsert) ----------
 def save_to_mongodb(features):
     from app.db import get_collection
     
@@ -99,7 +144,6 @@ def save_to_mongodb(features):
     for item in features:
         company_name = item["ticker"]
         stock_code = name_to_code.get(company_name, company_name)
-        # 단일 문자열 종목코드 정규화
         match = re.search(r"\d+", str(stock_code))
         if match:
             stock_code = match.group(0).zfill(6)
@@ -129,6 +173,153 @@ def save_to_mongodb(features):
             
     print(f"✅ MongoDB 적재 완료: {success_count}건 성공")
 
+# ---------- Materiality Map ----------
+if MATERIALITY_MAP_PATH.exists():
+    materiality_df = pd.read_csv(MATERIALITY_MAP_PATH)
+    CATEGORY_MATERIALITY = materiality_df.drop_duplicates("news_category").set_index("news_category")["is_material"].to_dict()
+else:
+    CATEGORY_MATERIALITY = {"ESG": 1, "실적·재무": 1, "산업·사업동향": 0, "문화·마케팅": 0, "기타": 0}
+
+# ---------- Gemini 연동 ----------
+try:
+    gemini_client = genai.Client()
+except Exception as e:
+    print(f"[WARN] Gemini Client 초기화 실패 (API 키 누락 가능성): {e}")
+    gemini_client = None
+
+GEMINI_MODEL = "gemini-3.5-flash"
+
+try:
+    class CategoryResult(BaseModel):
+        category: Literal["ESG", "실적·재무", "산업·사업동향", "문화·마케팅", "기타"]
+
+    class DirectionResult(BaseModel):
+        direction: Literal["positive", "negative", "neutral"]
+        severity: float
+except NameError:
+    # google-genai SDK 또는 pydantic 임포트 실패 대비 롤백 스키마 정의 생략
+    pass
+
+def classify_category_with_llm(text: str) -> str:
+    if not gemini_client:
+        raise ValueError("Gemini Client가 초기화되지 않았습니다. API 키를 설정해주세요.")
+    prompt = f"""다음 한국 주식 뉴스 제목을 아래 5개 카테고리 중 하나로 분류해줘.
+- ESG: 환경·사회·지배구조 관련
+- 실적·재무: 매출, 영업이익, 배당, 자금조달 등
+- 산업·사업동향: 신사업, 계약, 기술개발, 제휴 등
+- 문화·마케팅: 브랜드, 광고, 이벤트, 스폰서십 등
+- 기타: 위 어디에도 안 맞으면
+
+뉴스: "{text}"
+"""
+    response = gemini_client.models.generate_content(
+        model=GEMINI_MODEL,
+        contents=prompt,
+        config={"response_format": {"text": {"mime_type": "application/json", "schema": CategoryResult.model_json_schema()}}},
+    )
+    return CategoryResult.model_validate_json(response.text).category
+
+def classify_direction_with_llm(text: str) -> tuple[str, float]:
+    if not gemini_client:
+        raise ValueError("Gemini Client가 초기화되지 않았습니다. API 키를 설정해주세요.")
+    prompt = f"""다음 한국 주식 뉴스가 그 기업 주가에 긍정적(positive)/부정적(negative)/중립적(neutral)인지 판단하고, 확신도(0~1)를 매겨줘.
+
+뉴스: "{text}"
+"""
+    response = gemini_client.models.generate_content(
+        model=GEMINI_MODEL,
+        contents=prompt,
+        config={"response_format": {"text": {"mime_type": "application/json", "schema": DirectionResult.model_json_schema()}}},
+    )
+    result = DirectionResult.model_validate_json(response.text)
+    return result.direction, result.severity
+
+def clean_text(text: str) -> str:
+    text = re.sub(r"\[.*?\]", "", text)
+    text = re.sub(r"▶.*", "", text)
+    text = re.sub(r"[^\w\s가-힣.,!?]", " ", text)
+    return text.strip()
+
+# ---------- HuggingFace API 기반 분류 함수 ----------
+def predict_direction_severity(text: str) -> tuple[str, float]:
+    try:
+        res = query_huggingface_api({"inputs": text}, "snunlp/KR-FinBert-SC")
+        if isinstance(res, list) and len(res) > 0:
+            flat_res = res[0] if isinstance(res[0], list) else res
+            best = max(flat_res, key=lambda x: x["score"])
+            label = best["label"].lower()
+            return label, best["score"]
+    except Exception as e:
+        print(f"[WARN] HF FinBERT API 호출 에러: {e}")
+    return "neutral", 0.0
+
+def classify_category_with_hf(text: str) -> tuple[str, float]:
+    candidate_labels = ["ESG 관련", "실적/재무 관련", "산업/사업동향 관련", "문화/마케팅 관련", "기타"]
+    payload = {
+        "inputs": text,
+        "parameters": {"candidate_labels": candidate_labels}
+    }
+    cat_map = {
+        "ESG 관련": "ESG",
+        "실적/재무 관련": "실적·재무",
+        "산업/사업동향 관련": "산업·사업동향",
+        "문화/마케팅 관련": "문화·마케팅",
+        "기타": "기타"
+    }
+    try:
+        res = query_huggingface_api(payload, "joeddav/xlm-roberta-large-xnli")
+        if isinstance(res, dict) and "labels" in res and "scores" in res:
+            best_label = res["labels"][0]
+            best_score = res["scores"][0]
+            return cat_map.get(best_label, "기타"), best_score
+    except Exception as e:
+        print(f"[WARN] HF Zero-shot API 호출 에러: {e}")
+    return "기타", 0.0
+
+def classify_news(text):
+    text_clean = clean_text(text)
+    text_lower = text_clean.lower()
+
+    # 1단계: 단순 키워드 매칭
+    if any(k in text_lower for k in ["esg", "탄소", "친환경", "지배구조", "이사회", "투명", "사법", "상생", "사회공헌", "안전", "근로", "수사", "고발"]):
+        category = "ESG"
+        confidence = 0.95
+    elif any(k in text_lower for k in ["실적", "영업이익", "매출", "적자", "흑자", "배당", "재무", "자금", "부채", "금리", "실물"]):
+        category = "실적·재무"
+        confidence = 0.95
+    elif any(k in text_lower for k in ["신기술", "계약", "협력", "수출", "공급", "메모리", "hbm", "인수", "합병", "공장", "반도체", "개발", "공동"]):
+        category = "산업·사업동향"
+        confidence = 0.95
+    elif any(k in text_lower for k in ["마케팅", "이벤트", "캠페인", "브랜드", "홍보", "고객", "소비자"]):
+        category = "문화·마케팅"
+        confidence = 0.95
+    else:
+        # 2단계: 키워드 매칭 안 될 시 HF Zero-shot API 호출
+        category, confidence = classify_category_with_hf(text_clean)
+
+    # 3단계: 여전히 "기타" 이거나 애매할 시 Gemini LLM으로 재판정 (main 브랜치 로직 상계)
+    if category == "기타":
+        try:
+            category = classify_category_with_llm(text_clean)
+            confidence = 0.9
+        except Exception as e:
+            print(f"[WARN] LLM 카테고리 재분류 실패, '기타' 유지: {e}")
+
+    # 4단계: 감성(방향) 및 확신도 판정 (HF API 호출)
+    direction, dir_confidence = predict_direction_severity(text_clean)
+
+    # 5단계: 감성 판정 확신도가 낮을 시 Gemini LLM 재판정 (main 브랜치 로직)
+    if dir_confidence < 0.5:
+        try:
+            direction, dir_confidence = classify_direction_with_llm(text_clean)
+        except Exception as e:
+            print(f"[WARN] LLM 방향 재판정 실패, 모델 결과 유지: {e}")
+
+    severity = dir_confidence
+    is_material = CATEGORY_MATERIALITY.get(category, 0)
+
+    return category, direction, severity, is_material, dir_confidence
+
 def main():
     if not INPUT_PATH.exists():
         print(f"[ERROR] 원본 뉴스 수집 파일이 없습니다: {INPUT_PATH}")
@@ -139,153 +330,51 @@ def main():
         print("[WARN] 원본 뉴스 파일에 데이터가 없습니다.")
         return
 
-    # 1. 디바이스 감지 (GPU 사용 가능 시 CUDA/MPS 자동 매핑)
-    if torch.cuda.is_available():
-        device_id = 0
-        print("💡 GPU (CUDA) 가속을 사용하여 딥러닝 연산을 수행합니다.")
-    elif torch.backends.mps.is_available():
-        device_id = "mps"
-        print("💡 GPU (Apple Silicon MPS) 가속을 사용하여 딥러닝 연산을 수행합니다.")
-    else:
-        device_id = -1
-        print("💡 CPU 기반으로 딥러닝 연산을 수행합니다.")
-
-    # 2. 딥러닝 모델 통합 로드
-    print("📥 SBERT 문장 임베딩 모델 로딩 중...")
-    sbert_model = SentenceTransformer("snunlp/KR-SBERT-V40K-klueNLI-augSTS", device=device_id)
-
-    # 3. SBERT 세만틱 중복 기사 제거 먼저 적용하여 downstream 연산량 감축
-    df = semantic_deduplicate(df, sbert_model, threshold=0.82)
+    # SBERT 세만틱 중복 제거 (API 연계)
+    df = semantic_deduplicate(df, threshold=0.82)
     
     if df.empty:
         print("[WARN] 중복 제거 후 남은 뉴스가 없습니다.")
         return
 
-    print("📥 FinBERT 감성 분류 모델 로딩 중...")
-    sentiment_model_name = "snunlp/KR-FinBert-SC"
-    sentiment_tokenizer = AutoTokenizer.from_pretrained(sentiment_model_name)
-    sentiment_model = AutoModelForSequenceClassification.from_pretrained(sentiment_model_name)
-    
-    # MPS의 경우 pipeline에 직접 전달 시 호환성을 위해 디바이스 문자열 설정
-    pipe_device = device_id
-    sentiment_pipe = pipeline(
-        "text-classification",
-        model=sentiment_model,
-        tokenizer=sentiment_tokenizer,
-        device=pipe_device,
-        truncation=True,
-        max_length=512,
-    )
+    features = []
+    print(f"\n🧠 총 {len(df)}건 뉴스 분석 진행 중 (HuggingFace Inference API 활용)...")
+    for idx, row in df.iterrows():
+        text = str(row["text"])
+        company = row["company"]
+        pub_date = row["pub_date"]
 
-    print("📥 XLM-RoBERTa Zero-shot 카테고리 분류 모델 로딩 중...")
-    category_pipe = pipeline(
-        "zero-shot-classification",
-        model="joeddav/xlm-roberta-large-xnli",
-        device=pipe_device,
-    )
-
-    # 4. 감성 분석 수행 (Batch 처리)
-    print("🧠 뉴스 감성 분석(FinBERT) 수행 중...")
-    texts = df["text"].fillna("").astype(str).tolist()
-    sentiment_results = []
-    
-    # 16개 배치 처리
-    batch_size = 16
-    for i in range(0, len(texts), batch_size):
-        batch = texts[i:i+batch_size]
-        outputs = sentiment_pipe(batch)
-        sentiment_results.extend(outputs)
-        
-    label_map = {
-        "negative": "negative",
-        "neutral": "neutral",
-        "positive": "positive"
-    }
-    df["news_direction"] = [label_map.get(r["label"], r["label"]) for r in sentiment_results]
-    df["news_severity"] = [r["score"] for r in sentiment_results]
-
-    # 5. 카테고리 판정 (Zero-shot Batch 처리)
-    print("🧠 뉴스 카테고리 태깅(Zero-shot) 수행 중...")
-    candidate_labels = [
-        "ESG 관련",
-        "실적/재무 관련",
-        "산업/사업동향 관련",
-        "문화/마케팅 관련",
-        "기타",
-    ]
-    cat_map = {
-        "ESG 관련": "ESG",
-        "실적/재무 관련": "실적·재무",
-        "산업/사업동향 관련": "산업·사업동향",
-        "문화/마케팅 관련": "문화·마케팅",
-        "기타": "기타",
-    }
-    
-    categories = []
-    confidences = []
-    batch_size_cat = 8
-    
-    for i in range(0, len(texts), batch_size_cat):
-        batch = texts[i:i+batch_size_cat]
-        outputs = category_pipe(batch, candidate_labels)
-        if isinstance(outputs, dict):
-            outputs = [outputs]
-        for out in outputs:
-            categories.append(out["labels"][0])
-            confidences.append(out["scores"][0])
-            
-    df["news_category"] = [cat_map[c] for c in categories]
-    df["confidence_score"] = confidences
-
-    # 6. SASB 중요도 매핑 및 is_material 결정
-    print("📋 SASB Materiality Map 매핑 중...")
-    if not MATERIALITY_MAP_PATH.exists():
-        print(f"[WARN] materiality_map.csv 파일이 {MATERIALITY_MAP_PATH}에 존재하지 않습니다. 수동 생성합니다.")
-        df["is_material"] = df["news_category"].apply(lambda c: 1 if c in ("ESG", "실적·재무") else 0)
-    else:
-        materiality_map = pd.read_csv(MATERIALITY_MAP_PATH)
-        df["sasb_sector"] = df["company"].map(COMPANY_TO_SASB)
-        
-        # Merge materiality mapping
-        df = df.merge(
-            materiality_map,
-            on=["sasb_sector", "news_category"],
-            how="left"
-        )
-        df["is_material"] = df["is_material"].fillna(0).astype(int)
-
-    # 7. 날짜 파싱 정리
-    dates = []
-    for pub_date in df["pub_date"]:
         try:
-            date_val = pd.to_datetime(pub_date).strftime("%Y-%m-%d %H:%M:%S %z")
-        except:
-            try:
-                date_val = pd.to_datetime(pub_date).strftime("%Y-%m-%d")
-            except:
-                date_val = datetime.now().strftime("%Y-%m-%d")
-        dates.append(date_val)
-    df["date"] = dates
+            date_val = pd.to_datetime(pub_date).strftime("%Y-%m-%d")
+        except Exception:
+            date_val = datetime.now().strftime("%Y-%m-%d")
+            print(f"[WARN] {idx}번째 행 날짜 파싱 실패, 오늘 날짜로 대체")
 
-    # 컬럼 표준화
-    df["title"] = df["text"]
-    df["ticker"] = df["company"]
+        category, direction, severity, is_material, confidence = classify_news(text)
 
-    # 출력 CSV 컬럼 필터링 및 저장
-    output_cols = ["ticker", "date", "title", "news_direction", "news_severity", "news_category", "is_material", "confidence_score"]
-    output_cols = [c for c in output_cols if c in df.columns]
-    
-    feat_df = df[output_cols]
-    
-    # 2가지 경로로 동시 저장
+        features.append({
+            "ticker": company,
+            "date": date_val,
+            "news_related": True,
+            "news_direction": direction,
+            "news_severity": severity,
+            "news_category": category,
+            "is_material": is_material,
+            "confidence_score": confidence,
+        })
+
+        if (idx + 1) % 10 == 0 or (idx + 1) == len(df):
+            print(f"  진행: {idx + 1}/{len(df)}")
+
+    feat_df = pd.DataFrame(features)
     feat_df.to_csv(OUTPUT_PATH_1, index=False, encoding="utf-8-sig")
     feat_df.to_csv(OUTPUT_PATH_2, index=False, encoding="utf-8-sig")
-    
-    print(f"\n[SUCCESS] {len(feat_df)}건의 최종 실전 뉴스 피처 데이터셋이 생성되었습니다.")
+
+    print(f"\n[SUCCESS] {len(feat_df)}건의 실전 뉴스 피처 데이터셋이 생성되었습니다.")
     print(f" - {OUTPUT_PATH_1}")
     print(f" - {OUTPUT_PATH_2}")
 
-    # 8. MongoDB에 최종 결과 적재 (Upsert)
+    # MongoDB에 최종 결과 적재 (Upsert)
     features_list = feat_df.to_dict(orient="records")
     save_to_mongodb(features_list)
 
