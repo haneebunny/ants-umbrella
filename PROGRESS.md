@@ -24,5 +24,6 @@
 | 2026-07-22 | Antigravity | Poetry 캐시 권한 에러 우회(Cache_new) 조치 및 process_news_features.py pkl 피클 로더 변경, Gemini API 키 예외 처리 보완 후 뉴스 피처 생성 정상 완료 |
 | 2026-07-22 | Antigravity | collect_dart.py(3단계), collect_price.py(4단계), generate_labels.py(5단계), collect_macro.py(6단계) 순차 실행 완료 및 join_features.py로 최종 병합 - ml_ready_real.csv(13824행, 14컬럼) 생성 완료 |
 | 2026-07-22 | Antigravity | 날씨 연동형 인터랙티브 플로팅 개미 펫 (AntPet) UI 컴포넌트 개발 및 대시보드 연동 완료 |
-
-
+| 2026-07-23 | Antigravity | 홈 대시보드 전면 폴리싱: WeatherBanner shimmer 애니메이션·라이트모드 가독성 개선, AssetSummaryCard 도넛↔레이더 탭 전환(SVG 직접 구현), 레이더 차트 글로우·draw-in 애니메이션 적용 |
+| 2026-07-23 | Antigravity | StockWeatherList 플로팅 오버레이 패널 구현(AI판단근거·ESG점수바·상세링크), PortfolioProfileCard 신규 생성(투자성향배지+포트폴리오선택 통합) |
+| 2026-07-23 | Antigravity | 그리드 레이아웃 최종 확정: 코스닥·성향(2)·종목날씨(4)·보유자산(5), POSCO 오타 수정, 구름 인디케이터 바 버그 수정 - feature/fe-design-v2 브랜치 push 및 PR #24 생성 완료 |
