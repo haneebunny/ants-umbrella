@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTheme } from '../../hooks/useTheme';
 import Header from '../../components/layout/Header';
 import Icon from '../../components/Icon';
 import RainEffect from '../../components/RainEffect';
 
-// 종목별 상세 Mock 데이터 (모든 포트폴리오 종목 망라)
+// 종목별 상세 Mock 데이터
 const STOCK_DATA = {
   '005930': { name: '삼성전자', weather: 'sunny', direction: 'up', confidence: 'strong', change: 1.5, weight: 25, dropProb: 8.4,
     esgBreakdown: { e: { status: 'safe', text: '친환경 반도체 공정 전환' }, s: { status: 'safe', text: '안전보건 경영 강화' }, g: { status: 'safe', text: '투명 이사회 운용' } },
@@ -17,7 +17,10 @@ const STOCK_DATA = {
       '1M': [71000, 72500, 73000, 74200, 75000, 76800],
       '1Y': [65000, 68000, 71500, 73000, 75000, 76800],
     },
-    evidences: [{ type: '산업', direction: '긍정', title: 'HBM 메모리 공급 확대 및 메모리 반도체 실적 개선', date: '2026.07.23' }],
+    evidences: [
+      { type: '산업', direction: '긍정', title: 'HBM 메모리 공급 확대 및 메모리 반도체 실적 개선', date: '2026.07.23' },
+      { type: '재무', direction: '긍정', title: '반도체 사업부 3분기 영업이익 전년 대비 45% 상승 전망', date: '2026.07.22' },
+    ],
     aiBriefing: '글로벌 AI 반도체 수요 폭증에 따른 HBM 공급 확대로 실적 회복세가 뚜렷합니다. 주가 안정성이 유지되는 대표 우량주입니다.',
   },
   '005380': { name: '현대차', weather: 'sunny', direction: 'up', confidence: 'medium', change: 0.9, weight: 18, dropProb: 11.2,
@@ -157,10 +160,10 @@ const DEFAULT_STOCK = {
 };
 
 const WEATHER_CFG = {
-  sunny:   { icon: 'sun',       label: '맑음', color: 'text-amber-500' },
-  cloudy:  { icon: 'cloud',     label: '구름', color: 'text-slate-500' },
-  rainy:   { icon: 'cloudRain', label: '비',   color: 'text-sky-500'   },
-  thunder: { icon: 'zap',       label: '번개', color: 'text-rose-500'  },
+  sunny:   { icon: 'sun',       label: '맑음', color: 'text-[#3eb489]' },
+  cloudy:  { icon: 'cloud',     label: '구름', color: 'text-slate-400' },
+  rainy:   { icon: 'cloudRain', label: '비',   color: 'text-sky-400'   },
+  thunder: { icon: 'zap',       label: '번개', color: 'text-rose-400'  },
 };
 
 export default function StockDetailPage() {
@@ -182,7 +185,7 @@ export default function StockDetailPage() {
 
   // 기간별 주가 데이터 및 툴팁 포인트 연산
   const chartData = stock.sparklines[selectedPeriod] || stock.sparklines['1W'];
-  const chartW = 320, chartH = 90;
+  const chartW = 340, chartH = 90;
   const minP = Math.min(...chartData), maxP = Math.max(...chartData), rangeP = (maxP - minP) || 1;
 
   const points = chartData.map((v, i) => {
@@ -204,254 +207,283 @@ export default function StockDetailPage() {
       <Header isDark={isDark} toggleTheme={toggleTheme} />
       <RainEffect weatherStatus={stock.weather} isDark={isDark} />
 
-      <main className="relative z-10 pt-14 pb-10 px-4 max-w-3xl lg:ml-60 lg:w-[calc(100%-240px)] space-y-4">
+      <main className="relative z-10 pt-14 pb-10 px-4 max-w-6xl lg:ml-60 lg:w-[calc(100%-240px)]">
 
-        {/* ── 종목 헤더 카운터 ── */}
-        <div className="pt-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className={`text-2xl font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>{stock.name}</h1>
-                <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded-full ${isDark ? 'bg-white/10 text-slate-400' : 'bg-slate-200 text-slate-600'}`}>
-                  {ticker}
-                </span>
-              </div>
-              <p className={`text-xs mt-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                ESG Materiality 기반 20거래일 리스크 진단 보고서
-              </p>
-            </div>
-
-            <div className="flex flex-col items-end gap-1">
-              <div className={`flex items-center gap-1.5 ${wCfg.color}`}>
-                <Icon name={wCfg.icon} className="w-5 h-5" />
-                <span className="text-sm font-black">{wCfg.label}</span>
-              </div>
-              <span className={`text-sm font-black font-mono ${isUp ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : 'text-rose-500'}`}>
-                {isUp ? '▲ +' : '▼ '}{stock.change.toFixed(1)}%
-              </span>
-            </div>
-          </div>
-
-          {/* ── 🚀 [추천 3] XGBoost AI 예측 -10% 하락 확률 뱃지 & 원리 팝업 ── */}
-          <div className={`p-4 rounded-2xl border mb-4 flex items-center justify-between ${
-            isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'
-          }`}>
+        {/* ── 🌟 상단 종목 히어로 타일 ── */}
+        <div className={`mt-6 mb-4 p-5 rounded-2xl border transition-all ${
+          isDark ? 'bg-[#1e2220] border-white/5 shadow-md' : 'bg-white border-slate-100 shadow-sm'
+        }`}>
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm ${
-                stock.dropProb < 20
-                  ? (isDark ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/30' : 'bg-emerald-50 text-emerald-600 border border-emerald-200')
-                  : (isDark ? 'bg-rose-950/40 text-rose-400 border border-rose-500/30' : 'bg-rose-50 text-rose-600 border border-rose-200')
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg ${
+                isDark ? 'bg-white/5 border border-white/10 text-white' : 'bg-slate-100 text-[#0f1713]'
               }`}>
-                {stock.dropProb < 20 ? '안전' : '주의'}
+                {stock.name.slice(0, 2)}
               </div>
               <div>
-                <div className="flex items-center gap-1.5">
-                  <span className={`text-xs font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>20거래일 내 -10% 하락 확률</span>
-                  <span className={`text-sm font-black font-mono ${stock.dropProb < 20 ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : 'text-rose-500'}`}>
-                    {stock.dropProb}%
+                <div className="flex items-center gap-2">
+                  <h1 className={`text-2xl font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>{stock.name}</h1>
+                  <span className={`text-xs font-mono font-bold px-2.5 py-0.5 rounded-full ${isDark ? 'bg-white/10 text-slate-400' : 'bg-slate-200 text-slate-600'}`}>
+                    {ticker}
                   </span>
                 </div>
-                <p className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>XGBoost 머신러닝 예측 모델 기반 연산 결과</p>
+                <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  ESG Materiality 기반 리스크 진단 보고서
+                </p>
               </div>
             </div>
 
-            <button
-              onClick={() => setShowAiModal(true)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
-                isDark ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              AI 원리 💡
-            </button>
+            <div className="flex items-center gap-4">
+              <div className="flex flex-col items-end">
+                <div className={`flex items-center gap-1.5 ${wCfg.color}`}>
+                  <Icon name={wCfg.icon} className="w-5 h-5" />
+                  <span className="text-base font-black">{wCfg.label}</span>
+                </div>
+                <span className={`text-sm font-black font-mono mt-0.5 ${isUp ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : 'text-rose-500'}`}>
+                  {isUp ? '▲ +' : '▼ '}{stock.change.toFixed(1)}%
+                </span>
+              </div>
+            </div>
           </div>
+        </div>
 
-          {/* ── 📈 [추천 1] 인터랙티브 주가 추이 차트 & 기간 탭 ── */}
-          <div className={`rounded-2xl border p-5 mb-4 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
-            <div className="flex items-center justify-between mb-3">
-              <p className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-                인터랙티브 주가 추이
-              </p>
+        {/* ── 2컬럼 레이아웃 (좌측 8칸 / 우측 4칸) ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
 
-              {/* 기간 선택 탭 (1D / 1W / 1M / 1Y) */}
-              <div className="flex items-center gap-1 bg-slate-100 dark:bg-white/5 p-1 rounded-xl">
-                {['1D', '1W', '1M', '1Y'].map(t => (
-                  <button
-                    key={t}
-                    onClick={() => { setSelectedPeriod(t); setHoveredIdx(null); }}
-                    className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all ${
-                      selectedPeriod === t
-                        ? (isDark ? 'bg-[#3eb489] text-white shadow-sm' : 'bg-[#3eb489] text-white shadow-sm')
-                        : (isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-800')
+          {/* ┌── 👈 좌측 메인 영역 (8컬럼) ──┐ */}
+          <div className="lg:col-span-8 space-y-4">
+
+            {/* 📈 인터랙티브 주가 추이 차트 카드 */}
+            <div className={`rounded-2xl border p-5 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h2 className={`text-sm font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+                    인터랙티브 주가 추이
+                  </h2>
+                  <p className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                    그래프 위에 마우스를 올리면 상세 주가를 확인하실 수 있습니다.
+                  </p>
+                </div>
+
+                {/* 기간 선택 탭 (1D / 1W / 1M / 1Y) */}
+                <div className="flex items-center gap-1 bg-slate-100 dark:bg-white/5 p-1 rounded-xl">
+                  {['1D', '1W', '1M', '1Y'].map(t => (
+                    <button
+                      key={t}
+                      onClick={() => { setSelectedPeriod(t); setHoveredIdx(null); }}
+                      className={`px-3 py-1 rounded-lg text-xs font-black transition-all ${
+                        selectedPeriod === t
+                          ? (isDark ? 'bg-[#3eb489] text-white shadow-sm' : 'bg-[#3eb489] text-white shadow-sm')
+                          : (isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-800')
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* SVG 인터랙티브 차트 */}
+              <div className="relative">
+                <svg
+                  width="100%"
+                  viewBox={`0 0 ${chartW} ${chartH}`}
+                  preserveAspectRatio="none"
+                  className="h-28 w-full cursor-crosshair overflow-visible"
+                  onMouseLeave={() => setHoveredIdx(null)}
+                >
+                  <defs>
+                    <linearGradient id="stockGradDash" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={lineColor} stopOpacity="0.25" />
+                      <stop offset="100%" stopColor={lineColor} stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  <polyline points={pointsStr + ` ${chartW},${chartH} 0,${chartH}`} fill="url(#stockGradDash)" stroke="none" />
+                  <polyline points={pointsStr} fill="none" stroke={lineColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+
+                  {/* 데이터 포인트 호버 영역 */}
+                  {points.map((p, idx) => (
+                    <g key={idx} onMouseEnter={() => setHoveredIdx(idx)}>
+                      <circle
+                        cx={p.x}
+                        cy={p.y}
+                        r={hoveredIdx === idx ? 5 : 2.5}
+                        fill={lineColor}
+                        className="transition-all duration-200"
+                      />
+                      <rect
+                        x={p.x - 15}
+                        y={0}
+                        width={30}
+                        height={chartH}
+                        fill="transparent"
+                        className="cursor-pointer"
+                      />
+                    </g>
+                  ))}
+                </svg>
+
+                {/* 툴팁 */}
+                {hoveredIdx !== null && points[hoveredIdx] && (
+                  <div
+                    className={`absolute -top-3 left-1/2 transform -translate-x-1/2 px-3 py-1 rounded-lg text-xs font-black font-mono border shadow-lg pointer-events-none ${
+                      isDark ? 'bg-slate-900 border-white/20 text-white' : 'bg-white border-slate-200 text-slate-800'
                     }`}
                   >
-                    {t}
-                  </button>
-                ))}
+                    {points[hoveredIdx].val.toLocaleString()}원
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-between mt-2 pt-2 border-t border-white/5">
+                <span className={`text-xs font-mono ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                  최저 {minP.toLocaleString()}원
+                </span>
+                <span className={`text-xs font-mono font-black ${isUp ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : 'text-rose-500'}`}>
+                  최고 {maxP.toLocaleString()}원
+                </span>
               </div>
             </div>
 
-            {/* 인터랙티브 SVG 차트 */}
-            <div className="relative">
-              <svg
-                width="100%"
-                viewBox={`0 0 ${chartW} ${chartH}`}
-                preserveAspectRatio="none"
-                className="h-24 w-full cursor-crosshair overflow-visible"
-                onMouseLeave={() => setHoveredIdx(null)}
-              >
-                <defs>
-                  <linearGradient id="stockGradInteractive" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={lineColor} stopOpacity="0.25" />
-                    <stop offset="100%" stopColor={lineColor} stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                <polyline points={pointsStr + ` ${chartW},${chartH} 0,${chartH}`} fill="url(#stockGradInteractive)" stroke="none" />
-                <polyline points={pointsStr} fill="none" stroke={lineColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            {/* 💡 AI 종합 예측 브리핑 카드 */}
+            <div className={`rounded-2xl border p-5 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+              <h2 className={`text-sm font-black mb-2 flex items-center gap-1.5 ${isDark ? 'text-[#69dbad]' : 'text-[#3eb489]'}`}>
+                <Icon name="sparkles" className="w-4 h-4" />
+                AI 종합 예측 브리핑
+              </h2>
+              <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                {stock.aiBriefing}
+              </p>
+            </div>
 
-                {/* 데이터 노드 및 마우스 호버 감지 영역 */}
-                {points.map((p, idx) => (
-                  <g key={idx} onMouseEnter={() => setHoveredIdx(idx)}>
-                    <circle
-                      cx={p.x}
-                      cy={p.y}
-                      r={hoveredIdx === idx ? 5 : 2.5}
-                      fill={lineColor}
-                      className="transition-all duration-200"
-                    />
-                    <rect
-                      x={p.x - 15}
-                      y={0}
-                      width={30}
-                      height={chartH}
-                      fill="transparent"
-                      className="cursor-pointer"
-                    />
-                  </g>
-                ))}
-              </svg>
+            {/* 📋 핵심 위험 근거 타임라인 카드 */}
+            {stock.evidences && stock.evidences.length > 0 && (
+              <div className={`rounded-2xl border p-5 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+                <h2 className={`text-sm font-black mb-3 ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>핵심 위험 근거</h2>
+                <div className="space-y-2.5">
+                  {stock.evidences.map((ev, i) => (
+                    <div key={i} className={`flex items-start justify-between gap-3 p-3.5 rounded-xl transition-all ${isDark ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-50 hover:bg-slate-100'}`}>
+                      <div className="flex items-start gap-2.5 min-w-0">
+                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5 ${
+                          ev.direction === '부정' ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'
+                        }`}>{ev.type}</span>
+                        <p className={`text-xs leading-relaxed font-bold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>{ev.title}</p>
+                      </div>
+                      <span className={`text-[11px] font-mono flex-shrink-0 mt-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                        {ev.date || '2026.07.23'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
-              {/* 호버 시 툴팁 표시 */}
-              {hoveredIdx !== null && points[hoveredIdx] && (
-                <div
-                  className={`absolute -top-3 left-1/2 transform -translate-x-1/2 px-2.5 py-1 rounded-lg text-[10px] font-black font-mono border shadow-md pointer-events-none ${
-                    isDark ? 'bg-slate-900 border-white/20 text-white' : 'bg-white border-slate-200 text-slate-800'
+          {/* └── 👉 우측 사이드 영역 (4컬럼) ──┘ */}
+          <div className="lg:col-span-4 space-y-4">
+
+            {/* 🤖 XGBoost -10% 하락 확률 AI 뱃지 카드 */}
+            <div className={`rounded-2xl border p-5 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+              <div className="flex items-center justify-between mb-3">
+                <span className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+                  하락 위험 확률
+                </span>
+                <button
+                  onClick={() => setShowAiModal(true)}
+                  className={`px-2.5 py-1 rounded-xl text-[10px] font-bold border transition-all ${
+                    isDark ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                   }`}
                 >
-                  {points[hoveredIdx].val.toLocaleString()}원
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-between mt-2 pt-2 border-t border-white/5">
-              <span className={`text-[10px] font-mono ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                최저 {minP.toLocaleString()}원
-              </span>
-              <span className={`text-[10px] font-mono font-black ${isUp ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : 'text-rose-500'}`}>
-                최고 {maxP.toLocaleString()}원
-              </span>
-            </div>
-          </div>
-
-          {/* ── 🌿 [추천 2] 3대 ESG (E/S/G) 위험도 브레이크다운 카드 ── */}
-          <div className={`rounded-2xl border p-5 mb-4 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
-            <p className={`text-xs font-black mb-3 ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-              3대 ESG 영역별 위험도 분석
-            </p>
-            <div className="grid grid-cols-3 gap-2.5">
-              {[
-                { key: 'e', title: '🌿 환경(E)', item: stock.esgBreakdown?.e },
-                { key: 's', title: '🤝 사회(S)', item: stock.esgBreakdown?.s },
-                { key: 'g', title: '🏛️ 지배구조(G)', item: stock.esgBreakdown?.g },
-              ].map(pillar => {
-                const isSafe = pillar.item?.status === 'safe';
-                const isDanger = pillar.item?.status === 'danger';
-                return (
-                  <div
-                    key={pillar.key}
-                    className={`p-3 rounded-xl border flex flex-col justify-between ${
-                      isSafe
-                        ? (isDark ? 'bg-emerald-950/20 border-emerald-500/20' : 'bg-emerald-50/60 border-emerald-200')
-                        : isDanger
-                        ? (isDark ? 'bg-rose-950/20 border-rose-500/20' : 'bg-rose-50/60 border-rose-200')
-                        : (isDark ? 'bg-amber-950/20 border-amber-500/20' : 'bg-amber-50/60 border-amber-200')
-                    }`}
-                  >
-                    <div>
-                      <span className={`text-[10px] font-black ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{pillar.title}</span>
-                      <p className={`text-[10px] mt-1 font-bold leading-tight ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                        {pillar.item?.text || '표준 모니터링 이행'}
-                      </p>
-                    </div>
-                    <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full w-max mt-2 ${
-                      isSafe ? 'bg-emerald-500/20 text-emerald-400' : isDanger ? 'bg-rose-500/20 text-rose-400' : 'bg-amber-500/20 text-amber-400'
-                    }`}>
-                      {isSafe ? '맑음 🟢' : isDanger ? '위험 🔴' : '주의 🟡'}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* ── 💰 [추천 4] 내 포트폴리오 영향도 시뮬레이터 카드 ── */}
-          <div className={`rounded-2xl border p-5 mb-4 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
-            <div className="flex items-center justify-between mb-3">
-              <p className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-                내 포트폴리오 자산 영향도
-              </p>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isDark ? 'bg-white/10 text-[#69dbad]' : 'bg-emerald-50 text-[#3eb489]'}`}>
-                체감 시뮬레이션
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 text-center">
-              <div className={`p-3 rounded-xl border ${isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                <p className={`text-[10px] font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>내 보유 비중</p>
-                <p className={`text-base font-black font-mono mt-0.5 ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-                  {stock.weight}% <span className="text-[11px] font-normal text-slate-400">({(stockHoldingValue / 10000).toLocaleString()}만 원)</span>
-                </p>
+                  AI 원리 💡
+                </button>
               </div>
 
-              <div className={`p-3 rounded-xl border ${isDark ? 'bg-rose-950/20 border-rose-500/20 text-rose-300' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>
-                <p className="text-[10px] font-bold opacity-80">주가 5% 하락 시 내 자산 변동</p>
-                <p className="text-base font-black font-mono mt-0.5">
-                  -{(impactLossValue).toLocaleString()}원
+              <div className={`p-4 rounded-xl text-center border ${
+                stock.dropProb < 20
+                  ? (isDark ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700')
+                  : (isDark ? 'bg-rose-950/20 border-rose-500/30 text-rose-400' : 'bg-rose-50 border-rose-200 text-rose-700')
+              }`}>
+                <p className="text-[10px] font-bold opacity-80 mb-1">20거래일 내 -10% 하락 확률</p>
+                <p className="text-2xl font-black font-mono">
+                  {stock.dropProb}%
                 </p>
+                <span className={`inline-block mt-2 text-[10px] font-black px-2 py-0.5 rounded-full ${
+                  stock.dropProb < 20 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'
+                }`}>
+                  {stock.dropProb < 20 ? '안전 모니터링 🟢' : '주의 모니터링 🔴'}
+                </span>
               </div>
             </div>
-          </div>
 
-          {/* 위험 근거 */}
-          {stock.evidences && stock.evidences.length > 0 && (
-            <div className={`rounded-2xl border p-5 mb-4 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
-              <p className={`text-xs font-black mb-3 ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>핵심 위험 근거</p>
+            {/* 🌿 3대 ESG 영역별 브레이크다운 카드 */}
+            <div className={`rounded-2xl border p-5 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+              <h3 className={`text-xs font-black mb-3 ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+                3대 ESG 영역별 브레이크다운
+              </h3>
               <div className="space-y-2">
-                {stock.evidences.map((ev, i) => (
-                  <div key={i} className={`flex items-start justify-between gap-3 p-3 rounded-xl ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}>
-                    <div className="flex items-start gap-2.5 min-w-0">
-                      <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full flex-shrink-0 mt-0.5 ${
-                        ev.direction === '부정' ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'
-                      }`}>{ev.type}</span>
-                      <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{ev.title}</p>
+                {[
+                  { key: 'e', title: '🌿 환경(E)', item: stock.esgBreakdown?.e },
+                  { key: 's', title: '🤝 사회(S)', item: stock.esgBreakdown?.s },
+                  { key: 'g', title: '🏛️ 지배구조(G)', item: stock.esgBreakdown?.g },
+                ].map(pillar => {
+                  const isSafe = pillar.item?.status === 'safe';
+                  const isDanger = pillar.item?.status === 'danger';
+                  return (
+                    <div
+                      key={pillar.key}
+                      className={`p-3 rounded-xl border flex items-center justify-between ${
+                        isSafe
+                          ? (isDark ? 'bg-emerald-950/20 border-emerald-500/20' : 'bg-emerald-50/60 border-emerald-200')
+                          : isDanger
+                          ? (isDark ? 'bg-rose-950/20 border-rose-500/20' : 'bg-rose-50/60 border-rose-200')
+                          : (isDark ? 'bg-amber-950/20 border-amber-500/20' : 'bg-amber-50/60 border-amber-200')
+                      }`}
+                    >
+                      <div className="min-w-0 flex-1 pr-2">
+                        <span className={`text-[10px] font-black ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{pillar.title}</span>
+                        <p className={`text-[10px] font-bold leading-tight truncate ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                          {pillar.item?.text || '표준 모니터링 이행'}
+                        </p>
+                      </div>
+                      <span className={`text-[9px] font-black px-2 py-0.5 rounded-full flex-shrink-0 ${
+                        isSafe ? 'bg-emerald-500/20 text-emerald-400' : isDanger ? 'bg-rose-500/20 text-rose-400' : 'bg-amber-500/20 text-amber-400'
+                      }`}>
+                        {isSafe ? '맑음 🟢' : isDanger ? '위험 🔴' : '주의 🟡'}
+                      </span>
                     </div>
-                    <span className={`text-[10px] font-mono flex-shrink-0 mt-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                      {ev.date || '2026.07.23'}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
-          )}
 
-          {/* AI 브리핑 카드 */}
-          <div className={`rounded-2xl border p-5 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
-            <p className={`text-xs font-black mb-2 flex items-center gap-1.5 ${isDark ? 'text-[#69dbad]' : 'text-[#3eb489]'}`}>
-              <Icon name="sparkles" className="w-4 h-4" />
-              AI 종합 예측 브리핑
-            </p>
-            <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-              {stock.aiBriefing}
-            </p>
+            {/* 💰 내 포트폴리오 자산 영향도 계산기 카드 */}
+            <div className={`rounded-2xl border p-5 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+                  내 자산 실시간 영향도
+                </h3>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isDark ? 'bg-white/10 text-[#69dbad]' : 'bg-emerald-50 text-[#3eb489]'}`}>
+                  영향도 시뮬레이션
+                </span>
+              </div>
+
+              <div className="space-y-2.5">
+                <div className={`p-3 rounded-xl border text-center ${isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+                  <p className={`text-[10px] font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>내 보유 비중</p>
+                  <p className={`text-sm font-black font-mono mt-0.5 ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+                    {stock.weight}% <span className="text-[10px] font-normal text-slate-400">({(stockHoldingValue / 10000).toLocaleString()}만 원)</span>
+                  </p>
+                </div>
+
+                <div className={`p-3 rounded-xl border text-center ${isDark ? 'bg-rose-950/20 border-rose-500/20 text-rose-300' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>
+                  <p className="text-[10px] font-bold opacity-80">주가 5% 하락 시 내 자산 변동</p>
+                  <p className="text-sm font-black font-mono mt-0.5">
+                    -{(impactLossValue).toLocaleString()}원
+                  </p>
+                </div>
+              </div>
+            </div>
+
           </div>
 
         </div>
