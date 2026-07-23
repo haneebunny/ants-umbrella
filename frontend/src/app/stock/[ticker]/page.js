@@ -171,9 +171,12 @@ export default function StockDetailPage() {
   const router = useRouter();
   const { isDark, toggleTheme } = useTheme();
 
-  // 인터랙티브 차트 기간 선택 탭 ('1D', '1W', '1M', '1Y')
+  // 차트 선택 탭 ('1D', '1W', '1M', '1Y')
   const [selectedPeriod, setSelectedPeriod] = useState('1W');
   const [hoveredIdx, setHoveredIdx] = useState(null);
+
+  // 실시간 하락률 슬라이더 상태 (기본 -5% 하락 시 영향도 연산)
+  const [simDropPct, setSimDropPct] = useState(5);
 
   // AI 예측 원리 팝업 모달 상태
   const [showAiModal, setShowAiModal] = useState(false);
@@ -197,10 +200,10 @@ export default function StockDetailPage() {
 
   const lineColor = isDark ? (isUp ? '#69dbad' : '#ff8b8b') : (isUp ? '#3eb489' : '#ef4444');
 
-  // 내 자산 실시간 영향도 계산 (기본 가상 투자자 4,000만원 기준)
+  // 내 자산 실시간 영향도 계산 (가상 전체자산 4,000만원 기준)
   const userTotalAsset = 40000000;
   const stockHoldingValue = Math.round((userTotalAsset * stock.weight) / 100);
-  const impactLossValue = Math.round(stockHoldingValue * 0.05);
+  const impactLossValue = Math.round(stockHoldingValue * (simDropPct / 100));
 
   return (
     <div className={`min-h-screen w-full transition-colors duration-300 ${isDark ? 'bg-[#080b08] text-[#e2e2e2]' : 'bg-[#f5f6f4] text-[#0f1713]'}`}>
@@ -209,7 +212,7 @@ export default function StockDetailPage() {
 
       <main className="relative z-10 pt-14 pb-10 px-4 max-w-6xl lg:ml-60 lg:w-[calc(100%-240px)]">
 
-        {/* ── 🌟 상단 종목 히어로 타일 ── */}
+        {/* ── 🌟 상단 종목 히어로 헤더 타일 ── */}
         <div className={`mt-6 mb-4 p-5 rounded-2xl border transition-all ${
           isDark ? 'bg-[#1e2220] border-white/5 shadow-md' : 'bg-white border-slate-100 shadow-sm'
         }`}>
@@ -247,10 +250,10 @@ export default function StockDetailPage() {
           </div>
         </div>
 
-        {/* ── 2컬럼 레이아웃 (좌측 8칸 / 우측 4칸) ── */}
+        {/* ── 2컬럼 레이아웃 (좌측 8칸 메인 분석 / 우측 4칸 최상단 자산 계산기 & AI 지표) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
 
-          {/* ┌── 👈 좌측 메인 영역 (8컬럼) ──┐ */}
+          {/* ┌── 👈 좌측 메인 분석 영역 (8컬럼) ──┐ */}
           <div className="lg:col-span-8 space-y-4">
 
             {/* 📈 인터랙티브 주가 추이 차트 카드 */}
@@ -261,7 +264,7 @@ export default function StockDetailPage() {
                     인터랙티브 주가 추이
                   </h2>
                   <p className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                    그래프 위에 마우스를 올리면 상세 주가를 확인하실 수 있습니다.
+                    그래프 데이터 지점에 마우스를 올리면 정확한 주가가 표시됩니다.
                   </p>
                 </div>
 
@@ -283,7 +286,7 @@ export default function StockDetailPage() {
                 </div>
               </div>
 
-              {/* SVG 인터랙티브 차트 */}
+              {/* SVG 차트 */}
               <div className="relative">
                 <svg
                   width="100%"
@@ -301,7 +304,6 @@ export default function StockDetailPage() {
                   <polyline points={pointsStr + ` ${chartW},${chartH} 0,${chartH}`} fill="url(#stockGradDash)" stroke="none" />
                   <polyline points={pointsStr} fill="none" stroke={lineColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
 
-                  {/* 데이터 포인트 호버 영역 */}
                   {points.map((p, idx) => (
                     <g key={idx} onMouseEnter={() => setHoveredIdx(idx)}>
                       <circle
@@ -379,10 +381,72 @@ export default function StockDetailPage() {
             )}
           </div>
 
-          {/* └── 👉 우측 사이드 영역 (4컬럼) ──┘ */}
+          {/* └── 👉 우측 스마트 사이드 영역 (4컬럼 - 최상단 자산 계산기 재배치) ──┘ */}
           <div className="lg:col-span-4 space-y-4">
 
-            {/* 🤖 XGBoost -10% 하락 확률 AI 뱃지 카드 */}
+            {/* 💰 1. [맨 최상단 재배치] 내 자산 실시간 영향도 체감 시뮬레이터 카드 */}
+            <div className={`rounded-2xl border p-5 transition-all ${
+              isDark ? 'bg-[#1e2220] border-emerald-500/30 shadow-[0_4px_20px_rgba(62,180,137,0.08)]' : 'bg-white border-emerald-200 shadow-md'
+            }`}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-base">💰</span>
+                  <h3 className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+                    내 자산 실시간 영향도
+                  </h3>
+                </div>
+                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                  isDark ? 'bg-[#3eb489]/20 text-[#69dbad]' : 'bg-emerald-100 text-[#2d966e]'
+                }`}>
+                  라이브 체감
+                </span>
+              </div>
+
+              {/* 자산 현황 요약 */}
+              <div className={`p-3 rounded-xl border mb-3 flex items-center justify-between ${
+                isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-200'
+              }`}>
+                <div>
+                  <p className={`text-[10px] font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>내 포트폴리오 비중</p>
+                  <p className={`text-base font-black font-mono ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+                    {stock.weight}%
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className={`text-[10px] font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>평가 금액</p>
+                  <p className={`text-sm font-black font-mono ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                    {(stockHoldingValue / 10000).toLocaleString()}만 원
+                  </p>
+                </div>
+              </div>
+
+              {/* 하락율 조절 인터랙티브 슬라이더 */}
+              <div className={`p-3 rounded-xl border ${
+                isDark ? 'bg-rose-950/20 border-rose-500/20 text-rose-300' : 'bg-rose-50/70 border-rose-200 text-rose-800'
+              }`}>
+                <div className="flex items-center justify-between text-[11px] font-bold mb-1.5">
+                  <span>주가 <strong className="font-mono text-rose-500">{simDropPct}%</strong> 하락 시 내 자산 변동</span>
+                  <span className="font-black font-mono text-sm text-rose-500">
+                    -{(impactLossValue).toLocaleString()}원
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="20"
+                  value={simDropPct}
+                  onChange={(e) => setSimDropPct(Number(e.target.value))}
+                  className="w-full h-1.5 bg-rose-200 dark:bg-rose-950 rounded-lg appearance-none cursor-pointer accent-rose-500"
+                />
+                <div className="flex justify-between text-[9px] text-rose-400 mt-1">
+                  <span>-1%</span>
+                  <span>-5% (표준)</span>
+                  <span>-20% (급락)</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 🤖 2. XGBoost -10% 하락 위험 확률 AI 뱃지 카드 */}
             <div className={`rounded-2xl border p-5 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
               <div className="flex items-center justify-between mb-3">
                 <span className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
@@ -407,7 +471,7 @@ export default function StockDetailPage() {
                 <p className="text-2xl font-black font-mono">
                   {stock.dropProb}%
                 </p>
-                <span className={`inline-block mt-2 text-[10px] font-black px-2 py-0.5 rounded-full ${
+                <span className={`inline-block mt-2 text-[10px] font-black px-2.5 py-0.5 rounded-full ${
                   stock.dropProb < 20 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'
                 }`}>
                   {stock.dropProb < 20 ? '안전 모니터링 🟢' : '주의 모니터링 🔴'}
@@ -415,7 +479,7 @@ export default function StockDetailPage() {
               </div>
             </div>
 
-            {/* 🌿 3대 ESG 영역별 브레이크다운 카드 */}
+            {/* 🌿 3. 3대 ESG 영역별 브레이크다운 카드 */}
             <div className={`rounded-2xl border p-5 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
               <h3 className={`text-xs font-black mb-3 ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
                 3대 ESG 영역별 브레이크다운
@@ -453,34 +517,6 @@ export default function StockDetailPage() {
                     </div>
                   );
                 })}
-              </div>
-            </div>
-
-            {/* 💰 내 포트폴리오 자산 영향도 계산기 카드 */}
-            <div className={`rounded-2xl border p-5 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-                  내 자산 실시간 영향도
-                </h3>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isDark ? 'bg-white/10 text-[#69dbad]' : 'bg-emerald-50 text-[#3eb489]'}`}>
-                  영향도 시뮬레이션
-                </span>
-              </div>
-
-              <div className="space-y-2.5">
-                <div className={`p-3 rounded-xl border text-center ${isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                  <p className={`text-[10px] font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>내 보유 비중</p>
-                  <p className={`text-sm font-black font-mono mt-0.5 ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-                    {stock.weight}% <span className="text-[10px] font-normal text-slate-400">({(stockHoldingValue / 10000).toLocaleString()}만 원)</span>
-                  </p>
-                </div>
-
-                <div className={`p-3 rounded-xl border text-center ${isDark ? 'bg-rose-950/20 border-rose-500/20 text-rose-300' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>
-                  <p className="text-[10px] font-bold opacity-80">주가 5% 하락 시 내 자산 변동</p>
-                  <p className="text-sm font-black font-mono mt-0.5">
-                    -{(impactLossValue).toLocaleString()}원
-                  </p>
-                </div>
               </div>
             </div>
 
