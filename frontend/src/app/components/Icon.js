@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 
 export default function Icon({ name, className = "w-5 h-5", ...props }) {
   const icons = {

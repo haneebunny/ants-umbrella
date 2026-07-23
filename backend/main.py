@@ -116,6 +116,75 @@ def get_portfolios():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"포트폴리오 데이터 파일 로드 실패: {str(e)}")
 
+# ── prob_up → weather 변환 헬퍼 ─────────────────────────────────────
+def _prob_to_weather(prob_up: float, direction: str) -> str:
+    prob_down = 1.0 - prob_up
+    if direction == "up" and prob_down < 0.35:
+        return "sunny"
+    elif prob_down < 0.50:
+        return "cloudy"
+    elif prob_down < 0.65:
+        return "rainy"
+    else:
+        return "thunder"
+
+@app.get("/api/dashboard-weather")
+def get_dashboard_weather(tickers: str = ""):
+    """
+    홈 대시보드용 배치 날씨 조회.
+    ?tickers=055550,017670,005490,...  (쉼표 구분)
+    각 ticker의 최신 daily_risk_score → weather / direction / change 반환.
+    """
+    if not tickers.strip():
+        return []
+
+    ticker_list = [t.strip() for t in tickers.split(",") if t.strip()]
+
+    try:
+        collection = get_collection("daily_risk_score")
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"DB 연결 실패: {str(e)}")
+
+    results = []
+    for ticker in ticker_list:
+        try:
+            doc = collection.find_one({"ticker": ticker}, sort=[("date", -1)])
+            if not doc:
+                # 해당 종목 데이터 없으면 null 반환 → 프론트에서 mockData 사용
+                results.append({"ticker": ticker, "available": False})
+                continue
+
+            prob_up   = float(doc.get("prob_up", 0.5))
+            direction = doc.get("direction", "up")
+            weather   = _prob_to_weather(prob_up, direction)
+
+            # 1일 등락(log_return_1d)은 daily_risk_score에 없으므로 price_macro에서 보충
+            change = None
+            try:
+                price_col = get_collection("price_macro")
+                price_doc = price_col.find_one({"ticker": ticker}, sort=[("date", -1)])
+                if price_doc:
+                    change = round(float(price_doc.get("log_return_1d", 0)) * 100, 2)
+            except Exception:
+                pass
+
+            results.append({
+                "ticker":           ticker,
+                "available":        True,
+                "weather":          weather,
+                "direction":        direction,
+                "prob_up":          round(prob_up, 4),
+                "confidence_tier":  doc.get("confidence_tier", "weak"),
+                "change":           change,
+                "date":             str(doc.get("date", "")),
+                "esgScore":         None,   # esg_events에서 추후 집계 가능
+            })
+        except Exception as e:
+            print(f"[WARN] dashboard-weather {ticker}: {e}")
+            results.append({"ticker": ticker, "available": False})
+
+    return results
+
 def generate_ai_briefing(ticker_name: str, ticker: str, prob_up: float, direction: str, confidence_tier: str) -> str:
     prob_down_pct = int((1 - prob_up) * 100)
     prob_up_pct = int(prob_up * 100)
@@ -199,6 +268,15 @@ def get_risk_evidences(ticker: str):
                 prob_up=doc.get("prob_up", 0.5),
                 direction=doc.get("direction", "down"),
                 confidence_tier=doc.get("confidence_tier", "medium")
+            )
+        else:
+            # DB에 스코어 도큐먼트가 아직 없는 경우에도 풍부한 브리핑 제공
+            ai_brief = generate_ai_briefing(
+                ticker_name=corp_name or ticker,
+                ticker=ticker,
+                prob_up=0.5,
+                direction="up",
+                confidence_tier="medium"
             )
     except Exception as e:
         print(f"Briefing gen error: {e}")

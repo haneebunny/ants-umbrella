@@ -78,6 +78,8 @@
 | 2026-07-23 | Antigravity | 오프라인 환경 대응을 위한 HF API 패스트 페일(Fast-fail) 모드를 process_news_features.py에 도입하여 1300여건의 뉴스 분석 속도를 수 시간에서 1분 이내로 단축 |
 | 2026-07-23 | Antigravity | 이벤트 스터디 통계 집계 스크립트(evnet_study.py) 개발: 회사명-종목코드 매칭, MongoDB Atlas 연결, (ticker, date) 인덱스 충돌 방지 로직 적용 및 55건 통계 데이터 적재 완료 |
 | 2026-07-23 | Antigravity | schemas.py 및 main.py 수정: /risk-score/{ticker} API 응답에 과거 적중률(hit_rate), 사례 수(sample_size), Fallback 배지(badge) 필드 추가 연동 완료 |
+| 2026-07-23 | Antigravity | 데스크톱 좌측 메뉴 고정, 관심주식 10개 확장 위젯, 레이더 다각형 글래스 뱃지 & 옵티컬 밸런스, 15도 각도 대각선 비 배경 애니메이션(RainEffect), 메뉴 이동 페이지 뒤로가기 버튼 제거 및 대시보드 풀스크린 레이아웃 완성 |
+
 | 2026-07-23 | Antigravity | FinanceDataReader 404 HTTP Error 예외 우회용 16개 종목 정적 업종 폴백 사전 및 try-except 구조 구현 완료 (`collect_price.py`, `add_sector.py`) |
 | 2026-07-23 | Antigravity | google-genai 최신 SDK 네임스페이스 패키지 꼬임 해결(`google-genai` 강제 재설치) 및 Structured Output JSON 스키마 전송 규격을 `response_mime_type`과 `response_schema` 형태로 리팩토링 완료 (`process_news_features.py`) |
 | 2026-07-23 | Antigravity | HuggingFace 최신 라우터 도메인(`router.huggingface.co/hf-inference`) 이주 및 SBERT 모델의 feature-extraction 파이프라인 수동 라우팅을 통해 DNS / 400 Bad Request 에러 우회 적용 (`process_news_features.py`) |

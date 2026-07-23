@@ -51,19 +51,19 @@ export const PORTFOLIO_PRESETS = [
       ],
     },
     stockWeatherList: [
-      { ticker: '055550', name: '신한지주',    weight: 16, weather: 'sunny',  change:  1.0, direction: 'up',   detail: { sector: '금융', esgScore: 82, reason: '배당 공시 신호 긍정적, 업이익 개선 예상 지속' } },
+      { ticker: '055550', name: '신한지주',    weight: 16, weather: 'sunny',  change:  1.0, direction: 'up',   detail: { sector: '금융', esgScore: 82, reason: '배당 공시 신호 긍정적, 영업이익 개선 예상 지속' } },
       { ticker: '017670', name: 'SK텔레콤',   weight: 15, weather: 'sunny',  change:  0.8, direction: 'up',   detail: { sector: '통신', esgScore: 79, reason: '5G 가입자 증가세 유지, 확정 배당 가능성 높음' } },
-      { ticker: '005490', name: 'POSCO홀딩스', weight: 14, weather: 'cloudy', change: -0.4, direction: 'down', detail: { sector: '철강', esgScore: 65, reason: '중국 철강 수요 둔락과 환율 영향으로 단기 불확실성' } },
-      { ticker: '010950', name: 'S-Oil',       weight: 13, weather: 'sunny',  change:  0.3, direction: 'up',   detail: { sector: '에너지', esgScore: 71, reason: '정유 마진 안정적, 단기 리스크 수준 양호' } },
-      { ticker: '028260', name: '삼성물산',    weight: 14, weather: 'sunny',  change:  0.1, direction: 'up',   detail: { sector: '건설/유통', esgScore: 77, reason: '해외 건설 수주잔고 증가, ESG 예수 양호' } },
-      { ticker: '000270', name: '기아',         weight: 14, weather: 'sunny',  change:  0.2, direction: 'up',   detail: { sector: '자동차', esgScore: 74, reason: '전기사JV 확대 소식 긍정적, 수출 회복세' } },
+      { ticker: '005490', name: 'POSCO홀딩스', weight: 14, weather: 'cloudy', change: -0.4, direction: 'down', detail: { sector: '철강', esgScore: 65, reason: '중국 철강 수요 둔화와 환율 영향으로 단기 불확실성' } },
+      { ticker: '010950', name: 'S-Oil',       weight: 13, weather: 'rainy',  change: -0.3, direction: 'down', detail: { sector: '에너지', esgScore: 71, reason: '정제마진 하락 및 유가 변동성 확대로 단기 리스크 상승' } },
+      { ticker: '028260', name: '삼성물산',    weight: 14, weather: 'sunny',  change:  0.1, direction: 'up',   detail: { sector: '건설/유통', esgScore: 77, reason: '해외 건설 수주잔고 증가, ESG 지수 양호' } },
+      { ticker: '000270', name: '기아',         weight: 14, weather: 'sunny',  change:  0.2, direction: 'up',   detail: { sector: '자동차', esgScore: 74, reason: '전기차 JV 확대 소식 긍정적, 수출 회복세' } },
       { ticker: '068270', name: '셀트리온',    weight: 14, weather: 'cloudy', change: -0.2, direction: 'down', detail: { sector: '헬스케어', esgScore: 68, reason: '임상 데이터 승인 지연, 단기 실적 불확실성' } },
     ],
     radarScores: {
       sectorDiv:    82,  // 업종 다각화
       stockSpread:  78,  // 종목 분산도
       volatilityFit:88,  // 변동성 적합도
-      capStability: 90,  // 시가충액 안정성
+      capStability: 90,  // 시가총액 안정성
       esgRisk:      75,  // ESG 리스크 (높을수록 안전)
     },
     profile: {
@@ -102,12 +102,12 @@ export const PORTFOLIO_PRESETS = [
       ],
     },
     stockWeatherList: [
-      { ticker: '000660', name: 'SK하이닉스', weight: 22, weather: 'sunny',   change:  1.8, direction: 'up',   detail: { sector: '반도체', esgScore: 72, reason: 'HBM4 수주 확대 및 AI 반도체 수요 급증 수혁' } },
-      { ticker: '035720', name: '카카오',     weight: 18, weather: 'thunder', change: -1.2, direction: 'down', detail: { sector: 'IT/플랫폼', esgScore: 44, reason: '주요 임원 법적 리스크 지속, 광고 매출 둥락' } },
-      { ticker: '051910', name: 'LG화학',     weight: 16, weather: 'cloudy',  change: -0.7, direction: 'down', detail: { sector: '화학', esgScore: 58, reason: '배터리 소재 단가 하락, 교환사체 발행 부담' } },
-      { ticker: '003550', name: 'LG',         weight: 15, weather: 'cloudy',  change:  0.3, direction: 'up',   detail: { sector: '회사주', esgScore: 63, reason: '자회사 실적 혼조, 단기 시세 오름마' } },
-      { ticker: '036570', name: 'NC소프트',   weight: 15, weather: 'rainy',   change: -0.9, direction: 'down', detail: { sector: '게임', esgScore: 51, reason: '신게임 실패 재기, 이용자 이탈 가속화' } },
-      { ticker: '251270', name: '넷마블',     weight: 14, weather: 'cloudy',  change: -0.4, direction: 'down', detail: { sector: '게임', esgScore: 55, reason: '신게임 지연 및 마케팅 비용 과다 이슈' } },
+      { ticker: '000660', name: 'SK하이닉스', weight: 22, weather: 'sunny',   change:  1.8, direction: 'up',   detail: { sector: '반도체', esgScore: 72, reason: 'HBM4 수주 확대 및 AI 반도체 수요 급증 수혜' } },
+      { ticker: '035720', name: '카카오',     weight: 18, weather: 'thunder', change: -1.2, direction: 'down', detail: { sector: 'IT/플랫폼', esgScore: 44, reason: '주요 임원 법적 리스크 지속, 광고 매출 등락' } },
+      { ticker: '051910', name: 'LG화학',     weight: 16, weather: 'cloudy',  change: -0.7, direction: 'down', detail: { sector: '화학', esgScore: 58, reason: '배터리 소재 단가 하락, 교환사채 발행 부담' } },
+      { ticker: '003550', name: 'LG',         weight: 15, weather: 'cloudy',  change:  0.3, direction: 'up',   detail: { sector: '지주사', esgScore: 63, reason: '자회사 실적 혼조세, 단기 시세 오름세' } },
+      { ticker: '036570', name: 'NC소프트',   weight: 15, weather: 'rainy',   change: -0.9, direction: 'down', detail: { sector: '게임', esgScore: 51, reason: '신작 게임 출시 지연, 이용자 이탈 가속화' } },
+      { ticker: '251270', name: '넷마블',     weight: 14, weather: 'cloudy',  change: -0.4, direction: 'down', detail: { sector: '게임', esgScore: 55, reason: '신작 게임 지연 및 마케팅 비용 과다 이슈' } },
     ],
     radarScores: {
       sectorDiv:    55,  // IT/게임 편중
@@ -152,12 +152,12 @@ export const PORTFOLIO_PRESETS = [
       ],
     },
     stockWeatherList: [
-      { ticker: '006400', name: '삼성SDI',     weight: 20, weather: 'sunny',  change:  0.6, direction: 'up',   detail: { sector: '에너지/배터리', esgScore: 80, reason: '유럽 전기차 배터리 고장수주, 영업이익 회복세' } },
+      { ticker: '006400', name: '삼성SDI',     weight: 20, weather: 'sunny',  change:  0.6, direction: 'up',   detail: { sector: '에너지/배터리', esgScore: 80, reason: '유럽 전기차 배터리 대형 수주, 영업이익 회복세' } },
       { ticker: '096770', name: '한국가스공사', weight: 18, weather: 'rainy',  change: -1.1, direction: 'down', detail: { sector: '에너지', esgScore: 58, reason: '주요 공시에서 환경 규제 준수 기준 미달 1건 확인' } },
-      { ticker: '033780', name: 'KT&G',        weight: 17, weather: 'cloudy', change:  0.2, direction: 'up',   detail: { sector: '소비재', esgScore: 73, reason: '국내 담맰 규제 강화 의식, 해외에서 성장 가능성 주목' } },
-      { ticker: '047050', name: '포스코인터',  weight: 15, weather: 'rainy',  change: -0.5, direction: 'down', detail: { sector: '무역/유통', esgScore: 66, reason: '중국 경기 둥락에 따른 통상 화오 및 매출 압박' } },
-      { ticker: '009150', name: '삼성전기',    weight: 15, weather: 'cloudy', change: -0.3, direction: 'down', detail: { sector: '전자부품', esgScore: 70, reason: '글로벌 IT 수요 회복 주시되나, 무라에 시야' } },
-      { ticker: '011200', name: '한진',        weight: 15, weather: 'sunny',  change:  0.4, direction: 'up',   detail: { sector: '항공', esgScore: 68, reason: '얬행 수요 회복세 지속, 화물 웴량증가로 수익성 개선' } },
+      { ticker: '033780', name: 'KT&G',        weight: 17, weather: 'cloudy', change:  0.2, direction: 'up',   detail: { sector: '소비재', esgScore: 73, reason: '국내 담배 규제 강화 의식, 해외 성장 가능성 주목' } },
+      { ticker: '047050', name: '포스코인터',  weight: 15, weather: 'rainy',  change: -0.5, direction: 'down', detail: { sector: '무역/유통', esgScore: 66, reason: '중국 경기 둔화에 따른 통상 환경 및 매출 압박' } },
+      { ticker: '009150', name: '삼성전기',    weight: 15, weather: 'cloudy', change: -0.3, direction: 'down', detail: { sector: '전자부품', esgScore: 70, reason: '글로벌 IT 수요 회복 주시되나 단기 우려 지속' } },
+      { ticker: '011200', name: '한진',        weight: 15, weather: 'sunny',  change:  0.4, direction: 'up',   detail: { sector: '항공', esgScore: 68, reason: '여행 수요 회복세 지속, 화물 물동량 증가로 수익성 개선' } },
     ],
     radarScores: {
       sectorDiv:    88,  // SASB 보증 다각화

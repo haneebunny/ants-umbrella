@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React from 'react';
 import { useTheme } from '../hooks/useTheme';
@@ -24,9 +24,10 @@ export default function AlertsPage() {
 
   return (
     <div className={`min-h-screen w-full transition-colors duration-300 ${isDark ? 'bg-[#080b08] text-[#e2e2e2]' : 'bg-[#f5f6f4] text-[#0f1713]'}`}>
-      <Header isDark={isDark} toggleTheme={toggleTheme} showBack title="위험 알림" />
+      <Header isDark={isDark} toggleTheme={toggleTheme} title="위험 알림" />
 
-      <main className="pt-14 pb-10 px-4 max-w-4xl mx-auto">
+      <main className="pt-14 pb-10 px-4 max-w-4xl lg:ml-60 lg:w-[calc(100%-240px)]">
+
         <div className="pt-6 pb-4">
           <h1 className={`text-xl font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>위험 알림</h1>
           <p className={`text-xs mt-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>

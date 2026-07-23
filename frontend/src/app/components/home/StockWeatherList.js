@@ -128,7 +128,7 @@ function FloatingPanel({ stock, anchorRect, isDark, onClose, onNavigate }) {
               isDark ? 'text-slate-500' : 'text-slate-400'
             }`}>AI 판단 근거</p>
             <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-              {stock.detail?.reason}
+              {stock.detail?.reason || '최근 수집된 특이 리스크 신호가 수집되지 않아 업종 평균 수준의 안정적 상태를 유지하고 있습니다.'}
             </p>
           </div>
 
@@ -137,7 +137,7 @@ function FloatingPanel({ stock, anchorRect, isDark, onClose, onNavigate }) {
             <p className={`text-[10px] font-black uppercase tracking-widest mb-1.5 ${
               isDark ? 'text-slate-500' : 'text-slate-400'
             }`}>ESG 안전 점수</p>
-            <EsgBar score={stock.detail?.esgScore ?? 0} isDark={isDark} />
+            <EsgBar score={stock.detail?.esgScore ?? 72} isDark={isDark} />
           </div>
 
           {/* 상세 보기 버튼 */}

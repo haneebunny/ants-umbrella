@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import Icon from './Icon';
 
 export default function IntroScreen({ theme, onStart, toggleTheme }) {

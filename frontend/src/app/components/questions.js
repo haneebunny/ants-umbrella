@@ -1,4 +1,4 @@
-// --- Core Questions Data (v0.2 Spec-compliant) ---
+﻿// --- Core Questions Data (v0.2 Spec-compliant) ---
 export const QUESTIONS = [
   {
     id: 1,
