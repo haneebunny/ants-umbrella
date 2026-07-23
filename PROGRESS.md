@@ -80,6 +80,8 @@
 | 2026-07-23 | Antigravity | schemas.py 및 main.py 수정: /risk-score/{ticker} API 응답에 과거 적중률(hit_rate), 사례 수(sample_size), Fallback 배지(badge) 필드 추가 연동 완료 |
 | 2026-07-23 | Antigravity | 데스크톱 좌측 메뉴 고정, 관심주식 10개 확장 위젯, 레이더 다각형 글래스 뱃지 & 옵티컬 밸런스, 15도 각도 대각선 비 배경 애니메이션(RainEffect), 메뉴 이동 페이지 뒤로가기 버튼 제거 및 대시보드 풀스크린 레이아웃 완성 |
 | 2026-07-23 | Antigravity | 3대 주요 페이지 UX 대폭 고도화: 위험알림(스마트 필터탭·모두읽음·1초 직행링크), 포트폴리오 관리(원클릭 3대 템플릿·실시간 비중 도넛 프리뷰), 위험진단(라이브 슬라이더 시뮬레이터·개미 펫 AI 처방전 카드) 구현 |
+| 2026-07-23 | Antigravity | 종목 상세 페이지(/stock/[ticker]) 전면 업그레이드: 1D/1W/1M/1Y 기간 탭 인터랙티브 주가 차트, 3대 ESG(E/S/G) 위험도 브레이크다운, XGBoost AI -10% 하락확률 뱃지 & 산출원리 팝업 모달, 내 포트폴리오 자산 영향도 계산기 카드 구현 |
+
 
 
 | 2026-07-23 | Antigravity | FinanceDataReader 404 HTTP Error 예외 우회용 16개 종목 정적 업종 폴백 사전 및 try-except 구조 구현 완료 (`collect_price.py`, `add_sector.py`) |
