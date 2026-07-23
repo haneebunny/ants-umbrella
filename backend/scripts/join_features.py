@@ -124,8 +124,10 @@ if __name__ == "__main__":
     
     data_dir = project_root / "data"
 
-    # 실전 및 더미 CSV 경로 지정
-    news_csv = data_dir / "news_features_day2.csv"
+    # 학습용 뉴스 피처 파일이 감지되면 최우선 사용, 없으면 데일리 또는 더미 파일 로드
+    news_csv = data_dir / "news_features_training.csv"
+    if not news_csv.exists():
+        news_csv = data_dir / "news_features_day2.csv"
     if not news_csv.exists():
         news_csv = data_dir / "news_features_dummy.csv"
         

@@ -19,10 +19,8 @@ PIPELINE_STEPS = [
     ("scripts/collect_price.py", "1. 16개 포트폴리오 종목 주가 수집 (FinanceDataReader/pykrx)"),
     ("generate_labels.py", "2. 주가 라벨 정의 (20거래일 내 -10% 하락 여부)"),
     ("scripts/add_sector.py", "3. 종목별 업종(섹터) 정보 매핑"),
-    ("scripts/collect_news.py", "4. 최근 뉴스 수집 (최대 500개, 날짜 역순 페이징)"),
-    ("scripts/process_news_features.py", "5. 뉴스 텍스트 분석 및 피처 분류"),
-    ("scripts/join_features.py", "6. 최종 학습/추론 통합 피처 데이터셋 병합"),
-    ("scripts/compare_features.py", "7. XGBoost 피처 중요도 및 성능 비교 실험")
+    ("scripts/join_features.py", "4. 최종 학습/추론 통합 피처 데이터셋 병합 (코랩 가공 뉴스 반영)"),
+    ("scripts/compare_features.py", "5. XGBoost 피처 중요도 및 성능 비교 실험")
 ]
 
 def run_step(script_name: str, description: str, log_file) -> bool:
