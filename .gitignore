@@ -66,3 +66,6 @@ frontend/temp_design.html
 data/*.log
 data/raw/
 data/processed/
+data/news_features_training.csv
+data/news_features_training_dummy.csv
+data/training/
