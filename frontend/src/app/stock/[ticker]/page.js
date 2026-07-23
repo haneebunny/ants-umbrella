@@ -21,7 +21,7 @@ const STOCK_DATA = {
       { type: '산업', direction: '긍정', title: 'HBM 메모리 공급 확대 및 메모리 반도체 실적 개선', date: '2026.07.23' },
       { type: '재무', direction: '긍정', title: '반도체 사업부 3분기 영업이익 전년 대비 45% 상승 전망', date: '2026.07.22' },
     ],
-    aiBriefing: '글로벌 AI 반도체 수요 폭증에 따른 HBM 공급 확대로 실적 회복세가 뚜렷합니다. 주가 안정성이 유지되는 대표 우량주입니다.',
+    aiBriefing: '글로벌 AI 반도체 수요 폭증에 따른 HBM 공급 확대로 실적 회복세가 뚜렷합니다. 개미의 우산 리스크 진단 결과, ESG 위험 노출도가 안전 범위 내에서 유지되고 있습니다.',
   },
   '005380': { name: '현대차', marketCap: '53.4조', high52w: '280,000원', low52w: '185,000원', currentPrice: '254,000원', weather: 'sunny', direction: 'up', confidence: 'medium', change: 0.9, weight: 18, dropProb: 11.2,
     esgBreakdown: { e: { status: 'safe', text: '수소/전기차 라인업 확대' }, s: { status: 'caution', text: '노사 협상 일정 진행' }, g: { status: 'safe', text: '주주환원 배당 확대' } },
@@ -213,13 +213,15 @@ export default function StockDetailPage() {
       {/* ── 🚀 풀 화면 (100% 1920px 대형 해상도 대응) 컨테이너 ── */}
       <main className="relative z-10 pt-14 pb-10 px-4 sm:px-6 max-w-[1920px] lg:ml-60 lg:w-[calc(100%-240px)]">
 
-        {/* ── 🌟 상단 종목 히어로 타일 ── */}
+        {/* ── 🌟 [통합 1] 단일 통합 헬스체크 히어로 타일 ── */}
         <div className={`mt-6 mb-4 p-5 sm:p-6 rounded-2xl border transition-all ${
           isDark ? 'bg-[#1e2220] border-white/5 shadow-md' : 'bg-white border-slate-100 shadow-sm'
         }`}>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            
+            {/* 좌측 종목 기본 정보 */}
             <div className="flex items-center gap-4">
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl ${
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl flex-shrink-0 ${
                 isDark ? 'bg-white/5 border border-white/10 text-white' : 'bg-slate-100 text-[#0f1713]'
               }`}>
                 {stock.name.slice(0, 2)}
@@ -227,67 +229,76 @@ export default function StockDetailPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className={`text-2xl sm:text-3xl font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>{stock.name}</h1>
-                  <span className={`text-xs font-mono font-bold px-3 py-1 rounded-full ${isDark ? 'bg-white/10 text-slate-400' : 'bg-slate-200 text-slate-600'}`}>
+                  <span className={`text-xs font-mono font-bold px-2.5 py-0.5 rounded-full ${isDark ? 'bg-white/10 text-slate-400' : 'bg-slate-200 text-slate-600'}`}>
                     {ticker}
                   </span>
                 </div>
-                <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                  ESG Materiality 기반 20거래일 리스크 진단 보고서
-                </p>
+                <div className="flex items-center gap-3 mt-1.5 text-xs font-mono">
+                  <span className={`font-black text-sm sm:text-base ${isUp ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : 'text-rose-500'}`}>
+                    {stock.currentPrice} ({isUp ? '▲ +' : '▼ '}{stock.change.toFixed(1)}%)
+                  </span>
+                  <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>|</span>
+                  <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>시총 {stock.marketCap}</span>
+                  <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>|</span>
+                  <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>52주 {stock.high52w} ~ {stock.low52w}</span>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-6">
-              <div className="flex flex-col items-end">
-                <div className={`flex items-center gap-2 ${wCfg.color}`}>
-                  <Icon name={wCfg.icon} className="w-6 h-6" />
-                  <span className="text-lg font-black">{wCfg.label}</span>
-                </div>
-                <span className={`text-base font-black font-mono mt-0.5 ${isUp ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : 'text-rose-500'}`}>
-                  {isUp ? '▲ +' : '▼ '}{stock.change.toFixed(1)}%
+            {/* 우측 단일 통합 헬스체크 뱃지 묶음 (날씨 + 하락확률 + AI 원리) */}
+            <div className="flex items-center gap-3 pt-2 lg:pt-0 border-t lg:border-t-0 border-white/5">
+              {/* 기상도 뱃지 */}
+              <div className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl border ${
+                isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'
+              }`}>
+                <Icon name={wCfg.icon} className={`w-5 h-5 ${wCfg.color}`} />
+                <span className="text-xs font-black">{wCfg.label}</span>
+              </div>
+
+              {/* -10% 하락 확률 뱃지 */}
+              <div className={`px-4 py-2 rounded-xl border flex items-center gap-2 ${
+                stock.dropProb < 20
+                  ? (isDark ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700')
+                  : (isDark ? 'bg-rose-950/20 border-rose-500/30 text-rose-400' : 'bg-rose-50 border-rose-200 text-rose-700')
+              }`}>
+                <span className="text-xs font-bold">20일 하락 확률</span>
+                <span className="text-sm font-black font-mono">{stock.dropProb}%</span>
+                <span className={`text-[10px] font-black px-2 py-0.2 rounded-full ${
+                  stock.dropProb < 20 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'
+                }`}>
+                  {stock.dropProb < 20 ? '안전 🟢' : '주의 🔴'}
                 </span>
               </div>
+
+              {/* AI 원리 버튼 */}
+              <button
+                onClick={() => setShowAiModal(true)}
+                className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
+                  isDark ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                AI 원리 💡
+              </button>
             </div>
+
           </div>
         </div>
 
-        {/* ── 🌟 [추천 1] 상단 4분할 KPI 요약 뱃지 바 (Metric Quick Tiles) ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-          {[
-            { label: '현재가', val: stock.currentPrice, color: isUp ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : 'text-rose-500' },
-            { label: '52주 최고 / 최저', val: `${stock.high52w} / ${stock.low52w}` },
-            { label: '시가총액', val: stock.marketCap },
-            { label: 'ESG 위험 등급', val: stock.dropProb < 20 ? '안전 🟢' : '주의 🔴', color: stock.dropProb < 20 ? 'text-[#3eb489]' : 'text-rose-500' },
-          ].map((tile, i) => (
-            <div
-              key={i}
-              className={`p-3.5 rounded-2xl border text-center transition-all ${
-                isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'
-              }`}
-            >
-              <p className={`text-[10px] font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{tile.label}</p>
-              <p className={`text-xs sm:text-sm font-black font-mono mt-1 truncate ${tile.color || (isDark ? 'text-white' : 'text-[#0f1713]')}`}>
-                {tile.val}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* ── 2컬럼 레이아웃 (좌측 8칸 메인 대형 분석 / 우측 4칸 최상단 자산 계산기 & 개미 펫 코멘트) ── */}
+        {/* ── 2컬럼 레이아웃 (좌측 8칸 메인 대형 분석 / 우측 4칸 최상단 자산 계산기 & ESG) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
 
           {/* ┌── 👈 좌측 메인 분석 영역 (8컬럼) ──┐ */}
           <div className="lg:col-span-8 space-y-4">
 
-            {/* 📈 [추천 2] 대형 인터랙티브 주가 차트 카드 (Grid Lines & Height Extension h-36) */}
+            {/* 📈 인터랙티브 대형 주가 차트 카드 */}
             <div className={`rounded-2xl border p-5 sm:p-6 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h2 className={`text-base font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-                    인터랙티브 대형 주가 추이
+                    인터랙티브 주가 추이
                   </h2>
                   <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                    그래프 노드에 마우스를 올리면 당일 종가를 확인하실 수 있습니다.
+                    그래프 데이터 지점에 마우스를 올리면 당일 종가를 확인하실 수 있습니다.
                   </p>
                 </div>
 
@@ -309,7 +320,7 @@ export default function StockDetailPage() {
                 </div>
               </div>
 
-              {/* 시원하게 확대된 대형 SVG 차트 (h-36) */}
+              {/* 대형 SVG 차트 (h-36) */}
               <div className="relative">
                 <svg
                   width="100%"
@@ -319,18 +330,18 @@ export default function StockDetailPage() {
                   onMouseLeave={() => setHoveredIdx(null)}
                 >
                   <defs>
-                    <linearGradient id="stockGradDashFull" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="stockGradDashFullCons" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor={lineColor} stopOpacity="0.3" />
                       <stop offset="100%" stopColor={lineColor} stopOpacity="0" />
                     </linearGradient>
                   </defs>
 
-                  {/* 차트 가이드 점선 (Grid lines) */}
+                  {/* 가이드 점선 */}
                   <line x1="0" y1={chartH * 0.25} x2={chartW} y2={chartH * 0.25} stroke={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"} strokeDasharray="4 4" />
                   <line x1="0" y1={chartH * 0.5} x2={chartW} y2={chartH * 0.5} stroke={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"} strokeDasharray="4 4" />
                   <line x1="0" y1={chartH * 0.75} x2={chartW} y2={chartH * 0.75} stroke={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"} strokeDasharray="4 4" />
 
-                  <polyline points={pointsStr + ` ${chartW},${chartH} 0,${chartH}`} fill="url(#stockGradDashFull)" stroke="none" />
+                  <polyline points={pointsStr + ` ${chartW},${chartH} 0,${chartH}`} fill="url(#stockGradDashFullCons)" stroke="none" />
                   <polyline points={pointsStr} fill="none" stroke={lineColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
 
                   {points.map((p, idx) => (
@@ -376,12 +387,15 @@ export default function StockDetailPage() {
               </div>
             </div>
 
-            {/* 💡 AI 종합 예측 브리핑 카드 */}
+            {/* 🤖 [통합 2] 개미 펫 AI 통합 리포트 & 브리핑 단일 카드 */}
             <div className={`rounded-2xl border p-5 sm:p-6 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
-              <h2 className={`text-base font-black mb-2 flex items-center gap-1.5 ${isDark ? 'text-[#69dbad]' : 'text-[#3eb489]'}`}>
-                <Icon name="sparkles" className="w-5 h-5" />
-                AI 종합 예측 브리핑
-              </h2>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xl">☂️</span>
+                <h2 className={`text-base font-black flex items-center gap-1.5 ${isDark ? 'text-[#69dbad]' : 'text-[#3eb489]'}`}>
+                  <Icon name="sparkles" className="w-4 h-4" />
+                  개미의 우산 AI 종합 리포트
+                </h2>
+              </div>
               <p className={`text-xs sm:text-sm leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                 {stock.aiBriefing}
               </p>
@@ -410,7 +424,7 @@ export default function StockDetailPage() {
             )}
           </div>
 
-          {/* └── 👉 우측 스마트 사이드 영역 (4컬럼 - 최상단 자산 계산기 & 개미 펫 스마트 코멘트) ──┘ */}
+          {/* └── 👉 우측 스마트 사이드 영역 (4컬럼 - 자산 계산기 & ESG 브레이크다운) ──┘ */}
           <div className="lg:col-span-4 space-y-4">
 
             {/* 💰 1. 내 자산 실시간 영향도 체감 시뮬레이터 카드 */}
@@ -449,7 +463,7 @@ export default function StockDetailPage() {
                 </div>
               </div>
 
-              {/* 하락율 조절 인터랙티브 슬라이더 */}
+              {/* 하락율 조절 슬라이더 */}
               <div className={`p-3 rounded-xl border ${
                 isDark ? 'bg-rose-950/20 border-rose-500/20 text-rose-300' : 'bg-rose-50/70 border-rose-200 text-rose-800'
               }`}>
@@ -475,57 +489,7 @@ export default function StockDetailPage() {
               </div>
             </div>
 
-            {/* ☂️ 2. [추천 3] 개미 펫 캐릭터의 실시간 종목 스마트 코멘트 카드 */}
-            <div className={`p-4 rounded-2xl border flex items-start gap-3 ${
-              stock.dropProb < 20
-                ? (isDark ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-800')
-                : (isDark ? 'bg-rose-950/20 border-rose-500/30 text-rose-300' : 'bg-rose-50 border-rose-200 text-rose-800')
-            }`}>
-              <span className="text-xl">☂️</span>
-              <div>
-                <p className="text-xs font-black mb-1">개미 펫의 종목 코멘트</p>
-                <p className="text-xs leading-relaxed opacity-90">
-                  {stock.dropProb < 20
-                    ? `이 종목은 ESG 이슈 노출이 안전 범위 내에서 유지되고 있으며, 최근 하락 위험 확률도 ${stock.dropProb}%로 낮아 안심하고 보유하실 수 있습니다!`
-                    : `이 종목은 최근 ESG 리스크 지수 상승으로 단기 변동성 위험이 있으니 관심 있게 모니터링하세요.`}
-                </p>
-              </div>
-            </div>
-
-            {/* 🤖 3. XGBoost -10% 하락 위험 확률 AI 뱃지 카드 */}
-            <div className={`rounded-2xl border p-5 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
-              <div className="flex items-center justify-between mb-3">
-                <span className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-                  하락 위험 확률
-                </span>
-                <button
-                  onClick={() => setShowAiModal(true)}
-                  className={`px-2.5 py-1 rounded-xl text-[10px] font-bold border transition-all ${
-                    isDark ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                  }`}
-                >
-                  AI 원리 💡
-                </button>
-              </div>
-
-              <div className={`p-4 rounded-xl text-center border ${
-                stock.dropProb < 20
-                  ? (isDark ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700')
-                  : (isDark ? 'bg-rose-950/20 border-rose-500/30 text-rose-400' : 'bg-rose-50 border-rose-200 text-rose-700')
-              }`}>
-                <p className="text-[10px] font-bold opacity-80 mb-1">20거래일 내 -10% 하락 확률</p>
-                <p className="text-2xl font-black font-mono">
-                  {stock.dropProb}%
-                </p>
-                <span className={`inline-block mt-2 text-[10px] font-black px-2.5 py-0.5 rounded-full ${
-                  stock.dropProb < 20 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'
-                }`}>
-                  {stock.dropProb < 20 ? '안전 모니터링 🟢' : '주의 모니터링 🔴'}
-                </span>
-              </div>
-            </div>
-
-            {/* 🌿 4. 3대 ESG 영역별 브레이크다운 카드 */}
+            {/* 🌿 2. 3대 ESG 영역별 브레이크다운 카드 */}
             <div className={`rounded-2xl border p-5 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
               <h3 className={`text-xs font-black mb-3 ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
                 3대 ESG 영역별 브레이크다운
