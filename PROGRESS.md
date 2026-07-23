@@ -80,3 +80,12 @@
 | 2026-07-23 | Antigravity | schemas.py 및 main.py 수정: /risk-score/{ticker} API 응답에 과거 적중률(hit_rate), 사례 수(sample_size), Fallback 배지(badge) 필드 추가 연동 완료 |
 | 2026-07-23 | Antigravity | 데스크톱 좌측 메뉴 고정, 관심주식 10개 확장 위젯, 레이더 다각형 글래스 뱃지 & 옵티컬 밸런스, 15도 각도 대각선 비 배경 애니메이션(RainEffect), 메뉴 이동 페이지 뒤로가기 버튼 제거 및 대시보드 풀스크린 레이아웃 완성 |
 
+| 2026-07-23 | Antigravity | FinanceDataReader 404 HTTP Error 예외 우회용 16개 종목 정적 업종 폴백 사전 및 try-except 구조 구현 완료 (`collect_price.py`, `add_sector.py`) |
+| 2026-07-23 | Antigravity | google-genai 최신 SDK 네임스페이스 패키지 꼬임 해결(`google-genai` 강제 재설치) 및 Structured Output JSON 스키마 전송 규격을 `response_mime_type`과 `response_schema` 형태로 리팩토링 완료 (`process_news_features.py`) |
+| 2026-07-23 | Antigravity | HuggingFace 최신 라우터 도메인(`router.huggingface.co/hf-inference`) 이주 및 SBERT 모델의 feature-extraction 파이프라인 수동 라우팅을 통해 DNS / 400 Bad Request 에러 우회 적용 (`process_news_features.py`) |
+| 2026-07-23 | Antigravity | 무료 크레딧 소진(402) 대비를 위해 로컬 파이프라인(`run_pipeline.py`)에서 4단계, 5단계 뉴스 분석 단계를 제거하고, 코랩의 분석 산출물을 다운받아 즉시 병합하도록 최적화 완료 |
+| 2026-07-23 | Antigravity | portfolio.json 업로드 기반 동적 종목 수집 및 신규 업종 fallback 예외 처리(Services) 기능 통합 노트북에 내장 완료 |
+| 2026-07-23 | Antigravity | 빅카인즈 대용량 엑셀/CSV 데이터(32,791건)를 파일명 기반으로 회사명을 자동 매칭하여 단일 통합 학습 파일로 전처리하는 scripts/preprocess_bigkinds.py 개발 완료 |
+| 2026-07-23 | Antigravity | openpyxl 라이브러리 설치 및 20거래일 누적수익률 기준의 이진 등락 주가 라벨링 로직으로 generate_labels.py 개정 완료 |
+| 2026-07-23 | Antigravity | 20거래일 타겟 누수로 인한 모델 오버핏을 차단하기 위해 TimeSeriesSplit에 엠바고(gap=20)를 추가 적용 완료 (scripts/compare_features.py) |
+| 2026-07-23 | Antigravity | FinBERT 감성 중립 뭉개짐 버그 해결을 위해 통합 Colab 노트북 패치, 대용량 학습 뉴스 데이터를 1만 건 기업별 균등 분배로 정제하는 balance_training_data.py 개발, 로컬 피처 합성 완료 후 XGBoost 그리드 서치 튜닝(max_depth=4, lr=0.2, PR-AUC +0.0075, 3/3 fold win) 및 테스트셋 양성 비율(평균 55.19%) 로그 보존 완료 |

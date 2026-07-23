@@ -36,6 +36,7 @@
 
 **Colab (사람 주도 + 에이전트 보조)**
 - [x] 카테고리 zero-shot 프롬프트/라벨 문구 테스트, 후보 라벨 버전별 비교
+- [x] Day 1 + Day 2 코랩 뉴스 분류 및 Materiality 적용 단일 통합 노트북 빌드 완료
 - [ ] (linear probing 진행 시) 임베딩 추출 → 분류기 head 학습 → train/val loss curve 확인 (ESG·실적재무 데이터로 먼저)
 
 **VSCode에서 Antigravity에게 시킬 것**
@@ -53,8 +54,8 @@
 ## Day 3 — ML: XGBoost 학습 & Ablation
 
 - [x] PRD 4-3 스키마 ④대로 피처 조인 (뉴스 material/immaterial + 보조신호 + 가격/거시)
-- [x] 라벨 생성: `label_direction_next_day` (다음 거래일 종가가 전일 대비 상승=1/하락=0)
-- [x] 시계열 분할(look-ahead bias 방지)
+- [x] 라벨 생성: `label_direction_next_day` (20거래일 누적 등락 기준)
+- [x] 시계열 분할(look-ahead bias 방지 - 20일 엠바고 적용)
 - [x] XGBoost 학습, Accuracy/AUC-ROC/Brier Score로 평가 (양성비율이 대략 균형이라 PR-AUC/Precision@K는 사용하지 않음)
 - [x] Ablation 3단(베이스라인→+뉴스카테고리→+뉴스카테고리+보조신호) 실행 및 비교
 - [x] `daily_risk_score`(PRD 4-3 스키마 ⑤: `direction`, `confidence_tier`) 저장
