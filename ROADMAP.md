@@ -35,15 +35,15 @@
 - [ ] (linear probing 진행 시) 뉴스 문장 150~400건 라벨링: `news_related`, `news_category`, `direction` — 라벨링도 `ESG`/`실적·재무` 카테고리 문장부터 우선 진행
 
 **Colab (사람 주도 + 에이전트 보조)**
-- [ ] 카테고리 zero-shot 프롬프트/라벨 문구 테스트, 후보 라벨 버전별 비교
+- [x] 카테고리 zero-shot 프롬프트/라벨 문구 테스트, 후보 라벨 버전별 비교
 - [ ] (linear probing 진행 시) 임베딩 추출 → 분류기 head 학습 → train/val loss curve 확인 (ESG·실적재무 데이터로 먼저)
 
 **VSCode에서 Antigravity에게 시킬 것**
-- [ ] 카테고리 판정 함수 (HuggingFace zero-shot) — 파이프라인의 첫 단계로 배치
-- [ ] 선택한 방향 판정 방식(linear probing 또는 zero-shot)을 카테고리별 우선순위에 따라 적용하는 배치 파이프라인
-- [ ] Materiality Map 조회 함수 (`(업종, news_category) → is_material`)
-- [ ] PRD 4-3 스키마대로 결과 저장, `category_material_value`/`category_immaterial_value` 집계
-- [ ] MongoDB 컬렉션 세팅 및 07:00 배치 스케줄 뼈대
+- [x] 카테고리 판정 함수 (HuggingFace zero-shot) — 파이프라인의 첫 단계로 배치
+- [x] 선택한 방향 판정 방식(linear probing 또는 zero-shot)을 카테고리별 우선순위에 따라 적용하는 배치 파이프라인
+- [x] Materiality Map 조회 함수 (`(업종, news_category) → is_material`)
+- [x] PRD 4-3 스키마대로 결과 저장, `category_material_value`/`category_immaterial_value` 집계
+- [x] MongoDB 컬렉션 세팅 및 07:00 배치 스케줄 뼈대
 
 **Fallback (시간이 부족할 때)**
 - [ ] 카테고리 판정 정확도가 애매한 뉴스 → `기타`로 분류하고 넘어가기 (억지로 5개 중 하나에 끼워맞추지 않기)
@@ -67,6 +67,16 @@
 - [ ] 어드민: Materiality Map(업종×뉴스카테고리) 편집, 배치 모니터링, Ablation 결과 뷰
 - [ ] 통합 테스트
 - [ ] Ablation 결과(loss curve, Accuracy/AUC-ROC 비교표)를 발표자료로 정리
+
+## B 파트 담당 체크리스트 (Day 3 & Day 4)
+
+- [x] `materiality_map_draft.csv` -> `data/reference/materiality_map.csv` 이름 및 위치 맞춤 확인
+- [x] C로부터 `ml_ready_real.csv` 생성 완료 확인
+- [x] `run_experiments.py` 가동 및 결측치/이상치 진단 리포트 수집
+- [x] 하이퍼파라미터(`n_estimators`, `max_depth`, `learning_rate`) 최소 3가지 조합 시도 및 비교 분석 완료
+- [x] 피처 기여도 Top 3 확인 (뉴스 신호 기여 여부 판정)
+- [x] 데이터 분석 정의서 작성 (`data_analysis_definition.md`) 완료
+- [x] Ablation 결과(loss curve, Accuracy/AUC-ROC 비교표 등) 문서로 정리 완료
 
 ---
 

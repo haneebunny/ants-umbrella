@@ -27,3 +27,54 @@
 | 2026-07-23 | Antigravity | 홈 대시보드 전면 폴리싱: WeatherBanner shimmer 애니메이션·라이트모드 가독성 개선, AssetSummaryCard 도넛↔레이더 탭 전환(SVG 직접 구현), 레이더 차트 글로우·draw-in 애니메이션 적용 |
 | 2026-07-23 | Antigravity | StockWeatherList 플로팅 오버레이 패널 구현(AI판단근거·ESG점수바·상세링크), PortfolioProfileCard 신규 생성(투자성향배지+포트폴리오선택 통합) |
 | 2026-07-23 | Antigravity | 그리드 레이아웃 최종 확정: 코스닥·성향(2)·종목날씨(4)·보유자산(5), POSCO 오타 수정, 구름 인디케이터 바 버그 수정 - feature/fe-design-v2 브랜치 push 및 PR #24 생성 완료 |
+| 2026-07-22 | Antigravity | compare_features.py의 Pylance/Pyright 임포트 경로 문제(Cannot find module run_experiments)를 sys.path 추가 방식으로 해결 |
+| 2026-07-22 | Antigravity | join_features.py의 merged 변수 UnboundLocalError 해결 및 compare_features.py의 unreachable 비교 코드 수정 |
+| 2026-07-22 | Antigravity | collect_news.py에 날짜순 정렬 및 페이징 파라미터(최대 500개)를 도입하여 과거 뉴스 수집량 대폭 확대 |
+| 2026-07-22 | Antigravity | 전체 수집, 전처리, 학습, 평가 파이프라인 단일 구동 및 로그 파일 저장을 자동화하는 run_pipeline.py 개발 완료 |
+| 2026-07-22 | Antigravity | 뉴스 검색어 쿼리 다각화, 주말 뉴스 월요일 롤포워드 로직, SBERT 임베딩 중복 제거 데이터셋 연동 및 타임존 안전 병합 연산 고도화 완료 |
+| 2026-07-22 | Antigravity | 로컬 자원 부족 크래시 예방을 위한 Google Colab 통합 ML 파이프라인 구동 노트북(colab_pipeline.ipynb) 생성 |
+| 2026-07-22 | Antigravity | UTF-8 강제 모드 설정으로 cp949 인코딩 에러 우회 적용 및 run_experiments.py 기본 실험 가동 완료 |
+| 2026-07-22 | Antigravity | run_experiments.py에 4가지 추가 하이퍼파라미터 튜닝 조합(실험 4~7) 확장 구현 및 결과 지표 수집 |
+| 2026-07-22 | Antigravity | 수집된 7가지 실험의 지표(Accuracy, AUC-ROC, Brier Loss) 및 피처 기여도 분석 결과를 토대로 data_analysis_definition.md (데이터 분석 정의서) 최종 작성 완료 |
+| 2026-07-22 | Antigravity | 깃 충돌 방지를 위해 ROADMAP.md 수정본을 롤백하고, B 파트 전용 로드맵 파일인 ROADMAP_B.md를 신규 생성하여 로드맵 이력 관리 |
+| 2026-07-22 | A (Antigravity 지원) | Poetry 캐시 권한 에러 우회(Cache_new 경로 변경) 조치 완료 |
+| 2026-07-22 | A (Antigravity 지원) | **2단계**: `process_news_features.py` — pkl 피클 로더 변경(torch→pickle), Gemini API 키 예외 처리 보완, 뉴스 피처 578건 생성 완료 (`data/news_features_day2.csv`) |
+| 2026-07-22 | A (Antigravity 지원) | **3단계**: `collect_dart.py` — 가이드 규격으로 교체, DART_API_KEY/OPENDART_API_KEY 이중 지원 추가 후 공시 수집 완료 (`data/supplementary_signals.csv`) |
+| 2026-07-22 | A (Antigravity 지원) | **4단계**: `collect_price.py` — matplotlib DLL 에러 우회(Mock 주입), KRX-DESC 기반 업종 매핑 수정, KOSPI 지수 FinanceDataReader 대체 수집으로 13,840행 가격 데이터 생성 완료 (`data/price_features.csv`) |
+| 2026-07-22 | A (Antigravity 지원) | **5단계**: `generate_labels.py` — 원격 브랜치(feature/be-experiments)에서 파일 복구 및 경로 수정, 라벨 생성 완료 (`data/price_features_labeled.csv`) |
+| 2026-07-22 | A (Antigravity 지원) | **6단계**: `collect_macro.py` — pathlib 기반 저장 경로 수정, PublicDataReader 패키지 설치 후 실행 완료 (`data/macro_features.csv`, 2023~2026년 기준금리·환율 데이터) |
+| 2026-07-22 | A (Antigravity 지원) | **최종 병합**: `join_features.py` 실행 완료 — 4개 데이터 통합, `data/ml_ready_real.csv` (13,824행 × 14컬럼) 생성 완료 |
+| 2026-07-22 | Antigravity | main pull 후 feature/fe-design-v2 브랜치 생성, 디자인 수정 작업 시작 |
+| 2026-07-22 | Antigravity | 홈 화면 진입 방식 변경: `/` 첫 접속 시 데모 대시보드 즉시 표시 |
+| 2026-07-22 | Antigravity | `/onboarding` 라우트 신규 생성 (기존 인트로+설문 흐름 이전) |
+| 2026-07-22 | Antigravity | Gated Demo 적용: 헤더에 "데모 체험 중" 뱃지 + "내 포트폴리오 진단하기" CTA 버튼 |
+| 2026-07-22 | Antigravity | 프론트엔드 전면 개편: 멀티 라우트 대시보드 구조로 전환 |
+| 2026-07-22 | Antigravity | `components/layout/Header.js` 공통 헤더 신규 생성 (알림 아이콘, 테마 토글) |
+| 2026-07-22 | Antigravity | `components/home/` — WeatherBanner, KosdaqMiniChart, AssetSummaryCard, ProfileBadge, StockWeatherList, GuestCTABanner 신규 생성 |
+| 2026-07-22 | Antigravity | `page.js` 전면 리팩터: 라이트 테마 기본, 홈 컴포넌트 조합 대시보드 |
+| 2026-07-22 | Antigravity | `/diagnosis`, `/diagnosis/weather` 위험 진단 2단계 플로우 신규 생성 |
+| 2026-07-22 | Antigravity | `/alerts` 위험 알림 목록 페이지 신규 생성 |
+| 2026-07-22 | Antigravity | `/stock/[ticker]` 종목 상세 페이지 신규 생성 (개별 주가 그래프 포함) |
+| 2026-07-22 | Antigravity | `/portfolio/register` 포트폴리오 등록 페이지 신규 생성 (종목 검색 + 수량 입력) |
+| 2026-07-22 | Antigravity | `Icon.js`에 menu, trendingDown, chevronRight, shieldCheck, home 등 12개 아이콘 추가 |
+| 2026-07-22 | Antigravity | lint 통과 (error 0, warning 7 — 기존 `<img>` 경고만) |
+| 2026-07-22 | Antigravity | mockData.js 생성 (위젯용 데모 데이터 + DEMO_PROFILE) |
+| 2026-07-22 | Antigravity | eslint.config.mjs — react-hooks/set-state-in-effect 규칙 disable (localStorage 복원 패턴) |
+| 2026-07-22 | Antigravity | Header.js 사이드 네비게이션 드로어 추가 — 햄버거(☰) 클릭 시 슬라이드인, 활성 경로 하이라이트 |
+| 2026-07-22 | Antigravity | AntPet 캐릭터 홈 화면 복원 (드래그 가능 플로팅) |
+| 2026-07-22 | Antigravity | `stock/[ticker]/page.js` 빌드 오류 수정 — import 경로 `../../../` 오타 수정 |
+| 2026-07-22 | Antigravity | 홈 대시보드 3열 비균형 레이아웃 적용 (보유자산 4칸 / 종목날씨 5칸 / 코스닥+성향 3칸, 합계 12칸) |
+| 2026-07-22 | Antigravity | 전체 레이아웃 너비 max-w-5xl → max-w-7xl로 확대, 헤더도 동일 너비로 정렬 |
+| 2026-07-22 | Antigravity | 테마 flicker 완전 제거 — layout.js에 인라인 스크립트로 첫 Paint 전 localStorage 테마 즉시 적용 |
+| 2026-07-22 | Antigravity | useTheme 훅 개선 — getInitialTheme()로 첫 렌더부터 올바른 테마 초기화 (모든 페이지 공유) |
+| 2026-07-22 | Antigravity | KosdaqMiniChart, ProfileBadge 컴팩트 조정 (p-3, 폰트 축소) — 좁은 3칸 열 대응 |
+| 2026-07-22 | Antigravity | 홈 그리드 5+5+2 → 6+4+2 조정 (종목 날씨 열 축소, 보유자산 열 확대) |
+| 2026-07-22 | Antigravity | AssetSummaryCard: "보유 자산" 라벨-금액 간격 추가(mt-3), ₩ 기호 분리(text-lg) + 숫자(text-2xl) 비율 정렬 |
+| 2026-07-22 | Antigravity | WeatherBanner: 날씨별 애니메이션 배경 추가 — 맑음(태양광선), 구름(drift), 비(rain streaks), 번개(flash) |
+| 2026-07-22 | Antigravity | WeatherBanner: 색상 전면 강화 — 맑음(금빛), 구름(인디고), 비(시안), 번개(로즈) 3-stop 그라디언트 |
+| 2026-07-22 | Antigravity | WeatherBanner: 텍스트·버튼·AI근거 배경을 흰색/반투명으로 통일, 가독성 개선 |
+| 2026-07-23 | Antigravity | FinanceDataReader 404 에러 우회를 위한 15일 역방향 날짜 탐색(Fallback) 로직을 collect_price.py 및 add_sector.py에 적용 |
+| 2026-07-23 | Antigravity | Windows cp949 인코딩 에러 해결을 위해 run_pipeline.py, process_news_features.py, run_experiments.py 내 이모지 출력을 제거하거나 인코딩 우회 래핑 처리 |
+| 2026-07-23 | Antigravity | 오프라인 환경 대응을 위한 HF API 패스트 페일(Fast-fail) 모드를 process_news_features.py에 도입하여 1300여건의 뉴스 분석 속도를 수 시간에서 1분 이내로 단축 |
+| 2026-07-23 | Antigravity | 이벤트 스터디 통계 집계 스크립트(evnet_study.py) 개발: 회사명-종목코드 매칭, MongoDB Atlas 연결, (ticker, date) 인덱스 충돌 방지 로직 적용 및 55건 통계 데이터 적재 완료 |
+| 2026-07-23 | Antigravity | schemas.py 및 main.py 수정: /risk-score/{ticker} API 응답에 과거 적중률(hit_rate), 사례 수(sample_size), Fallback 배지(badge) 필드 추가 연동 완료 |
