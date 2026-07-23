@@ -24,6 +24,9 @@
 | 2026-07-22 | Antigravity | Poetry 캐시 권한 에러 우회(Cache_new) 조치 및 process_news_features.py pkl 피클 로더 변경, Gemini API 키 예외 처리 보완 후 뉴스 피처 생성 정상 완료 |
 | 2026-07-22 | Antigravity | collect_dart.py(3단계), collect_price.py(4단계), generate_labels.py(5단계), collect_macro.py(6단계) 순차 실행 완료 및 join_features.py로 최종 병합 - ml_ready_real.csv(13824행, 14컬럼) 생성 완료 |
 | 2026-07-22 | Antigravity | 날씨 연동형 인터랙티브 플로팅 개미 펫 (AntPet) UI 컴포넌트 개발 및 대시보드 연동 완료 |
+| 2026-07-23 | Antigravity | 홈 대시보드 전면 폴리싱: WeatherBanner shimmer 애니메이션·라이트모드 가독성 개선, AssetSummaryCard 도넛↔레이더 탭 전환(SVG 직접 구현), 레이더 차트 글로우·draw-in 애니메이션 적용 |
+| 2026-07-23 | Antigravity | StockWeatherList 플로팅 오버레이 패널 구현(AI판단근거·ESG점수바·상세링크), PortfolioProfileCard 신규 생성(투자성향배지+포트폴리오선택 통합) |
+| 2026-07-23 | Antigravity | 그리드 레이아웃 최종 확정: 코스닥·성향(2)·종목날씨(4)·보유자산(5), POSCO 오타 수정, 구름 인디케이터 바 버그 수정 - feature/fe-design-v2 브랜치 push 및 PR #24 생성 완료 |
 | 2026-07-22 | Antigravity | compare_features.py의 Pylance/Pyright 임포트 경로 문제(Cannot find module run_experiments)를 sys.path 추가 방식으로 해결 |
 | 2026-07-22 | Antigravity | join_features.py의 merged 변수 UnboundLocalError 해결 및 compare_features.py의 unreachable 비교 코드 수정 |
 | 2026-07-22 | Antigravity | collect_news.py에 날짜순 정렬 및 페이징 파라미터(최대 500개)를 도입하여 과거 뉴스 수집량 대폭 확대 |
@@ -69,7 +72,8 @@
 | 2026-07-22 | Antigravity | AssetSummaryCard: "보유 자산" 라벨-금액 간격 추가(mt-3), ₩ 기호 분리(text-lg) + 숫자(text-2xl) 비율 정렬 |
 | 2026-07-22 | Antigravity | WeatherBanner: 날씨별 애니메이션 배경 추가 — 맑음(태양광선), 구름(drift), 비(rain streaks), 번개(flash) |
 | 2026-07-22 | Antigravity | WeatherBanner: 색상 전면 강화 — 맑음(금빛), 구름(인디고), 비(시안), 번개(로즈) 3-stop 그라디언트 |
-| 2026-07-22 | Antigravity | WeatherBanner: 텍스트·버튼·AI근거 배경을 흰색/반투명으로 통일, 가독성 개선 || 2026-07-23 | Antigravity | FinanceDataReader 404 에러 우회를 위한 15일 역방향 날짜 탐색(Fallback) 로직을 collect_price.py 및 add_sector.py에 적용 |
+| 2026-07-22 | Antigravity | WeatherBanner: 텍스트·버튼·AI근거 배경을 흰색/반투명으로 통일, 가독성 개선 |
+| 2026-07-23 | Antigravity | FinanceDataReader 404 에러 우회를 위한 15일 역방향 날짜 탐색(Fallback) 로직을 collect_price.py 및 add_sector.py에 적용 |
 | 2026-07-23 | Antigravity | Windows cp949 인코딩 에러 해결을 위해 run_pipeline.py, process_news_features.py, run_experiments.py 내 이모지 출력을 제거하거나 인코딩 우회 래핑 처리 |
 | 2026-07-23 | Antigravity | 오프라인 환경 대응을 위한 HF API 패스트 페일(Fast-fail) 모드를 process_news_features.py에 도입하여 1300여건의 뉴스 분석 속도를 수 시간에서 1분 이내로 단축 |
 | 2026-07-23 | Antigravity | 이벤트 스터디 통계 집계 스크립트(evnet_study.py) 개발: 회사명-종목코드 매칭, MongoDB Atlas 연결, (ticker, date) 인덱스 충돌 방지 로직 적용 및 55건 통계 데이터 적재 완료 |

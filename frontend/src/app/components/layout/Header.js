@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -34,7 +34,7 @@ export default function Header({ isDark, toggleTheme, alertCount = 0, showBack =
       <header
         className={`flex items-center w-full fixed top-0 z-50 transition-all ${
           isDark
-            ? 'bg-[#0d0f0d]/90 backdrop-blur-md border-b border-[#222422]'
+            ? 'bg-[#080b08]/90 backdrop-blur-md border-b border-[#222422]'
             : 'bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm'
         }`}
       >
