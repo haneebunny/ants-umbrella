@@ -410,7 +410,6 @@ def generate_ai_briefing(ticker_name: str, ticker: str, prob_up: float, directio
                 f"상승할 확률이 **{prob_up_pct}%**(예측 확신도: '{conf_ko}')나 된다고 **개미의 우산**이 알려줬어! 🎉 "
                 f"최근 ESG 관련 지표에서도 별다른 리스크나 노이즈가 없었고, "
                 f"주가 변동성이나 수급 등의 긍정적인 신호들이 하락하지 않도록 든든히 지탱해 주고 있어. 편안한 마음으로 지켜보자! ☀️")
->>>>>>> main
 
 def generate_nagame_tip(ticker_name: str, title: str, category: str, direction: str) -> str:
     # 주식 초보 나개미 페르소나를 위한 친절한 뉴닉 스타일 팁

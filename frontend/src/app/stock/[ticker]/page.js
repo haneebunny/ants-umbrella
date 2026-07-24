@@ -84,6 +84,26 @@ function buildPeriodSparklines(basePrice, high52, low52, direction = 'down') {
 }
 
 const STOCK_DATA = {
+  '055550': {
+    name: '신한지주', marketCap: '26.8조', high52w: '64,200원', low52w: '38,500원', currentPrice: '55,200원', weather: 'sunny', direction: 'up', confidence: 'strong', change: 1.4, weight: 14, dropProb: 9.5,
+    esgBreakdown: {
+      e: { status: 'safe', text: '녹색 금융 및 탄소 중립 포트폴리오 자산 비중 지속 확대' },
+      s: { status: 'safe', text: '서민 금융 지원 확대 및 금융 소비자 보호 최우수 등급 획득' },
+      g: { status: 'safe', text: '분기 배당 제도 정착 및 3,000억 규모 자사주 소각 추진' }
+    },
+    sparklines: buildPeriodSparklines(55200, 64200, 38500, 'up'),
+    evidences: [
+      { type: '재무', direction: '긍정', title: '금리 방어선 유지 및 대출 포트폴리오 자산 성장세 지속', date: '2026.07.24', link: '#' },
+      { type: '공시', direction: '긍정', title: '분기 배당금 확정 및 적극적 주주환원 자사주 소각 결정', date: '2026.07.24', link: '#' },
+    ],
+    aiBriefing: '🐜 안녕 나개미! 최근 **신한지주**의 주가 날씨 예보를 전하러 왔어! **개미의 우산 AI 진단 시스템**이 정교하게 시세 판정을 해보니, 20거래일 내 상승 확률이 **90.5%**(예측 확신도: \'높음\')나 된다고 알려줬어! 🎉 금리를 잘 방어해 주는 이자 이익 덕에 기초 체력이 탄탄하고 자사주 소각 등 주주환원 정책이 든든히 지탱해 줘서 아주 맑은 날씨야! ☀️',
+    macroAnalysis: [
+      { name: "💵 원/달러 환율", status: "안정", description: "원/달러 환율이 안정적인 흐름을 유지하며 금융주 외국인 순매수 수급에 호재로 작용 중이야.", influence: "low" },
+      { name: "📈 국고채 금리 (3Y)", status: "안정", description: "국고채 금리가 견조하게 유지되어 신한지주의 순이자마진(NIM) 방어력이 크게 높아졌어.", influence: "low" },
+      { name: "📊 주가 변동 리스크", status: "안정", description: "최근 20거래일 가격 변동폭이 수축되며 상방 지지력이 매우 탄탄하게 형성되어 있어.", influence: "low" },
+      { name: "🌿 ESG 평판 중대성", status: "안정", description: "금융 업종 Materiality 맵 기준 사회/지배구조 관련 악재성 미디어 보도가 탐지되지 않았어.", influence: "low" }
+    ]
+  },
   '005930': {
     name: '삼성전자', marketCap: '468.0조', high52w: '88,800원', low52w: '55,000원', currentPrice: '78,400원', weather: 'sunny', direction: 'up', confidence: 'strong', change: 1.2, weight: 28, dropProb: 8.4,
     esgBreakdown: {
@@ -97,7 +117,13 @@ const STOCK_DATA = {
       { type: '공시', direction: '긍정', title: '단기 설비 투자 및 글로벌 자회사 차입금 일부 상환 완료', date: '2026.07.24', link: '#' },
       { type: '뉴스', direction: '긍정', title: '파운드리 2나노 수율 안정화 속도... 차세대 가속기 수주 청신호', date: '2026.07.23', link: '#' },
     ],
-    aiBriefing: '삼성전자는 한 달 내 주가가 떨어질 위험이 8.4%로 매우 안전한 상태예요! HBM3E 공급 본격화와 메모리 업황 회복이 실적 상승을 든든히 뒷받침해 주고 있어서 우려하지 않으셔도 좋습니다. ☀️',
+    aiBriefing: '🐜 좋은 소식이야, 나개미! **삼성전자**의 20거래일 내 주가 예보는 아주 \'맑음\'으로 예측됐어! 상승할 확률이 **91.6%**(예측 확신도: \'높음\')나 된다고 **개미의 우산**이 알려줬어! HBM3E 공급 본격화와 메모리 업황 회복이 실적 상승을 든든히 뒷받침해 주고 있어서 편안한 마음으로 지켜보자! ☀️',
+    macroAnalysis: [
+      { name: "💵 원/달러 환율", status: "안정", description: "환율 호조에 힘입어 반도체 수출 대금 유입 시 환차익 이점이 실적 개선을 돕고 있어.", influence: "low" },
+      { name: "📈 국고채 금리 (3Y)", status: "안정", description: "안정적 금리 수준으로 반도체 설비 투자(CAPEX) 관련 자금 조달 부담이 낮아.", influence: "low" },
+      { name: "📊 주가 변동 리스크", status: "안정", description: "외국인/기관 수급 유입으로 주가 변동 리스크가 밴드 하단에 위치하고 있어.", influence: "low" },
+      { name: "🌿 ESG 평판 중대성", status: "안정", description: "IT/반도체 산업군 중대성 평가 요소에 위배되는 부정 노이즈가 포착되지 않았어.", influence: "low" }
+    ]
   },
   '000660': {
     name: 'SK하이닉스', marketCap: '138.0조', high52w: '240,000원', low52w: '110,000원', currentPrice: '189,500원', weather: 'sunny', direction: 'up', confidence: 'strong', change: 1.8, weight: 22, dropProb: 6.2,
@@ -111,7 +137,13 @@ const STOCK_DATA = {
       { type: '재무', direction: '긍정', title: 'AI 가속기용 HBM4 1등 독점 지위 유지에 따른 역대 최대 매출', date: '2026.07.24', link: '#' },
       { type: '공시', direction: '긍정', title: '용인 반도체 클러스터 1기 팹 신설 시설 투자 확정', date: '2026.07.24', link: '#' },
     ],
-    aiBriefing: 'SK하이닉스는 한 달 내 주가가 떨어질 위험이 6.2%로 극도로 안전한 독주 체제예요! HBM 프리미엄과 AI 서버용 메모리 독점 수요가 매출을 크게 끌어올리고 있습니다. 🚀',
+    aiBriefing: '🐜 안녕 나개미! **SK하이닉스**의 20거래일 내 주가 예보는 극도로 안전한 맑음이야! 하락 위험은 단 **6.2%**에 불과해! HBM 프리미엄과 AI 서버용 메모리 독점 수요가 매출을 강력하게 이끌어주고 있어! 🚀',
+    macroAnalysis: [
+      { name: "💵 원/달러 환율", status: "안정", description: "달러 강세가 수혜로 작용하여 고부가가치 HBM 수출 이익률이 추가 상승하고 있어.", influence: "low" },
+      { name: "📈 국고채 금리 (3Y)", status: "안정", description: "재무 체력 개선으로 시설 투자용 사채 조달 비용 리스크가 대폭 하락했어.", influence: "low" },
+      { name: "📊 주가 변동 리스크", status: "안정", description: "실적 모멘텀이 탄탄하여 하방 지지선이 단단히 구축되어 있는 형태야.", influence: "low" },
+      { name: "🌿 ESG 평판 중대성", status: "안정", description: "친환경 용인 팹 투자 등 ESG 관점 중대성 맵에서 매우 우수한 평가를 받고 있어.", influence: "low" }
+    ]
   },
   '005380': {
     name: '현대차', marketCap: '52.0조', high52w: '290,000원', low52w: '180,000원', currentPrice: '245,000원', weather: 'sunny', direction: 'up', confidence: 'strong', change: 1.5, weight: 18, dropProb: 11.2,
@@ -125,7 +157,13 @@ const STOCK_DATA = {
       { type: '재무', direction: '긍정', title: '북미 하이브리드(HEV) 판매 비중 폭증으로 분기 최대 이익', date: '2026.07.24', link: '#' },
       { type: '공시', direction: '긍정', title: '조지아 신공장(HMGMA) 가동률 90% 돌파 및 인센티브 확보', date: '2026.07.23', link: '#' },
     ],
-    aiBriefing: '현대차는 한 달 내 주가가 떨어질 위험이 11.2%로 아주 편안한 흐름이에요. 북미 하이브리드 판매 호조와 든든한 주주환원 배당 정책이 차곡차곡 쌓이고 있습니다. 🚘',
+    aiBriefing: '🐜 **현대차**는 20거래일 내 주가가 떨어질 위험이 11.2%로 아주 편안한 흐름이야! 북미 하이브리드 판매 호조와 든든한 분기 배당 주주환원 정책이 주가를 차곡차곡 뒷받침하고 있어! 🚘',
+    macroAnalysis: [
+      { name: "💵 원/달러 환율", status: "안정", description: "북미 완성차 수출환율 호조가 영업이익률 추가 개선에 기여하고 있어.", influence: "low" },
+      { name: "📈 국고채 금리 (3Y)", status: "안정", description: "자동차 할부 금융 금리 안정화로 신차 구매 수급 회복세가 뚜렷해.", influence: "low" },
+      { name: "📊 주가 변동 리스크", status: "안정", description: "자사주 매입 및 분기 배당 수익률로 인해 안정적 하방 밴드가 형성되었어.", influence: "low" },
+      { name: "🌿 ESG 평판 중대성", status: "안정", description: "자동차 업종 수소/전기차 전환 및 노사 무분규 타결로 ESG 우수 지표를 유지 중이야.", influence: "low" }
+    ]
   },
   '035420': {
     name: 'NAVER', marketCap: '29.8조', high52w: '230,000원', low52w: '160,000원', currentPrice: '182,000원', weather: 'cloudy', direction: 'down', confidence: 'medium', change: -0.5, weight: 14, dropProb: 24.8,
@@ -139,7 +177,13 @@ const STOCK_DATA = {
       { type: '뉴스', direction: '부정', title: '국내 검색 점유율 소폭 변동 및 플랫폼 수수료 규제 법안 발의', date: '2026.07.24', link: '#' },
       { type: '공시', direction: '긍정', title: 'AI 하이퍼클로바X B2B 매출 전년 대비 45% 성장', date: '2026.07.22', link: '#' },
     ],
-    aiBriefing: 'NAVER는 한 달 내 주가가 떨어질 위험이 24.8%로 약간의 구름이 끼어있어요. 검색과 AI 본업은 건재하지만 플랫폼 규제 관련 뉴스 여파가 잠시 조정을 유발하고 있으니 관망을 추천해요. ⛅',
+    aiBriefing: '🐜 **NAVER**는 한 달 내 주가가 떨어질 위험이 24.8%로 약간의 구름이 끼어있어! 검색과 AI 본업은 건재하지만 플랫폼 수수료 관련 규제 뉴스 여파가 잠시 조정을 유발하고 있으니 매수 전 관망을 추천해! ⛅',
+    macroAnalysis: [
+      { name: "💵 원/달러 환율", status: "주의", description: "환율 상방 압력으로 외국인 IT 성장주 유동성 유입이 잠시 둔화된 상태야.", influence: "medium" },
+      { name: "📈 국고채 금리 (3Y)", status: "보통", description: "금리가 보합세를 보여 플랫폼 성장주 밸류에이션 할인이 유지되고 있어.", influence: "medium" },
+      { name: "📊 주가 변동 리스크", status: "보통", description: "단기 이동평균선 부근에서 에너지 수축 과정을 거치는 장세야.", influence: "medium" },
+      { name: "🌿 ESG 평판 중대성", status: "주의", description: "플랫폼 상생 관련 미디어 보도가 탐지되어 S(사회) 영역 모니터링이 필요해.", influence: "medium" }
+    ]
   },
   '051910': {
     name: 'LG화학', marketCap: '24.5조', high52w: '450,000원', low52w: '280,000원', currentPrice: '345,000원', weather: 'rainy', direction: 'down', confidence: 'medium', change: -1.8, weight: 10, dropProb: 28.5,
@@ -153,7 +197,13 @@ const STOCK_DATA = {
       { type: '공시', direction: '부정', title: '교환사채(EB) 2,000억 발행 추진에 따른 오버행 주가 압박', date: '2026.07.24', link: '#' },
       { type: '뉴스', direction: '부정', title: '글로벌 전기차 캐즘 여파로 양극재 출하량 일시적 감소', date: '2026.07.23', link: '#' },
     ],
-    aiBriefing: 'LG화학은 한 달 내 주가가 떨어질 위험이 28.5%로 주의가 필요해요! 교환사채 발행과 2차전지 업황 캐즘 불확실성이 겹쳐 있으므로 당분간 서두르지 말고 천천히 지켜보시는 것을 권합니다. 🌧️',
+    aiBriefing: '🐜 **LG화학**은 한 달 내 주가가 떨어질 위험이 28.5%로 비가 오고 있어! 교환사채 발행 오버행과 2차전지 업황 캐즘 불확실성이 겹쳐 있으니 서두르지 말고 천천히 지켜보자! 🌧️',
+    macroAnalysis: [
+      { name: "💵 원/달러 환율", status: "주의", description: "원자재 수입 비용 부담 증가로 석유화학 마진이 일시적 압박을 받고 있어.", influence: "medium" },
+      { name: "📈 국고채 금리 (3Y)", status: "위험", description: "고금리 기조 유지로 신규 양극재 공장 차입 이자 부담이 가중되었어.", influence: "high" },
+      { name: "📊 주가 변동 리스크", status: "위험", description: "교환사채 수급 영향으로 주가 변동성이 확대되어 하방 주의가 요구돼.", influence: "high" },
+      { name: "🌿 ESG 평판 중대성", status: "주의", description: "화학 업종 탄소 배출 관련 중대성 맵 위험 요소가 포착되었어.", influence: "medium" }
+    ]
   },
 };
 
@@ -163,6 +213,12 @@ const DEFAULT_STOCK = {
   sparklines: buildPeriodSparklines(90000, 100000, 80000, 'down'),
   evidences: [{ type: 'AI 분석', direction: '중립', title: '수집된 과거 리스크 이력이 적어 표준 모니터링 모드로 표시 중입니다.', date: '2026.07.23' }],
   aiBriefing: '현재 해당 종목은 기본 안전 지표 위주로 모니터링 중입니다. 추가 데이터 수집에 따라 리포트가 업데이트됩니다.',
+  macroAnalysis: [
+    { name: "💵 원/달러 환율", status: "안정", description: "대외 유동성 추세가 안정적인 범주에 있어 환율 위협도가 낮은 편이야.", influence: "low" },
+    { name: "📈 국고채 금리 (3Y)", status: "안정", description: "금리 지표가 평이하여 기업의 이자 조달 비용 부담이 적정 수준이야.", influence: "low" },
+    { name: "📊 주가 변동 리스크", status: "보통", description: "가격 변동 밴드가 상하한 범위 내에서 수급을 고르고 있어.", influence: "medium" },
+    { name: "🌿 ESG 평판 중대성", status: "안정", description: "업종별 Materiality 맵에 위배되는 특이 악재 보도가 탐지되지 않았어.", influence: "low" }
+  ]
 };
 
 const WEATHER_CFG = {
@@ -192,33 +248,50 @@ export default function StockDetailPage() {
   // AI 예측 원리 모달 상태
   const [showAiModal, setShowAiModal] = useState(false);
 
-  // 📡 실시간 백엔드 DB/API 데이터 연동
+  // 📡 실시간 백엔드 DB/API (KIS 실시간 주가 + DB 위험점수 + 근거) 동시 연동
   useEffect(() => {
     if (!ticker) return;
     async function fetchLiveData() {
       try {
-        const [scoreRes, weatherRes, evRes] = await Promise.all([
-          fetch(`${API_BASE}/risk-score/${ticker}`).then(r => r.ok ? r.json() : null),
-          fetch(`${API_BASE}/api/dashboard-weather?tickers=${ticker}`).then(r => r.ok ? r.json() : null),
-          fetch(`${API_BASE}/risk-evidences/${ticker}`).then(r => r.ok ? r.json() : null),
+        const [scoreRes, weatherRes, evRes, kisRes] = await Promise.all([
+          fetch(`${API_BASE}/risk-score/${ticker}`).then(r => r.ok ? r.json() : null).catch(() => null),
+          fetch(`${API_BASE}/api/dashboard-weather?tickers=${ticker}`).then(r => r.ok ? r.json() : null).catch(() => null),
+          fetch(`${API_BASE}/risk-evidences/${ticker}`).then(r => r.ok ? r.json() : null).catch(() => null),
+          fetch(`${API_BASE}/api/watchlist-prices?tickers=${ticker}`).then(r => r.ok ? r.json() : null).catch(() => null),
         ]);
 
-        if (scoreRes || weatherRes || evRes) {
-          const weatherItem = Array.isArray(weatherRes) ? weatherRes[0] : null;
-          let rawBriefing = evRes?.ai_briefing || '';
-          rawBriefing = rawBriefing.replace(/^💡\s*\[AI 진단\]\s*/, '').replace(/^\[AI 진단\]\s*/, '');
+        const kisData = Array.isArray(kisRes) ? kisRes[0] : null;
+        const weatherItem = Array.isArray(weatherRes) ? weatherRes[0] : null;
 
-          setLiveData({
-            prob_up: scoreRes?.prob_up,
-            dropProb: scoreRes?.prob_up !== undefined ? Math.round((1 - scoreRes.prob_up) * 1000) / 10 : undefined,
-            direction: weatherItem?.direction || scoreRes?.direction,
-            weather: weatherItem?.weather,
-            change: weatherItem?.change,
-            currentPrice: weatherItem?.price !== undefined ? `${weatherItem.price.toLocaleString()}원` : scoreRes?.price !== undefined ? `${scoreRes.price.toLocaleString()}원` : undefined,
-            aiBriefing: rawBriefing || undefined,
-            evidences: evRes?.evidences,
-          });
+        let livePriceFormatted = undefined;
+        let liveChangePercent = undefined;
+        let liveDirection = undefined;
+
+        if (kisData && kisData.price > 0) {
+          livePriceFormatted = `${new Intl.NumberFormat('ko-KR').format(kisData.price)}원`;
+          liveChangePercent = kisData.change_rate;
+          liveDirection = kisData.direction;
         }
+
+        let rawBriefing = evRes?.ai_briefing || scoreRes?.ai_briefing || '';
+        rawBriefing = rawBriefing.replace(/^💡\s*\[AI 진단\]\s*/, '').replace(/^\[AI 진단\]\s*/, '');
+
+        setLiveData({
+          prob_up: scoreRes?.prob_up,
+          dropProb: scoreRes?.prob_up !== undefined ? Math.round((1 - scoreRes.prob_up) * 1000) / 10 : undefined,
+          confidence_tier: scoreRes?.confidence_tier,
+          direction: liveDirection || weatherItem?.direction || scoreRes?.direction,
+          weather: weatherItem?.weather,
+          change: liveChangePercent !== undefined ? liveChangePercent : weatherItem?.change,
+          currentPrice: livePriceFormatted || (weatherItem?.price !== undefined ? `${weatherItem.price.toLocaleString()}원` : scoreRes?.price !== undefined ? `${scoreRes.price.toLocaleString()}원` : undefined),
+          aiBriefing: rawBriefing || undefined,
+          evidences: evRes?.evidences,
+          macroAnalysis: evRes?.macro_analysis,
+          sparkline: evRes?.sparkline,
+          marketCap: scoreRes?.market_cap,
+          high52w: scoreRes?.high_52w,
+          low52w: scoreRes?.low_52w,
+        });
       } catch (e) {
         console.warn('[StockDetail] Live backend API fetch fallback:', e);
       }
@@ -233,27 +306,24 @@ export default function StockDetailPage() {
 
   const syncedAiBriefing = (liveData?.aiBriefing && !liveData.aiBriefing.includes('준비 중입니다'))
     ? liveData.aiBriefing
-    : `${baseStock.name} 종목은 한 달 내 주가가 떨어질 위험이 ${currentDropProb}%로 ${
-        currentDropProb < 20
-          ? '매우 안전한 상태예요! 회사의 탄탄한 실적이 주가를 든든히 지원하고 있습니다.'
-          : '주의가 필요해요! 최근 악재 신호가 관측되고 있으니 매수 전 신중히 관망해 보세요.'
-      }`;
+    : baseStock.aiBriefing;
 
   const stock = {
     ...baseStock,
     currentPrice: liveData?.currentPrice || baseStock.currentPrice,
     weather: liveData?.weather || baseStock.weather,
     direction: currentDirection,
+    confidence: liveData?.confidence_tier || baseStock.confidence,
     change: liveData?.change !== undefined && liveData.change !== null ? liveData.change : baseStock.change,
     dropProb: currentDropProb,
     aiBriefing: syncedAiBriefing,
     evidences: (liveData?.evidences && liveData.evidences.length > 0) ? liveData.evidences : (baseStock.evidences || []),
+    macroAnalysis: (liveData?.macroAnalysis && liveData.macroAnalysis.length > 0) ? liveData.macroAnalysis : (baseStock.macroAnalysis || []),
+    marketCap: liveData?.marketCap || baseStock.marketCap,
+    high52w: liveData?.high52w || baseStock.high52w,
+    low52w: liveData?.low52w || baseStock.low52w,
   };
 
-  const decisionEvidences = stock.evidences?.filter(ev => ev.type === '공시' || ev.type === '재무') || [];
-  const newsEvidences     = stock.evidences?.filter(ev => ev.type !== '공시' && ev.type !== '재무') || [];
-
-  const wCfg = WEATHER_CFG[stock.weather] || WEATHER_CFG.cloudy;
   const isUp = stock.direction === 'up';
 
   // 기간별 주가 데이터 및 툴팁 연산
@@ -285,13 +355,13 @@ export default function StockDetailPage() {
       {/* ── 🚀 풀 화면 메인 컨테이너 ── */}
       <main className="relative z-10 pt-2 pb-10 px-1 max-w-[1920px]">
 
-        {/* ── 🌟 [통합 1] 단일 통합 헬스체크 히어로 타일 ── */}
+        {/* ── 🌟 [통합 1] 단일 통합 헬스체크 히어로 타일 (실시간 KIS 주가 및 백엔드 지표 동적 매핑) ── */}
         <div className={`mt-2 mb-4 p-5 sm:p-6 rounded-2xl border transition-all ${
           isDark ? 'bg-[#141715] border-white/10 shadow-lg' : 'bg-white border-slate-100 shadow-sm'
         }`}>
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             
-            {/* 좌측 종목 기본 정보 */}
+            {/* 좌측 종목 기본 정보 (실시간 시세 반영) */}
             <div className="flex items-center gap-4">
               <div>
                 <div className="flex items-center gap-2">
@@ -300,16 +370,16 @@ export default function StockDetailPage() {
                     {ticker}
                   </span>
                 </div>
-                <div className="flex items-center gap-3 mt-1.5 text-xs font-mono">
-                  <span className={`font-black text-lg ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>{stock.currentPrice}</span>
-                  <span className={`font-bold flex items-center gap-0.5 ${isUp ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : 'text-rose-500'}`}>
+                <div className="flex items-center gap-3 mt-1.5 font-mono">
+                  <span className={`font-black text-xl sm:text-2xl ${isDark ? 'text-white' : 'text-slate-900'}`}>{stock.currentPrice}</span>
+                  <span className={`font-bold text-sm flex items-center gap-0.5 ${isUp ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : 'text-rose-500'}`}>
                     {isUp ? '▲' : '▼'} {stock.change > 0 ? `+${stock.change}%` : `${stock.change}%`}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* 우측 4분할 헬스체크 KPI 그리드 */}
+            {/* 우측 4분할 헬스체크 KPI 그리드 (백엔드 머신러닝 & 시세 연동) */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               <div className={`p-3 rounded-xl border ${isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-100'}`}>
                 <p className={`text-[10px] font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>시가총액</p>
@@ -331,19 +401,26 @@ export default function StockDetailPage() {
           </div>
         </div>
 
-        {/* ── 🤖 AI 종합 진단 브리핑 카드 ── */}
+        {/* ── 🤖 개미의 꼼꼼한 AI 피처 분석 & 브리핑 카드 (뉴닉 스타일 풀이) ── */}
         <div className={`mb-6 p-5 sm:p-6 rounded-2xl border transition-all ${
           isDark ? 'bg-[#1a231e] border-[#3eb489]/30 shadow-lg' : 'bg-emerald-50/70 border-emerald-200 shadow-sm'
         }`}>
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-2xl bg-[#3eb489] text-white flex items-center justify-center flex-shrink-0 shadow-md font-black">
-              🤖
+            <div className="w-11 h-11 rounded-2xl bg-[#3eb489] text-white flex items-center justify-center flex-shrink-0 shadow-md text-xl">
+              🐜
             </div>
             <div className="flex-1">
-              <div className="flex items-center justify-between gap-2 mb-1.5">
-                <h3 className={`text-sm font-black ${isDark ? 'text-[#69dbad]' : 'text-[#2d966e]'}`}>
-                  AI 리스크 분석 브리핑
-                </h3>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2">
+                  <h3 className={`text-sm font-black ${isDark ? 'text-[#69dbad]' : 'text-[#2d966e]'}`}>
+                    나개미의 AI 리스크 분석 브리핑
+                  </h3>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    isDark ? 'bg-white/10 text-emerald-300' : 'bg-emerald-100 text-emerald-800'
+                  }`}>
+                    예측 확신도: {stock.confidence === 'strong' ? '높음 🎯' : stock.confidence === 'medium' ? '보통 ⚖️' : '낮음 🔍'}
+                  </span>
+                </div>
                 <button
                   onClick={() => setShowAiModal(true)}
                   className={`text-[11px] font-bold underline flex items-center gap-1 ${isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-800'}`}
@@ -356,6 +433,50 @@ export default function StockDetailPage() {
                 {renderMarkdownBold(stock.aiBriefing)}
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* ── 🌐 [분야별 세부 분석] 환율, 금리, 변동성, ESG 4대 영역 영향도 카드 ── */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Icon name="activity" className="w-4 h-4 text-emerald-500" />
+            <h3 className={`text-sm font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+              분야별 백엔드 피처 기여도 분석 (거시 경제 & ESG 영향)
+            </h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {stock.macroAnalysis.map((item, idx) => {
+              const isDanger = item.status === '위험' || item.status === '과열';
+              const isCaution = item.status === '주의' || item.status === '보통';
+              return (
+                <div
+                  key={idx}
+                  className={`p-4 rounded-2xl border transition-all ${
+                    isDark
+                      ? (isDanger ? 'bg-rose-950/20 border-rose-500/20' : isCaution ? 'bg-amber-950/20 border-amber-500/20' : 'bg-white/5 border-white/5')
+                      : (isDanger ? 'bg-rose-50/70 border-rose-200' : isCaution ? 'bg-amber-50/70 border-amber-200' : 'bg-white border-slate-100 shadow-sm')
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-xs font-bold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+                      {item.name}
+                    </span>
+                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                      isDanger
+                        ? 'bg-rose-500 text-white'
+                        : isCaution
+                        ? (isDark ? 'bg-amber-500/20 text-amber-300' : 'bg-amber-100 text-amber-700')
+                        : (isDark ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-100 text-emerald-700')
+                    }`}>
+                      {item.status}
+                    </span>
+                  </div>
+                  <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                    {item.description}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -382,7 +503,7 @@ export default function StockDetailPage() {
                       onClick={() => setSelectedPeriod(pd)}
                       className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                         selectedPeriod === pd
-                          ? (isDark ? 'bg-[#3eb489] text-white shadow-sm' : 'bg-[#3eb489] text-white shadow-sm')
+                          ? 'bg-[#3eb489] text-white shadow-sm'
                           : (isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-800')
                       }`}
                     >
@@ -550,7 +671,7 @@ export default function StockDetailPage() {
                         onClick={() => setSimVirtualAmount(amt)}
                         className={`py-2 rounded-xl text-xs font-mono font-bold border transition-all ${
                           simVirtualAmount === amt
-                            ? (isDark ? 'bg-[#3eb489] text-white border-[#3eb489]' : 'bg-[#3eb489] text-white border-[#3eb489]')
+                            ? 'bg-[#3eb489] text-white border-[#3eb489]'
                             : (isDark ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-600')
                         }`}
                       >
