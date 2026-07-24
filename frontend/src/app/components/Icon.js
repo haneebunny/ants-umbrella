@@ -168,8 +168,8 @@ export default function Icon({ name, className = "w-5 h-5", ...props }) {
     radar: (
       <>
         <path d="M23 12a11 11 0 1 1-22 0 11 11 0 0 1 22 0z" />
-        <path d="M19.07 4.93a10 10 0 0 0-14.14 0" />
-        <path d="M16.24 7.76a6 6 0 0 0-8.49 0" />
+        <path d="M19.07 6.93a10 10 0 0 0-14.14 0" />
+        <path d="M16.24 9.76a6 6 0 0 0-8.49 0" />
         <circle cx="12" cy="12" r="1" />
       </>
     ),

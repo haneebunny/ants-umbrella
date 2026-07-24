@@ -1,7 +1,18 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+
+const renderMessage = (text) => {
+  if (!text) return null;
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={index} className="font-extrabold text-emerald-600 dark:text-emerald-400">{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+};
 
 export default function AntPet({ weather, portfolio }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -49,9 +60,9 @@ export default function AntPet({ weather, portfolio }) {
 
       if (disclosureStock) {
         const targetEv = disclosureStock.evidences.find(ev => ev.type === '공시');
-        setMessage(`⚡ 번개 주의보! [${disclosureStock.name}] 종목에 중요한 공시가 감지되었어요. 지금 바로 대시보드를 들여다보시는 것을 추천해요!`);
+        setMessage(`⚡ 번개 주의보! **${disclosureStock.name}** 종목에 중요한 공시가 감지되었어요. 지금 바로 대시보드를 들여다보시는 것을 추천해요!`);
       } else if (strongDownStock) {
-        setMessage(`⚡ 폭풍우가 몰아쳐요! [${strongDownStock.name}]의 하락 압력이 매우 거세질 수 있으니 꼭 확인해보세요!`);
+        setMessage(`⚡ 폭풍우가 몰아쳐요! **${strongDownStock.name}**의 하락 압력이 매우 거세질 수 있으니 꼭 확인해보세요!`);
       } else {
         setMessage('⚡ 에구구! 기상 환경이 많이 흐려요. 리스크 알림 탭에서 종목별 이슈를 한 번 점검해 보시길 권장해요.');
       }
@@ -60,7 +71,7 @@ export default function AntPet({ weather, portfolio }) {
     else if (weather === 'rainy') {
       const downStock = portfolio.find(stock => stock.direction === 'down');
       if (downStock) {
-        setMessage(`🌧️ 비가 올 것 같아요! [${downStock.name}] 종목의 분위기가 무거우니 지금 바로 확인해보시길 추천드려요.`);
+        setMessage(`🌧️ 비가 올 것 같아요! **${downStock.name}** 종목의 분위기가 무거우니 지금 바로 확인해보시길 추천드려요.`);
       } else {
         setMessage('🌧️ 포트폴리오에 비가 내릴 기세예요. 우산을 준비하듯 어떤 종목이 흐린지 한 번 쓱 살펴보세요!');
       }
@@ -69,7 +80,7 @@ export default function AntPet({ weather, portfolio }) {
     else if (weather === 'cloudy') {
       const cautionStock = portfolio.find(stock => stock.direction === 'down');
       if (cautionStock) {
-        setMessage(`⛅ 하늘에 구름이 조금 끼었네요. [${cautionStock.name}] 종목에 흐릿한 신호가 있으니 시간 날 때 한 번 가볍게 체크해 보세요!`);
+        setMessage(`⛅ 하늘에 구름이 조금 끼었네요. **${cautionStock.name}** 종목에 흐릿한 신호가 있으니 시간 날 때 한 번 가볍게 체크해 보세요!`);
       } else {
         setMessage('⛅ 오늘은 하늘이 살짝 흐리네요. 너무 무리해서 움직이기보다는 차분히 시장의 흐름을 관망해보아요.');
       }
@@ -148,7 +159,7 @@ export default function AntPet({ weather, portfolio }) {
             }`}
           >
             <div className="relative">
-              <p className="leading-relaxed whitespace-pre-wrap pr-1">{message}</p>
+              <p className="leading-relaxed whitespace-pre-wrap pr-1">{renderMessage(message)}</p>
               
               {/* 하단 사라지기(취침모드 전환) 링크 버튼 */}
               <div className="mt-3 pt-2 border-t border-zinc-100 dark:border-zinc-800 flex justify-end">

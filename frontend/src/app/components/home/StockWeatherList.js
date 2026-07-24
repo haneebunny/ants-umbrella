@@ -128,7 +128,7 @@ function FloatingPanel({ stock, anchorRect, isDark, onClose, onNavigate }) {
               isDark ? 'text-slate-500' : 'text-slate-400'
             }`}>AI 판단 근거</p>
             <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-              {stock.detail?.reason || '최근 수집된 특이 리스크 신호가 수집되지 않아 업종 평균 수준의 안정적 상태를 유지하고 있습니다.'}
+              {stock.detail?.reason || '최근 특별히 포착된 리스크 신호가 없어서 업종 평균 수준의 안정적인 상태를 유지하고 있어요! ☀️'}
             </p>
           </div>
 

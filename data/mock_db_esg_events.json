@@ -1,0 +1,1552 @@
+[
+  {
+    "ticker": "105560",
+    "date": "2026-07-24",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "105560",
+    "date": "2026-07-23",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-24",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-23",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-22",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-21",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-20",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-19",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-18",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-16",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-15",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-14",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-13",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-12",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "문화·마케팅",
+    "is_material": 0,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-11",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-10",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-09",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-08",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-07",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-06",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "문화·마케팅",
+    "is_material": 0,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-05",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "문화·마케팅",
+    "is_material": 0,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-04",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-03",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-02",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-07-01",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-06-30",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-06-29",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "문화·마케팅",
+    "is_material": 0,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-06-26",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "문화·마케팅",
+    "is_material": 0,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-06-25",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-06-24",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-06-23",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-06-22",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-06-21",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "문화·마케팅",
+    "is_material": 0,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-06-20",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "문화·마케팅",
+    "is_material": 0,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "KT&G",
+    "date": "2026-06-19",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "문화·마케팅",
+    "is_material": 0,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "373220",
+    "date": "2026-07-24",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "373220",
+    "date": "2026-07-23",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "373220",
+    "date": "2026-07-22",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "373220",
+    "date": "2026-07-21",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "051910",
+    "date": "2026-07-24",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "문화·마케팅",
+    "is_material": 0,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "051910",
+    "date": "2026-07-23",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "051910",
+    "date": "2026-07-22",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "051910",
+    "date": "2026-07-21",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "051910",
+    "date": "2026-07-20",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "051910",
+    "date": "2026-07-19",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "051910",
+    "date": "2026-07-17",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "051910",
+    "date": "2026-07-15",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "051910",
+    "date": "2026-07-14",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "051910",
+    "date": "2026-07-13",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "051910",
+    "date": "2026-07-12",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "051910",
+    "date": "2026-07-10",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "051910",
+    "date": "2026-07-09",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "051910",
+    "date": "2026-07-08",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "051910",
+    "date": "2026-07-07",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "051910",
+    "date": "2026-07-06",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "051910",
+    "date": "2026-07-05",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "051910",
+    "date": "2026-07-03",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "035420",
+    "date": "2026-07-23",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "문화·마케팅",
+    "is_material": 0,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "035420",
+    "date": "2026-07-21",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "문화·마케팅",
+    "is_material": 0,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "035420",
+    "date": "2026-07-16",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "035420",
+    "date": "2026-07-11",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "035420",
+    "date": "2026-07-09",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "035420",
+    "date": "2026-07-07",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "035420",
+    "date": "2026-07-05",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "035420",
+    "date": "2026-07-03",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "035420",
+    "date": "2026-07-02",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-07-19",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-07-18",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-07-13",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-07-11",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-07-10",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-07-07",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-07-06",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-07-03",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-07-02",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-06-15",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-06-11",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-05-18",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-05-16",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-05-12",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-05-09",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-05-07",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-05-06",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-05-05",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-05-04",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-04-30",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-04-29",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005490",
+    "date": "2026-04-28",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "010950",
+    "date": "2026-07-20",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "010950",
+    "date": "2026-07-19",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "010950",
+    "date": "2026-07-18",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "010950",
+    "date": "2026-07-16",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "010950",
+    "date": "2026-07-15",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "010950",
+    "date": "2026-07-14",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "010950",
+    "date": "2026-07-13",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "010950",
+    "date": "2026-07-08",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "010950",
+    "date": "2026-07-07",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "010950",
+    "date": "2026-07-06",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "010950",
+    "date": "2026-06-30",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "010950",
+    "date": "2026-06-29",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "010950",
+    "date": "2026-06-24",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "010950",
+    "date": "2026-06-15",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "010950",
+    "date": "2026-06-10",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "017670",
+    "date": "2026-07-24",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "017670",
+    "date": "2026-07-23",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "017670",
+    "date": "2026-07-22",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "017670",
+    "date": "2026-07-21",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "017670",
+    "date": "2026-07-20",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "017670",
+    "date": "2026-07-19",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "017670",
+    "date": "2026-07-18",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "017670",
+    "date": "2026-07-17",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "문화·마케팅",
+    "is_material": 0,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "000660",
+    "date": "2026-07-24",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "000660",
+    "date": "2026-07-23",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "000270",
+    "date": "2026-07-24",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "000270",
+    "date": "2026-07-23",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "문화·마케팅",
+    "is_material": 0,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "000270",
+    "date": "2026-07-22",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "000270",
+    "date": "2026-07-21",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "028260",
+    "date": "2026-07-24",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "028260",
+    "date": "2026-07-23",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "028260",
+    "date": "2026-07-22",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "028260",
+    "date": "2026-07-21",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "028260",
+    "date": "2026-07-20",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "028260",
+    "date": "2026-07-19",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "문화·마케팅",
+    "is_material": 0,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "028260",
+    "date": "2026-07-18",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "028260",
+    "date": "2026-07-17",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "028260",
+    "date": "2026-07-16",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "문화·마케팅",
+    "is_material": 0,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "028260",
+    "date": "2026-07-15",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "032830",
+    "date": "2026-07-24",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "032830",
+    "date": "2026-07-23",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "032830",
+    "date": "2026-07-22",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "032830",
+    "date": "2026-07-21",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "032830",
+    "date": "2026-07-20",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005930",
+    "date": "2026-07-24",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "005930",
+    "date": "2026-07-23",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "068270",
+    "date": "2026-07-24",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "068270",
+    "date": "2026-07-23",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "068270",
+    "date": "2026-07-22",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "068270",
+    "date": "2026-07-21",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "068270",
+    "date": "2026-07-20",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "068270",
+    "date": "2026-07-19",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "068270",
+    "date": "2026-07-16",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "068270",
+    "date": "2026-07-15",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "068270",
+    "date": "2026-07-14",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "068270",
+    "date": "2026-07-13",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "068270",
+    "date": "2026-07-12",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "068270",
+    "date": "2026-07-11",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "068270",
+    "date": "2026-07-10",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "055550",
+    "date": "2026-07-24",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "055550",
+    "date": "2026-07-23",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "055550",
+    "date": "2026-07-20",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "ESG",
+    "is_material": 1,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "055550",
+    "date": "2026-07-16",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "문화·마케팅",
+    "is_material": 0,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "055550",
+    "date": "2026-07-14",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "055550",
+    "date": "2026-07-13",
+    "news_related": true,
+    "news_direction": "negative",
+    "news_severity": 0.85,
+    "news_category": "산업·사업동향",
+    "is_material": 0,
+    "confidence_score": 0.85
+  },
+  {
+    "ticker": "현대차",
+    "date": "2026-07-24",
+    "news_related": true,
+    "news_direction": "neutral",
+    "news_severity": 0.7,
+    "news_category": "문화·마케팅",
+    "is_material": 0,
+    "confidence_score": 0.7
+  },
+  {
+    "ticker": "현대차",
+    "date": "2026-07-23",
+    "news_related": true,
+    "news_direction": "positive",
+    "news_severity": 0.85,
+    "news_category": "실적·재무",
+    "is_material": 1,
+    "confidence_score": 0.85
+  }
+]

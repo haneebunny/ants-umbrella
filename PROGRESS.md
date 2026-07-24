@@ -89,3 +89,43 @@
 | 2026-07-23 | Antigravity | openpyxl 라이브러리 설치 및 20거래일 누적수익률 기준의 이진 등락 주가 라벨링 로직으로 generate_labels.py 개정 완료 |
 | 2026-07-23 | Antigravity | 20거래일 타겟 누수로 인한 모델 오버핏을 차단하기 위해 TimeSeriesSplit에 엠바고(gap=20)를 추가 적용 완료 (scripts/compare_features.py) |
 | 2026-07-23 | Antigravity | FinBERT 감성 중립 뭉개짐 버그 해결을 위해 통합 Colab 노트북 패치, 대용량 학습 뉴스 데이터를 1만 건 기업별 균등 분배로 정제하는 balance_training_data.py 개발, 로컬 피처 합성 완료 후 XGBoost 그리드 서치 튜닝(max_depth=4, lr=0.2, PR-AUC +0.0075, 3/3 fold win) 및 테스트셋 양성 비율(평균 55.19%) 로그 보존 완료 |
+| 2026-07-24 | Antigravity | verify2.py의 ml_ready_real.csv 파일 경로를 로컬 상대 경로로 수정하고 성공적으로 스크립트 실행 및 결과 검증 완료 |
+| 2026-07-24 | Antigravity | verify_news_contribution.py의 ml_ready_real.csv 파일 경로를 로컬 상대 경로로 수정하고 성공적으로 스크립트 실행 및 결과 검증 완료 |
+| 2026-07-24 | Antigravity | collect_news.py 복구 및 실행(1,709건 뉴스 수집), process_news_features.py를 통한 뉴스 감성/카테고리 분류, run_pipeline.py(전체 ML 파이프라인 구동) 및 save_risk_scores.py(XGBoost 예측값 적재) 실행 완료 |
+| 2026-07-24 | Antigravity | 신규 한국투자증권(KIS) API 키 환경 변수 갱신 후 test_kis_api.py를 통한 실시간 현재가 조회 연동 검증 완료 |
+| 2026-07-24 | Antigravity | WeatherBanner.js의 삼각함수 연산 결과에 소수점 4자리 제한(.toFixed(4))을 걸어 Hydration Mismatch 에러를 해결하고, background 단축 스타일 속성을 backgroundImage로 변경하여 React 스타일 속성 충돌 경고 해결 완료 |
+| 2026-07-24 | Antigravity | 고정 사이드바 너비를 w-60(240px)에서 w-52(208px)로 축소하고 이에 맞춰 각 페이지의 메인 레이아웃 및 헤더 마진을 조정했으며, 헤더 좌측에 데스크톱 포함 전 화면에서 로고와 브랜드가 상시 노출되도록 개선 완료 |
+| 2026-07-24 | Antigravity | AntPet.js 내 펫의 말풍선 메시지에서 대괄호([]) 대신 마크다운 볼드체(**)로 렌더링되게 리팩토링하고, 데스크톱 헤더 로고 중복 제거(lg:hidden 복구) 및 모바일 전용 로고 상시 출력 보완, globals.css에 클릭/호버 가능 요소 대상 전역 마우스 포인터 스타일(cursor: pointer) 강제 규칙 반영 완료 |
+| 2026-07-24 | Antigravity | AssetSummaryCard.js 레이더 차트의 R 반경 축소(58->48) 및 뱃지 거리 타이트화로 데스크톱 뱃지 잘림 방지, 좁은 화면(md 미만)일 때는 SVG 뱃지를 가리고 하단에 격자형 지표 리스트가 반응형으로 노출되도록 개선 완료 |
+| 2026-07-24 | Antigravity | page.js 내 메인 그리드 및 위젯들의 반응형 분기(breakpoint)를 lg(1024px)에서 xl(1280px)로 상향하여 태블릿/노트북 화면에서 관심주식을 하단으로 내리고 3열 위젯을 2열로 넉넉히 배치해 종목명 생략 버그 차단 완료 |
+| 2026-07-24 | Antigravity | backend/main.py에 KIS 실시간 주가 리스트 조회 API(/api/watchlist-prices)를 신설(FDR fallback 포함)하고, WatchlistCard.js에 30초 주기 가격 폴링 연동을 부착해 실시간 실제 가격이 반영되도록 패치 완료 |
+| 2026-07-24 | Antigravity | WatchlistCard.js를 '주식 실시간 시세' 위젯으로 개편: 개수 배지 및 별 버튼 제거, 별 버튼 자리에 날씨 아이콘을 좌측 배치하고 우측에 현재가와 등락률(▲/▼ 세모 기호 포함)을 한눈에 보게끔 UI 디자인 전면 수정 완료 |
+| 2026-07-24 | Antigravity | backend/main.py의 AI 브리핑 및 나개미 팁 어조를 뉴닉(NEWNEEK) 스타일로 전면 개편하여 친근한 대화체와 적절한 이모지를 통해 주식 초보자 눈높이의 친숙한 설명이 되도록 수정 완료 |
+| 2026-07-24 | Antigravity | stock/[ticker]/page.js (종목 상세 페이지)에서 기존 통합 '위험 근거' 섹션을 모델 예측의 핵심인 '예측 판단 근거'(공시/재무)와 단순 기사 참고인 '관련 뉴스'(ESG/산업)로 두 개의 카드 영역으로 깔끔하게 이원화 렌더링하도록 수정 완료 |
+| 2026-07-24 | Antigravity | backend/main.py 및 stock/[ticker]/page.js의 예측 확신도(confidence_tier) 텍스트를 영어(strong/medium/weak) 대신 한글(높음/보통/낮음)로 전면 번역 치환하고, 종목 상세페이지의 AI 브리핑 내 마크다운 볼드(**종목명**) 파서 헬퍼를 추가하여 실제 굵은 글씨로 올바르게 렌더링되도록 패치 완료 |
+| 2026-07-24 | Antigravity | stock/[ticker]/page.js의 '예측 판단 근거' 및 '관련 뉴스' 아이템 마크업을 a 태그로 변경하고 hover 스타일(커서 손가락, 배경/글자 강조)을 입혀 클릭이 가능한 직관적 형태로 개선 완료 |
+| 2026-07-24 | Antigravity | backend/main.py에서 공시 타입 증거 반환 시 종목별 네이버 증권 모바일 공시 리스트 URL을 동적으로 바인딩하여 클릭 시 원본 DART 공시 조회 화면으로 유연하게 이동하도록 패치 완료 |
+| 2026-07-24 | Antigravity | stock/[ticker]/page.js (종목 상세 페이지) 레이아웃의 max-w 너비를 5xl로 넓히고 mx-auto를 주어 와이드 균형을 맞췄으며, 데스크톱용 2열 반응형 그리드(좌측 차트+AI브리핑 / 우측 보유정보+판단근거+뉴스)를 적용하여 시각적 단조로움 탈피 완료 |
+| 2026-07-24 | Antigravity | backend/main.py의 /risk-evidences/{ticker} API 및 stock/[ticker]/page.js에서 XGBoost 모델이 진짜 참조한 4대 핵심 계량 피처(환율, 금리, 가격변동성, ESG중대성)에 대한 분석 결과와 영향도 라벨(높음/보통/낮음)을 동적 매핑하여 렌더링하도록 AI 피처 영향도 분석 카드 신설 완료 |
+| 2026-07-24 | Antigravity | stock/[ticker]/page.js (종목 상세 페이지)의 2열 레이아웃 카드 배치를 좌측 열(차트, 보유정보, AI 브리핑)과 우측 열(피처 영향도 분석, 예측 판단 근거, 관련 뉴스)로 재분배하여 정보의 계통성을 강화 완료 |
+| 2026-07-24 | Antigravity | stock/[ticker]/page.js 파일 내 Icon 컴포넌트의 오기입된 임포트 경로(components/common/Icon)를 올바른 공용 경로(components/Icon)로 수정하여 빌드 타임의 모듈 조회 실패 오류 해결 완료 |
+| 2026-07-24 | Antigravity | stock/[ticker]/page.js 파일의 useTheme 훅 임포트를 default import에서 named import({ useTheme }) 형식으로 변경하여 훅 로딩 실패 컴파일 에러 원천 차단 완료 |
+| 2026-07-24 | Antigravity | backend/main.py 및 stock/[ticker]/page.js에 FinanceDataReader 및 DB 조회 기반 최근 7거래일 실제 종가(sparkline)를 동적 수집하여 차트에 주입하도록 구조를 혁신함으로써 특정 종목에서 차트 미표시 오류를 완전 해결 완료 |
+| 2026-07-24 | Antigravity | backend/main.py의 /risk-evidences/{ticker} API 및 stock/[ticker]/page.js에 KIS 실시간 API 조회를 연계하여 신한지주(104,400원선) 포함 상세페이지 내 상단 현재가 및 등락률을 실제 한국투자증권 실시간 호가 정보로 동적 주입 및 렌더링 동기화 완료 |
+| 2026-07-24 | Antigravity | /risk-evidences/{ticker} API 함수 내부에서 발생하던 모듈 및 변수(kis_key, kis_secret, datetime)의 NameError(500 Internal Server Error 원인)를 감지하고 지역 임포트 및 초기화를 보장하여 실시간 주가/피처 렌더링 실패 오류를 영구 조치 완료 |
+| 2026-07-24 | Antigravity | backend/main.py에 /api/alerts API를 신설하여 DB esg_events의 최신 리스크 보도를 동적으로 긁어오도록 하고, alerts/page.js에서 이 알림 목록을 불러와 클릭 시 해당 종목 상세페이지로 바로 라우팅 이동되게 연동 완료 |
+| 2026-07-24 | Antigravity | 주가변동리스크 내의 XGBoost 머신러닝 단어 직접 언급을 브랜드명인 '개미의 우산 시세 판단 시스템'으로 대체하고, evidences의 뉴스 pub_date(정규표현식 파싱 거침) 및 공시 수집 date 필드를 API를 통해 동적 반환하도록 고쳐 상세페이지 판단근거의 하드코딩 날짜 오류를 완전 수정 완료 |
+| 2026-07-24 | Antigravity | AI 종합 진단 브리핑의 'AI 비서' 단어를 '개미의 우산 AI 진단 시스템'으로 교정하고, 수집된 실시간 ESG 부정 뉴스 개수(esg_count)를 브리핑 인자로 연계해 모순된 텍스트 출력을 구조적으로 해결 완료 |
+| 2026-07-24 | Antigravity | macro_analysis 내 ESG 중대성 피처의 주의 임계값 조건을 esg_news_count >= 1로 수정 조정하여, 종합 브리핑 멘트와 우측 카드 판단의 모순(노이즈 있음 vs 전혀 감지 안 됨)을 완벽히 정렬하여 해결 완료 |
+| 2026-07-24 | Antigravity | frontend/src/app/page.js의 마운트 생명주기에 useRouter를 추가하고, ants_survey_complete 미등록(비진단자) 유저일 때 /onboarding 페이지로 리다이렉트시키는 최초 성향분석 필수 유입 장치를 성공적으로 복원 완료 |
+| 2026-07-24 | Antigravity | onboarding/page.js 레이아웃에 Header와 main 정렬 클래스를 도입해 대시보드와 구조를 맞추고, 설문 직후 ResultsScreen 리포트를 선노출한 뒤 가이드 배너의 [샘플데이터로 먼저 보기] 및 [직접 등록] 버튼 액션을 매핑해 온보딩 흐름 개편 완료 |
+| 2026-07-24 | Antigravity | ThemeProvider 컨텍스트 및 AppLayoutShell 글로벌 레이아웃 구조를 layout.js에 구축해 개별 페이지들의 Header/컨테이너 중복을 완전 청산하고, Intro/SurveyScreen의 fixed 헤더 제거 및 w-full/max-w-3xl 확장 정렬로 중앙 반응형 뷰를 완벽 개선 완료 |
+| 2026-07-24 | Antigravity | page.js, ResultsScreen.js, diagnosis/weather/page.js, stock/[ticker]/page.js 내 중복 Header 및 찌그러짐을 유발하던 flex 래퍼/min-h-screen/z-10 absolute 고정 마진들을 완전 청산해 공용 레이아웃 쉘 상에서 와이드하게 정상 복원 완료 |
+| 2026-07-24 | Antigravity | frontend/src/app/page.js에서 중복 및 구문 오류가 있던 비정상적인 코드 조각(return문 및 컴포넌트 꼬임 현상)을 정밀 복원하고 ESLint 구문 오류를 해결하여 빌드 컴파일을 정상화 완료 |
+| 2026-07-24 | Antigravity | 대시보드 및 상세 페이지의 빗방울(RainEffect) 레이어를 relative z-10 콘텐츠 뒤(배경)에만 내리도록 조절하고, 메인 대시보드 3열 그리드를 3:5:4 비율로 재조정하여 종목명 잘림 현상 해결 및 전체 페이지(인트로, 온보딩, 진단 결과, 상세 페이지, 알림 등)의 톤앤매너를 뉴닉(NEWNEEK) 친근한 말투(해요체 및 이모지)로 전면 통합 완료 |
+| 2026-07-24 | Antigravity | 메인 대시보드의 포트폴리오 기상 예보 및 AI 판단 근거 Mock 데이터 문구의 '합니다/입니다' 어미를 뉴닉 친근한 어조로 최종 변환 완료하고, 진단 페이지(/diagnosis) 및 세부 날씨 페이지(/diagnosis/weather)에서 sessionStorage의 현재 활성 선택 포트폴리오를 동적 매핑하여 연동되도록 긴급 조치 완료 |
+| 2026-07-24 | Antigravity | 포트폴리오 직접 등록 기능을 임시 제거(사이드바 메뉴, 종목추가 버튼, 성향진단 결과 배너 버튼, 자산 편집 버튼 차단)하고 온보딩 완료 시 /onboarding/result 라우트로 분리 이동하게 했으며, 결과 페이지에서 투자기상도/레이더/자산 탭 메뉴(하단 플로팅 바)를 숨기고 대시보드로 이동 가능한 왼쪽 공통 사이드바가 렌더링되도록 수정 및 온보딩 헤더 높이 불일치 해결 완료 |
+| 2026-07-24 | Antigravity | 주식 실시간 시세 위젯에서 현재 활성화된 포트폴리오의 보유 종목들을 무조건 상단에 고정 포함(DEFAULT_WATCHLIST 병합하여 10개 구성)하도록 동적 결합을 완료하고, 대형 우량주 포트폴리오 성격에 부합하게 대시보드 지수 위젯 및 데이터를 코스닥에서 코스피(KOSPI)로 개편 적용 완료했으며, 레이더 차트의 꼭짓점 툴팁 마우스 호버 시 카드 높이 변경으로 발생하던 layout shift 및 흔들림 현상을 96px 고정 높이 래퍼 컨테이너 방식을 통해 원천 해결 완료 |
+| 2026-07-24 | Antigravity | GitHub Actions 자동화 배치(.github/workflows/daily_batch.yml)의 cron 실행 스케줄을 매일 아침 7시 KST (UTC 22시)로 변경 완료 |
+| 2026-07-24 | Antigravity | 메인 대시보드 진입 시 로컬스토리지에 완료된 진단 기록이 없는 신규 게스트의 경우 강제 리다이렉트시키는 대신, 대시보드 데모 모드를 개방하고 투자성향 진단을 권유하는 세련된 팝업 모달을 띄우도록 사용자 유입 흐름 전면 개선 완료 |
+| 2026-07-24 | Antigravity | 위험 진단(radar) 아이콘의 윗부분 와이파이 모양 호(arc)들의 Y좌표를 2px씩 아래로 하향 조절하여 상하 시각적 밸런스를 개선하고, 데일리 배치 종료 직후 실시간 감지된 핵심 리스크(is_material == 1 및 negative) 뉴스 5건을 슬랙 채널로 즉각 전송해 주는 Block Kit 기반 자동 연동 스크립트(backend/scripts/slack_notifier.py) 및 GitHub Actions 워크플로우 연동 완료 |

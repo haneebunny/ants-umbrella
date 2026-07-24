@@ -5,11 +5,11 @@ import { useRouter, usePathname } from 'next/navigation';
 import Icon from '../Icon';
 
 const NAV_ITEMS = [
-  { href: '/',                    icon: 'home',         label: '홈 대시보드'     },
-  { href: '/diagnosis',           icon: 'radar',        label: '위험 진단'       },
-  { href: '/alerts',              icon: 'bell',         label: '위험 알림'       },
-  { href: '/portfolio/register',  icon: 'barChart2',    label: '포트폴리오 관리' },
-  { href: '/onboarding',          icon: 'trendingUp',   label: '투자성향 재진단' },
+  { href: '/', icon: 'home', label: '홈 대시보드' },
+  { href: '/diagnosis', icon: 'radar', label: '위험 진단' },
+  { href: '/alerts', icon: 'bell', label: '위험 알림' },
+  
+  { href: '/onboarding', icon: 'trendingUp', label: '투자성향 재진단' },
 ];
 
 /**
@@ -20,7 +20,7 @@ export default function Header({ isDark, toggleTheme, alertCount = 0, showBack =
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const openDrawer  = () => setDrawerOpen(true);
+  const openDrawer = () => setDrawerOpen(true);
   const closeDrawer = () => setDrawerOpen(false);
 
   const navigate = (href) => {
@@ -32,33 +32,31 @@ export default function Header({ isDark, toggleTheme, alertCount = 0, showBack =
     <>
       {/* ── 상단 헤더 바 (사이드바 오른쪽 영역만 차지) ── */}
       <header
-        className={`flex items-center fixed top-0 right-0 z-40 h-14 w-full lg:w-[calc(100%-240px)] transition-all ${
-          isDark
-            ? 'bg-[#080b08]/90 backdrop-blur-md border-b border-[#222422]'
-            : 'bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm'
-        }`}
+        className={`flex items-center fixed top-0 right-0 z-40 h-14 w-full lg:w-[calc(100%-208px)] transition-all ${isDark
+          ? 'bg-[#080b08]/90 backdrop-blur-md border-b border-[#222422]'
+          : 'bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm'
+          }`}
       >
-        {/* 헤더 내부 컨텐츠: 사이드바(240px) 바로 오른쪽에 정렬 (전체 해상도 활용) */}
-        <div className="flex justify-between items-center h-14 w-full lg:ml-60 lg:w-[calc(100%-240px)] max-w-[1920px] px-4 lg:px-6">
+        {/* 헤더 내부 컨텐츠: 사이드바 공간을 비워둔 본문 헤더 정렬 */}
+        <div className="flex justify-between items-center h-14 w-full max-w-[1920px] px-4 lg:px-6">
           {/* 좌측 */}
           <div className="flex items-center gap-3">
-            {showBack ? (
+            {showBack && (
               <button
                 onClick={() => router.back()}
                 aria-label="뒤로가기"
-                className={`p-2 rounded-full transition-colors ${
-                  isDark ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-100 text-slate-600'
-                }`}
+                className={`p-2 rounded-full transition-colors ${isDark ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-100 text-slate-600'
+                  }`}
               >
                 <Icon name="arrowLeft" className="w-5 h-5" />
               </button>
-            ) : (
+            )}
+            {!showBack && (
               <button
                 onClick={openDrawer}
                 aria-label="메뉴 열기"
-                className={`p-2 rounded-full transition-colors lg:hidden ${
-                  isDark ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-100 text-slate-600'
-                }`}
+                className={`p-2 rounded-full transition-colors lg:hidden ${isDark ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-100 text-slate-600'
+                  }`}
               >
                 <Icon name="menu" className="w-5 h-5" />
               </button>
@@ -75,9 +73,8 @@ export default function Header({ isDark, toggleTheme, alertCount = 0, showBack =
                 className="w-6 h-6 object-contain"
               />
               <span
-                className={`font-sans text-base font-black tracking-tight ${
-                  isDark ? 'text-[#e2e2e2]' : 'text-[#0f1713]'
-                }`}
+                className={`font-sans text-base font-black tracking-tight ${isDark ? 'text-[#e2e2e2]' : 'text-[#0f1713]'
+                  }`}
               >
                 개미의 우산
               </span>
@@ -89,9 +86,8 @@ export default function Header({ isDark, toggleTheme, alertCount = 0, showBack =
             <button
               onClick={() => navigate('/alerts')}
               aria-label="위험 알림"
-              className={`relative p-2 rounded-full transition-colors ${
-                isDark ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-100 text-slate-600'
-              }`}
+              className={`relative p-2 rounded-full transition-colors ${isDark ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-100 text-slate-600'
+                }`}
             >
               <Icon name="bell" className="w-5 h-5" />
               {alertCount > 0 && (
@@ -104,20 +100,18 @@ export default function Header({ isDark, toggleTheme, alertCount = 0, showBack =
             <button
               onClick={toggleTheme}
               aria-label="화면 테마 전환"
-              className={`w-12 h-6 rounded-full p-0.5 transition-colors duration-300 cursor-pointer relative flex items-center ${
-                isDark ? 'bg-zinc-700 border border-zinc-600' : 'bg-slate-200 border border-slate-300'
-              }`}
+              className={`w-12 h-6 rounded-full p-0.5 transition-colors duration-300 cursor-pointer relative flex items-center ${isDark ? 'bg-zinc-700 border border-zinc-600' : 'bg-slate-200 border border-slate-300'
+                }`}
             >
               <div
-                className={`w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 transform ${
-                  isDark
-                    ? 'translate-x-6 bg-[#3eb489] text-[#002115]'
-                    : 'translate-x-0 bg-white text-amber-500 shadow-sm'
-                }`}
+                className={`w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 transform ${isDark
+                  ? 'translate-x-6 bg-[#3eb489] text-[#002115]'
+                  : 'translate-x-0 bg-white text-amber-500 shadow-sm'
+                  }`}
               >
                 {isDark
                   ? <Icon name="moon" className="w-3 h-3" />
-                  : <Icon name="sun"  className="w-3 h-3" />
+                  : <Icon name="sun" className="w-3 h-3" />
                 }
               </div>
             </button>
@@ -135,13 +129,11 @@ export default function Header({ isDark, toggleTheme, alertCount = 0, showBack =
 
       {/* ── 고정 사이드바 패널 (데스크톱: 좌측 상단 고정 z-50, 모바일: 슬라이드 z-70) ── */}
       <aside
-        className={`fixed top-0 left-0 h-full w-60 z-[70] lg:z-50 flex flex-col transition-transform duration-300 ease-in-out ${
-          drawerOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        } ${
-          isDark
+        className={`fixed top-0 left-0 h-full w-52 z-[70] lg:z-50 flex flex-col transition-transform duration-300 ease-in-out ${drawerOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          } ${isDark
             ? 'bg-[#111311] border-r border-[#222422]'
             : 'bg-white border-r border-slate-100 shadow-xl lg:shadow-none'
-        }`}
+          }`}
       >
         {/* 사이드바 헤더 (로고) */}
         <div className={`flex items-center justify-between px-5 h-14 border-b flex-shrink-0 ${isDark ? 'border-[#222422]' : 'border-slate-100'}`}>
@@ -172,15 +164,14 @@ export default function Header({ isDark, toggleTheme, alertCount = 0, showBack =
               <button
                 key={item.href}
                 onClick={() => navigate(item.href)}
-                className={`w-full flex items-center gap-3 px-5 py-3 text-left transition-colors ${
-                  isActive
-                    ? (isDark
-                        ? 'bg-[#3eb489]/15 text-[#69dbad] font-bold'
-                        : 'bg-[#3eb489]/10 text-[#3eb489] font-bold')
-                    : (isDark
-                        ? 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-[#0f1713]')
-                }`}
+                className={`w-full flex items-center gap-3 px-5 py-3 text-left transition-colors ${isActive
+                  ? (isDark
+                    ? 'bg-[#3eb489]/15 text-[#69dbad] font-bold'
+                    : 'bg-[#3eb489]/10 text-[#3eb489] font-bold')
+                  : (isDark
+                    ? 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-[#0f1713]')
+                  }`}
               >
                 <Icon
                   name={item.icon}
@@ -196,11 +187,11 @@ export default function Header({ isDark, toggleTheme, alertCount = 0, showBack =
         </nav>
 
         {/* 사이드바 푸터 */}
-        <div className={`px-5 py-4 border-t flex-shrink-0 ${isDark ? 'border-[#222422]' : 'border-slate-100'}`}>
-          <p className={`text-[10px] font-bold ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
-            개미의 우산 v0.2 · ESG 리스크 분석
+        <div className={`px-4 py-4 border-t flex-shrink-0 ${isDark ? 'border-[#222422]' : 'border-slate-100'}`}>
+          <p className={`text-[9px] font-black tracking-tight whitespace-nowrap overflow-hidden text-ellipsis ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+            개미의 우산 v0.2 · 주식 리스크 분석
           </p>
-          <p className={`text-[10px] mt-0.5 ${isDark ? 'text-slate-700' : 'text-slate-300'}`}>
+          <p className={`text-[9px] mt-0.5 tracking-tight ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
             데이터는 매일 새벽 갱신됩니다
           </p>
         </div>

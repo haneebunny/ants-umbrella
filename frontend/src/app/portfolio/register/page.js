@@ -58,126 +58,110 @@ export default function PortfolioRegisterPage() {
   };
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-300 ${isDark ? 'bg-[#080b08] text-[#e2e2e2]' : 'bg-[#f5f6f4] text-[#0f1713]'}`}>
-      <Header isDark={isDark} toggleTheme={toggleTheme} title="포트폴리오 등록" />
+    <div className="w-full">
+      <div className="pb-4">
+        <h1 className={`text-xl font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>포트폴리오 등록</h1>
+        <p className={`text-xs mt-1 leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+          보유 중인 종목과 수량을 입력하세요. 실제 위험 분석에 사용됩니다.
+        </p>
+      </div>
 
-      <main className="pt-14 pb-10 px-4 max-w-4xl lg:ml-60 lg:w-[calc(100%-240px)]">
-
-        <div className="pt-6 pb-4">
-          <h1 className={`text-xl font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>포트폴리오 등록</h1>
-          <p className={`text-xs mt-1 leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-            보유 중인 종목과 수량을 입력하세요. 실제 위험 분석에 사용됩니다.
-          </p>
+      {/* 종목 검색 */}
+      <div className={`rounded-2xl border p-4 mb-4 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+        <p className={`text-xs font-black mb-3 ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>종목 검색</p>
+        <div className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 ${isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'}`}>
+          <Icon name="search" className={`w-4 h-4 flex-shrink-0 ${isDark ? 'text-slate-500' : 'text-slate-400'}`} />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="종목명 또는 코드 입력"
+            className={`flex-1 bg-transparent text-sm outline-none ${isDark ? 'text-white placeholder-slate-600' : 'text-[#0f1713] placeholder-slate-400'}`}
+          />
         </div>
 
-        {/* 종목 검색 */}
-        <div className={`rounded-2xl border p-4 mb-4 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
-          <p className={`text-xs font-black mb-3 ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>종목 검색</p>
-          <div className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 ${isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'}`}>
-            <Icon name="search" className={`w-4 h-4 flex-shrink-0 ${isDark ? 'text-slate-500' : 'text-slate-400'}`} />
-            <input
-              type="text"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="종목명 또는 코드 입력"
-              className={`flex-1 bg-transparent text-sm outline-none ${isDark ? 'text-white placeholder-slate-600' : 'text-[#0f1713] placeholder-slate-400'}`}
-            />
+        {/* 검색 결과 드롭다운 */}
+        {search && filtered.length > 0 && (
+          <div className={`mt-2 rounded-xl border overflow-hidden ${isDark ? 'border-white/10' : 'border-slate-200'}`}>
+            {filtered.slice(0, 5).map((s, idx) => (
+              <button
+                key={s.ticker}
+                onClick={() => addStock(s)}
+                className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors ${
+                  idx > 0 ? (isDark ? 'border-t border-white/5' : 'border-t border-slate-50') : ''
+                } ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}
+              >
+                <div>
+                  <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>{s.name}</p>
+                  <p className={`text-[11px] font-mono ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>{s.ticker}</p>
+                </div>
+                <Icon name="plus" className={`w-4 h-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`} />
+              </button>
+            ))}
           </div>
+        )}
+      </div>
 
-          {/* 검색 결과 드롭다운 */}
-          {search && filtered.length > 0 && (
-            <div className={`mt-2 rounded-xl border overflow-hidden ${isDark ? 'border-white/10' : 'border-slate-200'}`}>
-              {filtered.slice(0, 5).map((s, idx) => (
-                <button
-                  key={s.ticker}
-                  onClick={() => addStock(s)}
-                  className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors ${
-                    idx > 0 ? (isDark ? 'border-t border-white/5' : 'border-t border-slate-50') : ''
-                  } ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}
-                >
-                  <div>
-                    <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>{s.name}</p>
-                    <p className={`text-[11px] font-mono ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>{s.ticker}</p>
-                  </div>
-                  <Icon name="plus" className={`w-4 h-4 ${isDark ? 'text-[#69dbad]' : 'text-[#3eb489]'}`} />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* 등록된 종목 목록 */}
-        {holdings.length > 0 && (
-          <div className={`rounded-2xl border overflow-hidden mb-4 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
-            <div className={`px-5 py-3.5 border-b ${isDark ? 'border-white/5' : 'border-slate-50'}`}>
-              <p className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-                등록된 종목 ({holdings.length}개)
-              </p>
-            </div>
+      {/* 보유 목록 */}
+      <div className={`rounded-2xl border p-4 mb-4 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+        <p className={`text-xs font-black mb-3 ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>등록된 보유 종목 ({holdings.length})</p>
+        {holdings.length === 0 ? (
+          <div className="py-8 text-center text-xs text-slate-400">
+            검색을 통해 종목을 추가하세요
+          </div>
+        ) : (
+          <div className="space-y-3">
             {holdings.map((h, idx) => (
               <div
                 key={h.ticker}
-                className={`flex items-center gap-3 px-5 py-3.5 ${
-                  idx < holdings.length - 1 ? (isDark ? 'border-b border-white/5' : 'border-b border-slate-50') : ''
+                className={`flex items-center justify-between py-2 ${
+                  idx > 0 ? (isDark ? 'border-t border-white/5' : 'border-t border-slate-50') : ''
                 }`}
               >
-                <div className="flex-1 min-w-0">
+                <div>
                   <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>{h.name}</p>
                   <p className={`text-[11px] font-mono ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>{h.ticker}</p>
                 </div>
-                {/* 수량 입력 */}
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-3">
+                  <div className={`flex items-center border rounded-xl overflow-hidden ${isDark ? 'border-white/10' : 'border-slate-200'}`}>
+                    <input
+                      type="number"
+                      value={h.quantity}
+                      onChange={e => updateQuantity(h.ticker, e.target.value)}
+                      className={`w-14 text-center text-xs bg-transparent py-1.5 outline-none font-mono ${isDark ? 'text-white' : 'text-[#0f1713]'}`}
+                    />
+                    <span className={`text-[10px] pr-2.5 font-bold ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>주</span>
+                  </div>
                   <button
-                    onClick={() => updateQuantity(h.ticker, h.quantity - 1)}
-                    className={`w-6 h-6 rounded-lg flex items-center justify-center text-sm font-black ${isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'}`}
-                  >−</button>
-                  <input
-                    type="number"
-                    value={h.quantity}
-                    onChange={e => updateQuantity(h.ticker, e.target.value)}
-                    className={`w-16 text-center text-sm font-black font-mono rounded-lg py-1 border ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-[#0f1713]'}`}
-                  />
-                  <button
-                    onClick={() => updateQuantity(h.ticker, h.quantity + 1)}
-                    className={`w-6 h-6 rounded-lg flex items-center justify-center text-sm font-black ${isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'}`}
-                  >＋</button>
-                  <span className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>주</span>
+                    onClick={() => removeStock(h.ticker)}
+                    className={`p-2 rounded-xl transition-colors ${isDark ? 'hover:bg-white/5 text-slate-400' : 'hover:bg-slate-50 text-slate-500'}`}
+                  >
+                    <Icon name="trash2" className="w-4 h-4" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => removeStock(h.ticker)}
-                  className={`p-1.5 rounded-lg transition-colors ${isDark ? 'text-slate-600 hover:text-red-400 hover:bg-red-900/20' : 'text-slate-300 hover:text-red-500 hover:bg-red-50'}`}
-                >
-                  <Icon name="x" className="w-4 h-4" />
-                </button>
               </div>
             ))}
           </div>
         )}
+      </div>
 
-        {/* 완료 버튼 */}
-        <button
-          onClick={handleComplete}
-          disabled={holdings.length === 0}
-          className={`w-full py-4 rounded-2xl text-sm font-black flex items-center justify-center gap-2 transition-all ${
-            holdings.length === 0
-              ? (isDark ? 'bg-white/5 text-slate-600 cursor-not-allowed' : 'bg-slate-100 text-slate-400 cursor-not-allowed')
-              : (isDark
-                  ? 'bg-[#3eb489] text-[#0a1f14] hover:bg-[#69dbad]'
-                  : 'bg-[#3eb489] text-white hover:bg-[#2d966e] shadow-[0_4px_20px_rgba(62,180,137,0.3)]')
-          }`}
-        >
-          <Icon name="check" className="w-4 h-4" />
-          {holdings.length === 0 ? '종목을 1개 이상 추가해주세요' : `${holdings.length}개 종목으로 분석 시작하기`}
-        </button>
+      <button
+        onClick={handleComplete}
+        disabled={holdings.length === 0}
+        className={`w-full py-4 rounded-2xl text-sm font-black flex items-center justify-center gap-2 transition-all ${
+          holdings.length === 0 ? 'opacity-40 cursor-not-allowed bg-slate-300' : ''
+        } ${isDark ? 'bg-[#3eb489] text-[#0a1f14] hover:bg-[#69dbad]' : 'bg-[#3eb489] text-white hover:bg-[#2d966e] shadow-[0_4px_20px_rgba(62,180,137,0.3)]'}`}
+      >
+        {holdings.length === 0 ? '종목을 1개 이상 추가해주세요' : `${holdings.length}개 종목으로 분석 시작하기`}
+      </button>
 
-        {/* 건너뛰기 */}
-        <button
-          onClick={() => { localStorage.setItem('ants_survey_complete', 'true'); router.push('/'); }}
-          className={`mt-3 w-full py-2.5 text-xs font-bold transition-colors ${isDark ? 'text-slate-600 hover:text-slate-400' : 'text-slate-400 hover:text-slate-600'}`}
-        >
-          나중에 등록하기 (샘플 데이터로 먼저 보기)
-        </button>
-      </main>
+      {/* 건너뛰기 */}
+      <button
+        onClick={() => { localStorage.setItem('ants_survey_complete', 'true'); router.push('/'); }}
+        className={`mt-3 w-full py-2.5 text-xs font-bold transition-colors ${isDark ? 'text-slate-600 hover:text-slate-400' : 'text-slate-400 hover:text-slate-600'}`}
+      >
+        나중에 등록하기 (샘플 데이터로 먼저 보기)
+      </button>
     </div>
   );
 }
