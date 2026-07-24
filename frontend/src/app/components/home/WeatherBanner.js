@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import Icon from '../Icon';
@@ -81,8 +81,8 @@ function SunnyDecor({ isDark }) {
       {[0,30,60,90,120,150,180,210,240,270,300,330].map((deg, i) => (
         <line key={i}
           x1="92%" y1="30%"
-          x2={`${92 + Math.cos(deg * Math.PI / 180) * 18}%`}
-          y2={`${30 + Math.sin(deg * Math.PI / 180) * 28}%`}
+          x2={`${(92 + Math.cos(deg * Math.PI / 180) * 18).toFixed(4)}%`}
+          y2={`${(30 + Math.sin(deg * Math.PI / 180) * 28).toFixed(4)}%`}
           stroke={c2} strokeWidth="1.5" strokeLinecap="round"
         />
       ))}
@@ -209,7 +209,7 @@ export default function WeatherBanner({ weather, isDark }) {
     : `linear-gradient(135deg, ${cfg.bgFrom} 0%, ${cfg.bgMid || cfg.bgTo} 45%, ${cfg.bgTo} 100%)`;
 
   const bgStyle = {
-    background: bgLinear,
+    backgroundImage: bgLinear,
     backgroundSize: '200% auto',
     animation: 'weatherShimmer 8s ease-in-out infinite alternate',
   };

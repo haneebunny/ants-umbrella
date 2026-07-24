@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Icon from '../Icon';
 
@@ -25,34 +25,73 @@ const WEATHER_MAP = {
   thunder: { icon: 'zap',       color: 'text-rose-400',  label: '번개' },
 };
 
-export default function WatchlistCard({ isDark }) {
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+export default function WatchlistCard({ isDark, portfolio = [] }) {
   const router = useRouter();
-  const [watchlist, setWatchlist] = useState(DEFAULT_WATCHLIST);
-  const [starred, setStarred] = useState(['005930', '000660', '035420', '196170']); // 기본 관심종목 ID
 
-  // 마운트 시 localStorage에서 관심 종목 불러오기
+  // 1. 포트폴리오 보유 종목을 실시간 시세 우선 순위에 두고, 10개가 안 채워지면 기본 추천주로 채움
+  const mergedDefaultList = useMemo(() => {
+    const holdingTickers = new Set((portfolio || []).map(p => p.ticker));
+    
+    const holdingsConverted = (portfolio || []).map(p => ({
+      ticker: p.ticker,
+      name: p.name,
+      weather: p.weather || 'sunny',
+      change: Math.abs(p.change || 0.0),
+      direction: p.direction || 'up',
+      price: p.price || (p.detail && p.detail.price) || '50,000'
+    }));
+
+    const nonOverlapDefault = DEFAULT_WATCHLIST.filter(d => !holdingTickers.has(d.ticker));
+    const merged = [...holdingsConverted, ...nonOverlapDefault];
+    return merged.slice(0, 10);
+  }, [portfolio]);
+
+  const [watchlist, setWatchlist] = useState(mergedDefaultList);
+
+  // 포트폴리오 변경 시 리스트 갱신
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('ants_watchlist_starred');
-      if (saved) setStarred(JSON.parse(saved));
-    } catch (e) {
-      console.warn('Failed to load watchlist:', e);
-    }
-  }, []);
+    setWatchlist(mergedDefaultList);
+  }, [mergedDefaultList]);
 
-  // 즐겨찾기 토글
-  const toggleStar = (e, ticker) => {
-    e.stopPropagation();
-    const next = starred.includes(ticker)
-      ? starred.filter(t => t !== ticker)
-      : [...starred, ticker];
-    setStarred(next);
-    try {
-      localStorage.setItem('ants_watchlist_starred', JSON.stringify(next));
-    } catch (err) {
-      console.warn('Failed to save watchlist:', err);
-    }
-  };
+  // 실시간 KIS 가격 호출 연동
+  useEffect(() => {
+    const fetchWatchlistPrices = async () => {
+      const tickers = mergedDefaultList.map(w => w.ticker).join(',');
+      if (!tickers) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/watchlist-prices?tickers=${tickers}`);
+        if (res.ok) {
+          const data = await res.json();
+          const dataMap = {};
+          data.forEach(item => {
+            dataMap[item.ticker] = item;
+          });
+          
+          setWatchlist(prevList => prevList.map(stock => {
+            const live = dataMap[stock.ticker];
+            if (live && live.price > 0) {
+              return {
+                ...stock,
+                price: new Intl.NumberFormat('ko-KR').format(live.price),
+                change: Math.abs(live.change_rate),
+                direction: live.direction,
+                weather: live.weather || stock.weather
+              };
+            }
+            return stock;
+          }));
+        }
+      } catch (err) {
+        console.warn('Failed to fetch watchlist live prices:', err);
+      }
+    };
+
+    fetchWatchlistPrices();
+    const interval = setInterval(fetchWatchlistPrices, 30000); // 30초 주기 실시간 연동
+    return () => clearInterval(interval);
+  }, [mergedDefaultList]);
 
   return (
     <div className={`flex flex-col rounded-2xl border p-5 transition-all duration-300 ${
@@ -63,31 +102,16 @@ export default function WatchlistCard({ isDark }) {
       {/* ── 위젯 헤더 ── */}
       <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/5 flex-shrink-0">
         <div className="flex items-center gap-1.5">
-          <Icon name="star" className="w-4 h-4 text-amber-400 fill-amber-400" />
+          <Icon name="activity" className="w-4 h-4 text-emerald-500" />
           <h3 className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-            관심 주식
+            주식 실시간 시세
           </h3>
-          <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
-            isDark ? 'bg-white/10 text-slate-400' : 'bg-slate-100 text-slate-500'
-          }`}>
-            {watchlist.length}개
-          </span>
         </div>
-
-        <button
-          onClick={() => router.push('/portfolio/register')}
-          className={`text-[11px] font-bold flex items-center gap-1 transition-colors ${
-            isDark ? 'text-[#69dbad] hover:text-[#52c49b]' : 'text-[#3eb489] hover:text-[#2d966e]'
-          }`}
-        >
-          <span>+ 종목 추가</span>
-        </button>
       </div>
 
-      {/* ── 관심 종목 10개 (세로 길이를 시원하고 길게 늘린 항목 리스트) ── */}
+      {/* ── 관심 종목 10개 (실시간 시세 항목 리스트) ── */}
       <div className="flex flex-col space-y-2 pt-1">
         {watchlist.map(stock => {
-          const isStarred = starred.includes(stock.ticker);
           const wCfg = WEATHER_MAP[stock.weather] || WEATHER_MAP.cloudy;
           const isUp = stock.direction === 'up';
 
@@ -101,42 +125,33 @@ export default function WatchlistCard({ isDark }) {
                   : 'hover:bg-slate-50 border border-transparent hover:border-slate-100'
               }`}
             >
-              {/* 좌측: 별 버튼 + 종목명 */}
+              {/* 좌측: 날씨 아이콘 + 종목명 */}
               <div className="flex items-center gap-3 min-w-0">
-                <button
-                  onClick={(e) => toggleStar(e, stock.ticker)}
-                  aria-label="즐겨찾기 토글"
-                  className="p-0.5 rounded transition-transform active:scale-90 flex-shrink-0"
-                >
-                  <Icon
-                    name="star"
-                    className={`w-4 h-4 transition-colors ${
-                      isStarred
-                        ? 'text-amber-400 fill-amber-400'
-                        : (isDark ? 'text-slate-600 hover:text-slate-400' : 'text-slate-300 hover:text-slate-400')
-                    }`}
-                  />
-                </button>
-
-                <span className={`text-xs font-bold truncate ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-                  {stock.name}
-                </span>
+                <Icon name={wCfg.icon} className={`w-4 h-4 flex-shrink-0 ${wCfg.color}`} />
+                
+                <div className="flex flex-col min-w-0">
+                  <span className={`text-xs font-bold truncate ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+                    {stock.name}
+                  </span>
+                  <span className={`text-[9px] font-mono ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
+                    {stock.ticker}
+                  </span>
+                </div>
               </div>
 
-              {/* 우측: 날씨 배지 + 주가 + 등락률 */}
-              <div className="flex items-center gap-2.5 flex-shrink-0">
-                <Icon name={wCfg.icon} className={`w-4 h-4 ${wCfg.color}`} />
-
-                <span className={`text-xs font-mono ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              {/* 우측: 주가 + 화살표 전일대비 등락률 */}
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <span className={`text-xs font-mono font-bold ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>
                   {stock.price}원
                 </span>
 
-                <span className={`text-xs font-black font-mono w-14 text-right ${
+                <span className={`text-xs font-black font-mono flex items-center gap-0.5 w-16 justify-end ${
                   isUp
                     ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]')
                     : 'text-rose-500'
                 }`}>
-                  {isUp ? '+' : ''}{stock.change.toFixed(1)}%
+                  <span>{isUp ? '▲' : '▼'}</span>
+                  <span>{stock.change.toFixed(1)}%</span>
                 </span>
               </div>
             </div>

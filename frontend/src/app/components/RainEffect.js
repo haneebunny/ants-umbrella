@@ -1,16 +1,21 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 
 /**
  * 세로 방향 기준 15도 각도로 기울어진 가늘고 날렵한 대각선 비 내림 이펙트
  */
 export default function RainEffect({ weatherStatus, isDark }) {
   const isRaining = weatherStatus === 'rainy' || weatherStatus === 'thunder';
+  const [raindrops, setRaindrops] = useState([]);
 
   // 55개의 가늘고 날렵한 빗방울 (1.0초 ~ 1.8초 속도)
-  const raindrops = useMemo(() => {
-    return Array.from({ length: 55 }).map((_, i) => ({
+  useEffect(() => {
+    if (!isRaining) {
+      setRaindrops([]);
+      return;
+    }
+    const drops = Array.from({ length: 55 }).map((_, i) => ({
       id: i,
       left: `${(i * 1.8 + Math.random() * 2.0).toFixed(1)}%`,
       delay: `${(Math.random() * 2.0).toFixed(2)}s`,
@@ -19,9 +24,10 @@ export default function RainEffect({ weatherStatus, isDark }) {
       opacity: (0.5 + Math.random() * 0.35).toFixed(2),
       width: Math.random() > 0.5 ? '1.5px' : '1.0px',
     }));
-  }, []);
+    setRaindrops(drops);
+  }, [isRaining]);
 
-  if (!isRaining) return null;
+  if (!isRaining || raindrops.length === 0) return null;
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none">

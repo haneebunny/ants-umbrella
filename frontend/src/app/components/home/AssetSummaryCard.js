@@ -207,30 +207,32 @@ function RadarChart({ scores, weatherStatus, isDark }) {
 
       </svg>
 
-      {/* ── ℹ️ 툴팁 스마트 해설 카드 (가독성을 위해 글씨 크기 12px로 확대) ── */}
-      {hoveredAx ? (
-        <div className={`w-full p-3 rounded-xl border transition-all animate-fadeIn ${
-          isDark
-            ? 'bg-zinc-800/90 border-emerald-500/40 text-slate-200 shadow-xl'
-            : 'bg-white border-emerald-500/30 text-slate-800 shadow-md'
-        }`}>
-          <div className="flex items-center justify-between mb-1">
-            <span className={`font-black text-xs ${isDark ? 'text-[#69dbad]' : 'text-[#2d966e]'}`}>
-              {hoveredAx.label.replace('\n', ' ')} ({scores[hoveredAx.key] ?? 0}점)
-            </span>
-            <span className={`text-[10px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>ℹ️ 지표 스마트 해설</span>
+      {/* ── ℹ️ 툴팁 스마트 해설 카드 (높이 고정하여 레이아웃 시프트 방지) ── */}
+      <div className="w-full min-h-[96px] h-[96px] flex items-stretch">
+        {hoveredAx ? (
+          <div className={`w-full p-3 rounded-xl border text-left transition-all animate-fadeIn ${
+            isDark
+              ? 'bg-zinc-800/90 border-emerald-500/40 text-slate-200 shadow-xl'
+              : 'bg-white border-emerald-500/30 text-slate-800 shadow-md'
+          }`}>
+            <div className="flex items-center justify-between mb-1">
+              <span className={`font-black text-xs ${isDark ? 'text-[#69dbad]' : 'text-[#2d966e]'}`}>
+                {hoveredAx.label.replace('\n', ' ')} ({scores[hoveredAx.key] ?? 0}점)
+              </span>
+              <span className={`text-[10px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>ℹ️ 지표 스마트 해설</span>
+            </div>
+            <p className={`text-[12px] leading-relaxed font-medium ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+              {hoveredAx.desc}
+            </p>
           </div>
-          <p className={`text-[12px] leading-relaxed font-medium ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
-            {hoveredAx.desc}
-          </p>
-        </div>
-      ) : (
-        <div className={`w-full p-2.5 rounded-xl text-[11px] text-center transition-all ${
-          isDark ? 'text-slate-400 bg-white/5 border border-white/5' : 'text-slate-500 bg-slate-50 border border-slate-200'
-        }`}>
-          <span>💡 각 항목 지표를 마우스로 건드리면 상세 해설이 나타납니다</span>
-        </div>
-      )}
+        ) : (
+          <div className={`w-full p-2.5 rounded-xl text-[11px] text-center flex items-center justify-center transition-all ${
+            isDark ? 'text-slate-400 bg-white/5 border border-white/5' : 'text-slate-500 bg-slate-50 border border-slate-200'
+          }`}>
+            <span>💡 각 항목 지표를 마우스로 건드리면 상세 해설이 나타납니다</span>
+          </div>
+        )}
+      </div>
 
 
 
@@ -306,15 +308,7 @@ export default function AssetSummaryCard({ summary, radarScores, isDark, weather
           }`}>
             위험자산 {riskAssetRatio}%
           </span>
-          <a
-            href="/portfolio/register"
-            className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
-              isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            <Icon name="edit" className="w-3 h-3" />
-            편집
-          </a>
+
         </div>
       </div>
 

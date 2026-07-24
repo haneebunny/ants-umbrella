@@ -10,15 +10,18 @@ sys.modules['matplotlib.font_manager'] = MagicMock()
 sys.modules['matplotlib.pyplot'] = MagicMock()
 
 import json
+import os
 import requests
 from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 from pathlib import Path
+from dotenv import load_dotenv
 import FinanceDataReader as fdr
 from pykrx import stock
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+load_dotenv(PROJECT_ROOT / "backend" / ".env")
 
 def get_portfolio_tickers() -> list[str]:
     portfolio_path = PROJECT_ROOT / "data" / "portfolio.json"
@@ -31,6 +34,54 @@ def get_portfolio_tickers() -> list[str]:
             if code:
                 tickers.add(str(code).zfill(6))
     return sorted(tickers)
+
+def get_realtime_price_via_kis(ticker: str) -> dict:
+    """한국투자증권 API를 통해 특정 종목의 실시간 현재가 정보를 반환합니다."""
+    kis_key = (os.environ.get("KIS_APP_KEY") or os.environ.get("KIS_APPKEY") or "").strip()
+    kis_secret = (os.environ.get("KIS_APP_SECRET") or os.environ.get("KIS_APPSECRET") or "").strip()
+    if not kis_key or not kis_secret:
+        print("[WARN] .env에 KIS_APP_KEY 또는 KIS_APP_SECRET이 설정되지 않아 KIS 실시간 주가 조회를 스킵합니다.")
+        return None
+        
+    try:
+        # 1. 접근 토큰 발급
+        auth_url = "https://openapi.koreainvestment.com:9443/oauth2/tokenP"
+        headers = {"content-type": "application/json"}
+        body = {
+            "grant_type": "client_credentials",
+            "appkey": kis_key,
+            "appsecret": kis_secret
+        }
+        res = requests.post(auth_url, headers=headers, data=json.dumps(body), timeout=5)
+        if res.status_code != 200:
+            return None
+        access_token = res.json().get("access_token")
+        
+        # 2. 실시간 현재가 조회 (H0STCNT0)
+        price_url = "https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/quotations/inquire-price"
+        price_headers = {
+            "content-type": "application/json; charset=utf-8",
+            "authorization": f"Bearer {access_token}",
+            "appkey": kis_key,
+            "appsecret": kis_secret,
+            "tr_id": "FHKST01010100"
+        }
+        params = {
+            "FID_COND_MRKT_DIV_CODE": "J",
+            "FID_INPUT_ISCD": str(ticker).zfill(6)
+        }
+        price_res = requests.get(price_url, headers=price_headers, params=params, timeout=5)
+        if price_res.status_code == 200:
+            out = price_res.json().get("output", {})
+            return {
+                "ticker": str(ticker).zfill(6),
+                "price": int(out.get("stck_prpr", 0)),
+                "change": int(out.get("prdy_vrss", 0)),
+                "change_rate": float(out.get("prdy_ctrt", 0.0))
+            }
+    except Exception as e:
+        print(f"[ERROR] KIS API 현재가 조회 중 오류 발생: {e}")
+    return None
 
 def get_sector_map() -> pd.DataFrame:
     # 16개 핵심 포트폴리오 종목에 대한 정적 업종(섹터) 정보 백업 (FDR 404 에러 및 네트워크 단절 대비)
