@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import Icon from './Icon';
 
 export default function SurveyScreen({
@@ -50,7 +50,7 @@ export default function SurveyScreen({
       />
 
       {/* Top Header */}
-      <header className={`flex justify-between items-center px-6 h-16 w-full fixed top-0 z-50 transition-all ${
+      <header className={`flex justify-between items-center px-6 h-14 w-full fixed top-0 z-50 transition-all ${
         isDark 
           ? 'bg-[#0d0f0f]/80 backdrop-blur-md border-b border-[#3d4943]' 
           : 'bg-[#f4f9f7]/80 backdrop-blur-md border-b border-[#3eb489]/20'
@@ -113,7 +113,7 @@ export default function SurveyScreen({
       </header>
 
       {/* Progress Bar Section */}
-      <div className={`fixed top-16 w-full z-40 px-6 py-4 transition-all ${
+      <div className={`fixed top-14 w-full z-40 px-6 py-4 transition-all ${
         isDark ? 'bg-[#0d0f0f]/90' : 'bg-[#f4f9f7]/90 backdrop-blur-md border-b border-[#3eb489]/10'
       }`}>
         <div className="max-w-4xl mx-auto">
@@ -147,7 +147,7 @@ export default function SurveyScreen({
       </div>
 
       {/* Main Content */}
-      <main className="flex-grow w-full max-w-4xl px-6 pt-36 pb-32 z-10">
+      <main className="flex-grow w-full max-w-4xl px-6 pt-32 pb-32 z-10">
         <div className="space-y-8 max-w-2xl mx-auto">
           
           {/* Question Header */}

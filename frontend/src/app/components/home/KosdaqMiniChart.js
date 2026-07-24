@@ -4,7 +4,7 @@ import React from 'react';
 import Icon from '../Icon';
 
 /**
- * 코스닥 미니 지수 위젯 (토스증권 스타일)
+ * 코스피 미니 지수 위젯 (토스증권 스타일)
  * @param {Object}  props.index  - kosdaqIndex 객체
  * @param {boolean} props.isDark
  */
@@ -37,7 +37,7 @@ export default function KosdaqMiniChart({ index, isDark }) {
       <div className="flex items-center justify-between">
         <div>
           <p className={`text-[10px] font-bold tracking-wider uppercase ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-            코스닥
+            코스피
           </p>
           <p className={`text-xl font-black font-mono leading-tight ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
             {currentPrice.toFixed(2)}

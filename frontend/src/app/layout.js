@@ -1,5 +1,7 @@
-﻿import { Outfit, Noto_Sans_KR, JetBrains_Mono } from "next/font/google";
+import { Outfit, Noto_Sans_KR, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "./hooks/useTheme";
+import AppLayoutShell from "./components/layout/AppLayoutShell";
 
 /* ─── Google Fonts ─── */
 const outfit = Outfit({
@@ -54,10 +56,14 @@ export default function RootLayout({ children }) {
     >
       {/* dangerouslySetInnerHTML 사용: 인라인 스크립트로 첫 렌더 전 테마 주입 */}
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script id="theme-initializer" dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-full flex flex-col transition-colors duration-300">
-        {children}
+        <ThemeProvider>
+          <AppLayoutShell>
+            {children}
+          </AppLayoutShell>
+        </ThemeProvider>
       </body>
     </html>
   );

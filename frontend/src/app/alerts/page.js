@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '../hooks/useTheme';
-import Header from '../components/layout/Header';
 import Icon from '../components/Icon';
 
 const INITIAL_ALERTS = [
@@ -20,11 +19,40 @@ const LEVEL_CFG = {
   info:    { icon: 'info',          label: '정보',   color: 'text-sky-500',    bg: 'bg-sky-50',    dark: 'bg-sky-900/30 text-sky-400', border: 'border-sky-200' },
 };
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 export default function AlertsPage() {
   const router = useRouter();
-  const { isDark, toggleTheme } = useTheme();
+  const { isDark } = useTheme();
   const [alerts, setAlerts] = useState(INITIAL_ALERTS);
   const [activeTab, setActiveTab] = useState('all');
+  const [loading, setLoading] = useState(false);
+
+  // 백엔드 실시간 API 수집 알림 연동
+  useEffect(() => {
+    async function loadAlerts() {
+      try {
+        const res = await fetch(`${API_BASE}/api/alerts`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.length > 0) {
+            setAlerts(data.map((item, idx) => ({
+              id: item.id || idx + 1,
+              level: item.level || 'danger',
+              ticker: item.ticker_name || item.ticker || '종목',
+              code: item.ticker_code || item.ticker || '005930',
+              title: item.title || item.news_title || 'ESG 위험 감지 알림',
+              time: item.time || '방금 전',
+              read: false
+            })));
+          }
+        }
+      } catch (e) {
+        console.warn('[AlertsPage] API fetch fallback to preset mock:', e);
+      }
+    }
+    loadAlerts();
+  }, []);
 
   const unreadCount = alerts.filter(a => !a.read).length;
 
@@ -36,7 +64,9 @@ export default function AlertsPage() {
   // 개별 읽음 처리 & 종목 상세 페이지 이동
   const handleAlertClick = (alert) => {
     setAlerts(prev => prev.map(a => a.id === alert.id ? { ...a, read: true } : a));
-    router.push(`/stock/${alert.code}`);
+    if (alert.code) {
+      router.push(`/stock/${alert.code}`);
+    }
   };
 
   // 탭별 필터링
@@ -46,12 +76,10 @@ export default function AlertsPage() {
   });
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-300 ${isDark ? 'bg-[#080b08] text-[#e2e2e2]' : 'bg-[#f5f6f4] text-[#0f1713]'}`}>
-      <Header isDark={isDark} toggleTheme={toggleTheme} title="위험 알림" />
-
-      <main className="pt-14 pb-10 px-4 max-w-4xl lg:ml-60 lg:w-[calc(100%-240px)]">
+    <div className="w-full">
+      <main className="pt-2 pb-10 px-1 max-w-4xl">
         {/* 헤더 & 모두 읽음 액션 */}
-        <div className="pt-6 pb-4 flex items-center justify-between">
+        <div className="pt-2 pb-4 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
               <h1 className={`text-xl font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>위험 알림</h1>
@@ -62,7 +90,7 @@ export default function AlertsPage() {
               )}
             </div>
             <p className={`text-xs mt-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-              내 보유 종목 관련 주요 공시 및 ESG 위험 알림 리스트입니다.
+              {loading ? '알림을 불러오는 중이에요...' : '내 보유 종목 관련 주요 공시 및 ESG 위험 알림 리스트입니다. 🔔'}
             </p>
           </div>
 
@@ -95,7 +123,7 @@ export default function AlertsPage() {
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex-shrink-0 ${
                   isActive
-                    ? (isDark ? 'bg-[#3eb489] text-white shadow-md' : 'bg-[#3eb489] text-white shadow-md')
+                    ? 'bg-[#3eb489] text-white shadow-md'
                     : (isDark ? 'bg-white/5 text-slate-400 hover:bg-white/10' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50')
                 }`}
               >
@@ -114,11 +142,11 @@ export default function AlertsPage() {
         <div className={`rounded-2xl border overflow-hidden transition-all ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
           {filteredAlerts.length === 0 ? (
             <div className="p-8 text-center text-xs text-slate-400">
-              해당하는 알림 내역이 없습니다.
+              해당하는 알림 내역이 없습니다. ☀️
             </div>
           ) : (
             filteredAlerts.map((alert, idx) => {
-              const cfg = LEVEL_CFG[alert.level];
+              const cfg = LEVEL_CFG[alert.level] || LEVEL_CFG.info;
               const isLast = idx === filteredAlerts.length - 1;
               return (
                 <div

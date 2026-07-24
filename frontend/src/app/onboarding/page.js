@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '../hooks/useTheme';
 import IntroScreen from '../components/IntroScreen';
@@ -9,7 +9,7 @@ import { QUESTIONS, calculateRiskProfile } from '../components/questions';
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { theme, isDark, toggleTheme } = useTheme();
+  const { toggleTheme, theme } = useTheme();
   const [step, setStep] = useState('INTRO');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
@@ -36,14 +36,16 @@ export default function OnboardingPage() {
     if (currentQuestionIndex < QUESTIONS.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
-      const profile = calculateRiskProfile(answers);
-      localStorage.setItem('ants_result_profile', JSON.stringify(profile));
-      router.push('/portfolio/register');
+      const computedProfile = calculateRiskProfile(answers);
+      localStorage.setItem('ants_result_profile', JSON.stringify(computedProfile));
+      
+      // 진단결과 페이지로 분리 라우팅 이동!
+      router.push('/onboarding/result');
     }
   };
 
   const handleCancelSurvey = () => {
-    const ok = window.confirm('진행 중인 성향 진단을 중단하고 인트로 화면으로 돌아가시겠습니까?');
+    const ok = window.confirm('앗, 정말로 성향 진단을 중단하고 처음 화면으로 돌아갈까요? 😢');
     if (!ok) return;
     setStep('INTRO');
     setCurrentQuestionIndex(0);
@@ -51,7 +53,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    <main className="flex-1 flex flex-col w-full min-h-screen">
+    <div className="w-full">
       {step === 'INTRO' && (
         <IntroScreen
           theme={theme}
@@ -72,6 +74,6 @@ export default function OnboardingPage() {
           onCancel={handleCancelSurvey}
         />
       )}
-    </main>
+    </div>
   );
 }

@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTheme } from './hooks/useTheme';
-import Header from './components/layout/Header';
 import WeatherBanner from './components/home/WeatherBanner';
 import KosdaqMiniChart from './components/home/KosdaqMiniChart';
 import AssetSummaryCard from './components/home/AssetSummaryCard';
@@ -12,6 +12,7 @@ import GuestCTABanner from './components/home/GuestCTABanner';
 import WatchlistCard from './components/home/WatchlistCard';
 import AntPet from './components/AntPet';
 import RainEffect from './components/RainEffect';
+import Icon from './components/Icon';
 import { PORTFOLIO_PRESETS, kosdaqIndex } from './data/mockData';
 
 
@@ -32,6 +33,7 @@ function aggregateWeather(stocks) {
 }
 
 export default function Home() {
+  const router = useRouter();
   const { isDark, toggleTheme } = useTheme();
   const [isDemo, setIsDemo] = useState(true);
 
@@ -57,14 +59,20 @@ export default function Home() {
 
   // 초기 상태부터 전역 캐시된 데이터로 즉시 렌더링 (돌아왔을 때 딜레이/깜빡임 100% 차단)
   const [liveStockList, setLiveStockList] = useState(() => globalWeatherCache[selectedPortfolioId] || null);
+  const [showSurveyPrompt, setShowSurveyPrompt] = useState(false);
+  const [kospiIndex, setKospiIndex] = useState(kosdaqIndex);
   const [apiLoading, setApiLoading] = useState(false);
 
-  // 마운트 시 localStorage에서 완료된 진단 결과 복원
+  // 마운트 시 localStorage에서 완료된 진단 결과 복원 및 게스트 모달 처리
   useEffect(() => {
     const complete = localStorage.getItem('ants_survey_complete');
     const saved    = localStorage.getItem('ants_result_profile');
     if (complete === 'true' && saved) {
       try { setIsDemo(false); } catch { setIsDemo(true); }
+    } else {
+      // 진단을 받지 않은 신규 유저인 경우 데모 모드로 둘러보기 지원하며, 검사 유도 모달 활성화
+      setIsDemo(true);
+      setShowSurveyPrompt(true);
     }
   }, []);
 
@@ -78,10 +86,10 @@ export default function Home() {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/dashboard-weather?tickers=${tickers}`, {
+      const res = await fetch(API_BASE + '/api/dashboard-weather?tickers=' + tickers, {
         signal: AbortSignal.timeout(5000),
       });
-      if (!res.ok) throw new Error(`API ${res.status}`);
+      if (!res.ok) throw new Error('API ' + res.status);
       const apiData = await res.json();
 
       const apiMap = {};
@@ -111,6 +119,24 @@ export default function Home() {
     }
   }, []);
 
+  // KOSPI 실시간 지수 호출 연동 (30초 주기 폴링)
+  useEffect(() => {
+    const fetchKospiIndex = async () => {
+      try {
+        const res = await fetch(API_BASE + '/api/kospi-index');
+        if (res.ok) {
+          const data = await res.json();
+          setKospiIndex(data);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch KOSPI index:', err);
+      }
+    };
+    fetchKospiIndex();
+    const interval = setInterval(fetchKospiIndex, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     if (globalWeatherCache[selectedPortfolioId]) {
       setLiveStockList(globalWeatherCache[selectedPortfolioId]);
@@ -127,48 +153,36 @@ export default function Home() {
     : mockPortfolio.overallWeather;
 
   const { assetSummary, profile, radarScores } = mockPortfolio;
-  const alertCount = 2;
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-300 ${
-      isDark ? 'bg-[#080b08] text-[#e2e2e2]' : 'bg-[#f0f2f0] text-[#0f1713]'
-    }`}>
-
-      {/* 공통 헤더 */}
-      <Header isDark={isDark} toggleTheme={toggleTheme} alertCount={alertCount} />
-
-      {/* 배경 대각선 비 내림 애니메이션 (날씨가 '비'나 '번개'일 때 작동) */}
+    <div className="w-full relative">
+      {/* 배경 대각선 비 내림 애니메이션 (날씨가 '비'나 '번개'일 때 작동) - z-0으로 렌더링 */}
       <RainEffect weatherStatus={overallWeather.status} isDark={isDark} />
 
-      {/* ── 메인 콘텐츠: 모든 카드가 비 애니메이션(z-0) 위로 오도록 relative z-10 적용 ── */}
-      <main className="relative z-10 pt-14 pb-32 px-4 lg:px-6 lg:ml-60 lg:w-[calc(100%-240px)] max-w-[1920px] min-h-screen flex flex-col">
-
-
+      {/* ── 콘텐츠 영역을 relative z-10으로 감싸 빗방울이 뒤로 가게 함 ── */}
+      <div className="relative z-10 w-full">
         {/* ─ 게스트 CTA (데모 시에만) ─ */}
         {isDemo && (
-          <div className="flex items-center pt-2 pb-2 flex-shrink-0">
+          <div className="mb-3">
             <GuestCTABanner isDemoMode={isDemo} isDark={isDark} compact />
           </div>
         )}
-        {!isDemo && <div className="pt-3 flex-shrink-0" />}
 
-        {/* ── 메인 12열 그리드: 날씨 배너(9칸) + 상단 연동 관심 주식(3칸) ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+        {/* ── 메인 2단 그리드 (좌: 콘텐츠 / 우: 관심주식) ── */}
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-4 items-start">
 
-          {/* 좌측 9칸 영역: 상단 날씨 배너 + 하단 3열 위젯 ── */}
-          <div className="lg:col-span-9 flex flex-col gap-4">
+          {/* ── 좌측 메인 콘텐츠 영역 ── */}
+          <div className="flex flex-col gap-4 min-w-0">
 
-            {/* 섹션 1: 날씨 예보 배너 (가로폭 9칸으로 조절) */}
-            <div>
-              <WeatherBanner weather={overallWeather} isDark={isDark} />
-            </div>
+            {/* 날씨 배너 (전체 폭) */}
+            <WeatherBanner weather={overallWeather} isDark={isDark} />
 
-            {/* 하단 3열 그리드 (2 : 3.5 : 3.5 = 9) */}
-            <div className="grid grid-cols-1 lg:grid-cols-9 gap-4 items-start">
+            {/* 하단 3열 위젯 그리드: 12열 레이아웃으로 변경하여 좌측은 좁히고 종목별 날씨는 넓힘 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 items-start">
 
-              {/* 1열 (2칸) — 코스닥 + 투자성향 & 포트폴리오 선택 */}
-              <div className="lg:col-span-2 flex flex-col gap-4">
-                <KosdaqMiniChart index={kosdaqIndex} isDark={isDark} />
+              {/* 코스닥 + 투자성향 (12열 중 3열 배정, 컴팩트하게) */}
+              <div className="md:col-span-1 lg:col-span-3 flex flex-col gap-4">
+                <KosdaqMiniChart index={kospiIndex} isDark={isDark} />
                 <PortfolioProfileCard
                   profile={profile}
                   isDemoMode={isDemo}
@@ -179,8 +193,8 @@ export default function Home() {
                 />
               </div>
 
-              {/* 2열 (3.5칸) — 종목별 날씨 */}
-              <div className="lg:col-span-3 flex flex-col gap-4">
+              {/* 종목별 날씨 (12열 중 5열 배정, 종목명이 안 잘리도록 넉넉하게) */}
+              <div className="md:col-span-1 lg:col-span-4 flex flex-col gap-4">
                 <StockWeatherList
                   stocks={stockWeatherList}
                   isDark={isDark}
@@ -188,8 +202,8 @@ export default function Home() {
                 />
               </div>
 
-              {/* 3열 (3.5/4칸) — 보유 자산 도넛 */}
-              <div className="lg:col-span-4 flex flex-col gap-4">
+              {/* 보유 자산 (md에서 2칸 차지, lg에서 4열 배정) */}
+              <div className="md:col-span-2 lg:col-span-5 flex flex-col gap-4">
                 <AssetSummaryCard
                   summary={assetSummary}
                   radarScores={radarScores}
@@ -199,21 +213,78 @@ export default function Home() {
               </div>
 
             </div>
-
           </div>
 
-          {/* ── 우측 4열 (3칸) — 관심 주식 (자연스러운 컴팩트 고정 높이) ── */}
-          <div className="lg:col-span-3 flex flex-col gap-4">
-            <WatchlistCard isDark={isDark} />
+          {/* ── 우측 관심 주식 (xl 이상에서만 고정 사이드 패널) ── */}
+          <div className="hidden xl:flex flex-col gap-4 min-w-0">
+            <WatchlistCard isDark={isDark} portfolio={stockWeatherList} />
           </div>
 
         </div>
 
-      </main>
+        {/* 모바일/태블릿: 관심주식을 하단에 배치 */}
+        <div className="xl:hidden mt-4">
+          <WatchlistCard isDark={isDark} portfolio={stockWeatherList} />
+        </div>
+      </div>
+
+
+      {/* ── 팝업 모달: 비진단자(신규 방문자) 대상 성향 검사 유도 ── */}
+      {showSurveyPrompt && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className={`w-full max-w-md rounded-2xl border p-6 text-center space-y-6 transform scale-100 transition-all ${
+            isDark 
+              ? 'bg-[#191d1a] border-emerald-500/30 text-white shadow-[0_10px_50px_rgba(0,0,0,0.5)]' 
+              : 'bg-white border-slate-100 text-[#0f1713] shadow-[0_10px_50px_rgba(62,180,137,0.15)]'
+          }`}>
+            <div className="space-y-4">
+              {/* 상단 레이더 펄스 아이콘 */}
+              <div className="relative inline-block">
+                <div className={`absolute inset-0 blur-2xl rounded-full scale-125 opacity-30 ${isDark ? 'bg-[#69dbad]' : 'bg-[#3eb489]'}`} />
+                <div className={`relative rounded-full p-4 w-20 h-20 mx-auto flex items-center justify-center border shadow-inner ${
+                  isDark ? 'bg-zinc-800/80 border-zinc-700/50 text-[#69dbad]' : 'bg-emerald-50 border-emerald-100 text-[#3eb489]'
+                }`}>
+                  <Icon name="radar" className="w-10 h-10 animate-pulse" />
+                </div>
+              </div>
+
+              {/* 문구 설명 */}
+              <div className="space-y-2">
+                <h2 className="text-lg font-black tracking-tight leading-snug">
+                  반가워요! 🐜 <br />내 투자 성향에 딱 맞는 리스크를 진단해 보세요!
+                </h2>
+                <p className={`text-xs leading-relaxed font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  개미의 우산은 회원님의 투자 체질(성향)에 따라 맞춤형 주식 기상도를 분석해 드리는 서비스예요.<br />
+                  지금 성향 진단을 받아보시면 나만을 위한 포트폴리오 날씨와 위험 대비책을 바로 확인하실 수 있답니다! ☔
+                </p>
+              </div>
+            </div>
+
+            {/* 버튼 그룹 */}
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => router.push('/onboarding')}
+                className="w-full py-3 rounded-xl text-xs font-black bg-[#3eb489] text-[#002115] hover:bg-[#329e76] transition-all cursor-pointer shadow-md active:scale-[0.98]"
+              >
+                🎯 3분만에 내 투자성향 진단하기
+              </button>
+              <button
+                onClick={() => setShowSurveyPrompt(false)}
+                className={`w-full py-2.5 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${
+                  isDark 
+                    ? 'border-white/10 hover:bg-white/5 text-slate-300' 
+                    : 'border-slate-200 hover:bg-slate-50 text-slate-500 bg-white'
+                }`}
+              >
+                👀 샘플데이터로 먼저 둘러볼래요
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 나개미 캐릭터 플로팅 */}
       <AntPet weather={overallWeather.status} portfolio={stockWeatherList} />
     </div>
   );
 }
-

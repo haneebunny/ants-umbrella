@@ -1,14 +1,16 @@
-﻿import React from 'react';
+import React from 'react';
+import { useRouter } from 'next/navigation';
 import Icon from './Icon';
 
 export default function IntroScreen({ theme, onStart, toggleTheme }) {
   const isDark = theme === 'dark';
+  const router = useRouter();
 
   return (
-    <div className={`min-h-screen relative overflow-hidden transition-colors duration-300 w-full ${
+    <div className={`min-h-screen relative overflow-hidden transition-colors duration-300 w-full flex flex-col justify-between ${
       isDark ? 'bg-[#0d0f0f] text-[#e2e2e2]' : 'bg-[#f4f9f7] text-[#0f1713]'
     }`}>
-      {/* Dynamic grid background */}
+      {/* Background patterns */}
       <div 
         className="absolute inset-0 pointer-events-none opacity-[0.03]"
         style={{
@@ -18,54 +20,33 @@ export default function IntroScreen({ theme, onStart, toggleTheme }) {
           backgroundSize: '24px 24px'
         }}
       />
-
-      {/* Atmospheric Blurs */}
-      <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[120px] pointer-events-none z-0 ${
+      <div className={`absolute top-1/4 -right-20 w-96 h-96 rounded-full blur-[120px] pointer-events-none -z-10 ${
         isDark ? 'bg-[#69dbad]/5' : 'bg-[#3eb489]/5'
+      }`} />
+      <div className={`absolute bottom-1/4 -left-20 w-80 h-80 rounded-full blur-[100px] pointer-events-none -z-10 ${
+        isDark ? 'bg-[#d7ffc5]/5' : 'bg-[#3eb489]/20'
       }`} />
 
       {/* Top Header */}
-      <header className={`fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-6 z-50 transition-all ${
+      <header className={`flex justify-between items-center px-6 h-14 w-full fixed top-0 z-50 transition-all ${
         isDark 
           ? 'bg-[#0d0f0f]/80 backdrop-blur-md border-b border-[#3d4943]' 
           : 'bg-[#f4f9f7]/80 backdrop-blur-md border-b border-[#3eb489]/20'
       }`}>
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.location.reload()}>
-          <img src="/images/ants_umbrella_logo.png" alt="로고" className="w-8 h-8 object-contain" />
-          <span className={`font-sans text-xl font-black tracking-tight px-2.5 py-0.5 rounded transition-all ${
-            isDark 
-              ? 'text-[#69dbad] bg-[#69dbad]/5' 
-              : 'text-[#3eb489] bg-[#3eb489]/5 border border-[#3eb489]/20'
-          }`}>
+        <div
+          className="flex items-center gap-2 cursor-pointer"
+          onClick={() => router.push('/')}
+        >
+          <img src="/images/ants_umbrella_logo.png" alt="로고" className="w-7 h-7 object-contain" />
+          <span className={`font-sans text-lg font-black tracking-tight ${isDark ? 'text-[#e2e2e2]' : 'text-[#0f1713]'}`}>
             개미의 우산
           </span>
-          <div className={`h-4 w-[1px] ${isDark ? 'bg-[#3d4943]' : 'bg-[#3eb489]/20'} mx-2`} />
-          <span className={`hidden md:inline-block font-mono text-xs tracking-widest uppercase ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-            Ants Umbrella Terminal
-          </span>
         </div>
 
-        {/* Global Stats */}
-        <div className="hidden lg:flex items-center gap-6">
-          <div className="flex items-center gap-2 text-xs font-semibold">
-            <Icon name="checkCircle2" className="w-4 h-4 text-[#3eb489]" />
-            <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>정답이 없다</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs font-semibold">
-            <Icon name="timer" className="w-4 h-4 text-[#3eb489]" />
-            <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>약 2분 소요</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs font-semibold">
-            <Icon name="info" className="w-4 h-4 text-[#3eb489]" />
-            <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>결과는 참고 정보</span>
-          </div>
-        </div>
-
-        {/* Action Controls & Avatar */}
         <div className="flex items-center gap-4">
           <button
             onClick={toggleTheme}
-            aria-label="Toggle theme"
+            aria-label="화면 테마 전환"
             className={`w-14 h-7 rounded-full p-1 transition-colors duration-300 cursor-pointer relative flex items-center ${
               isDark 
                 ? 'bg-zinc-800 border border-[#3d4943]' 
@@ -82,89 +63,65 @@ export default function IntroScreen({ theme, onStart, toggleTheme }) {
               {isDark ? <Icon name="moon" className="w-3.5 h-3.5" /> : <Icon name="sun" className="w-3.5 h-3.5" />}
             </div>
           </button>
-
-          <div className={`w-8 h-8 rounded-full overflow-hidden border ${
-            isDark ? 'border-[#3d4943]' : 'border-[#3eb489]/20'
-          }`}>
-            <img 
-              className="w-full h-full object-cover" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNY5NDw88xhiYKkv9zCStz5DeMSn1z9x8zbDEx8Rmtv-n1RzKTRZ9dW9UhzlRHyZVWZoZQWIgGrILxwoqhuvl-E2ALQKOZP4takWWeAs8l5pY1um27lbAj3JMxxbpdMPhrhgxjN7zloMUtTXtAR3HY8bp-VPpO8U9XXb_gIZoBe67AWv-AiR0mdCPjITnxwgaskhC0aJ-adj7QC2z6MT6ZzfiNq2r4kW_S-EELFtuFBRT-0TbmZOpqIw" 
-              alt="Financial Analyst Avatar"
-            />
-          </div>
         </div>
       </header>
 
-      {/* Main Workspace */}
-      <main className="min-h-screen pt-24 pb-16 flex items-center justify-center relative z-10 px-6 w-full max-w-5xl mx-auto">
-        <div className="w-full text-center">
+      {/* Main content */}
+      <main className="flex-grow w-full max-w-5xl mx-auto px-6 pt-28 pb-16 flex items-center justify-center relative z-10">
+        <div className="text-center w-full max-w-3xl space-y-8">
           
-          {/* Umbrella Illustration */}
-          <div className="mb-10 relative inline-block">
-            <div className={`absolute inset-0 blur-3xl rounded-full scale-125 opacity-70 ${
+          {/* Logo illustration */}
+          <div className="mb-8 relative inline-block">
+            <div className={`absolute inset-0 blur-3xl rounded-full scale-125 opacity-60 ${
               isDark ? 'bg-[#69dbad]/15' : 'bg-[#3eb489]/10'
             }`} />
             
-            <div className={`relative transition-all duration-500 rounded-full p-6 w-56 h-56 mx-auto flex items-center justify-center border-2 shadow-2xl ${
+            <div className={`relative rounded-full p-5 w-44 h-44 mx-auto flex items-center justify-center border-2 shadow-xl ${
               isDark 
-                ? 'bg-[#1e2020]/75 backdrop-blur-md border-[#69dbad]/40' 
-                : 'bg-white/80 backdrop-blur-md border-[#3eb489]/30 soft-shadow-light hover:soft-shadow-hover-light'
+                ? 'bg-[#1e2020]/75 backdrop-blur-md border-[#69dbad]/30' 
+                : 'bg-white/80 backdrop-blur-md border-[#3eb489]/20 soft-shadow-light'
             }`}>
-              <div className="absolute inset-0 pointer-events-none opacity-5 bg-[radial-gradient(#3eb489_1px,transparent_1px)] [background-size:12px_12px]" />
-              
-              <div className="relative w-44 h-44 flex items-center justify-center transition-transform hover:scale-110 duration-300">
-                <img src="/images/ants_umbrella_logo.png" alt="개미의 우산 로고" className="w-full h-full object-contain" />
-              </div>
+              <div className="absolute inset-0 pointer-events-none opacity-5 bg-[radial-gradient(#3eb489_1px,transparent_1px)] [background-size:10px_10px]" />
+              <img src="/images/ants_umbrella_logo.png" alt="개미의 우산 로고" className="w-32 h-32 object-contain" />
             </div>
           </div>
 
           {/* Core Info */}
-          <div className="space-y-6 max-w-2xl mx-auto">
-            <h1 className={`font-sans text-3xl md:text-5xl font-black tracking-tight leading-tight uppercase ${
+          <div className="space-y-6">
+            <h1 className={`font-sans text-3xl md:text-5xl font-black tracking-tight leading-tight ${
               isDark ? 'text-white' : 'text-[#0f1713]'
             }`}>
-              투자 방식엔 <br className="sm:hidden" />
+              내 주식 포트폴리오{' '}
               <span className={`inline-block relative px-3 py-1 rounded-xl transition-all ${
                 isDark 
                   ? 'text-[#69dbad] underline decoration-[#69dbad]/40 underline-offset-8' 
                   : 'text-[#3eb489] bg-[#3eb489]/5 border border-[#3eb489]/15'
               }`}>
-                정답이 없어요
+                일기예보
               </span>
             </h1>
 
-            <p className={`font-sans text-sm md:text-base leading-relaxed font-medium ${
+            <p className={`font-sans text-sm md:text-base leading-relaxed font-medium max-w-2xl mx-auto ${
               isDark ? 'text-slate-400' : 'text-slate-600'
             }`}>
-              개미의 우산의 정교한 알고리즘을 통해 당신만의 독특한 투자 성향을 파악하세요.<br className="hidden md:inline" /> 
-              심리적 회복탄력성과 시장 대응력을 심층 분석하여 최적의 포트폴리오 전략적 가중치를 제안합니다.
+              ESG 뉴스·공시 리스크를 매일 자동 수집하고, 내 투자 성향에 맞게 가중치를 적용해{' '}
+              <br className="hidden md:inline" />
+              오늘 내 포트폴리오에 비가 내릴지 맑을지 쏙 알려주는 리스크 진단 서비스예요! ☔
             </p>
 
-            {/* Mobile Info Cards */}
-            <div className="grid grid-cols-3 gap-3 pt-6 md:hidden">
-              <div className={`p-3 rounded-xl transition-all border ${
-                isDark 
-                  ? 'bg-[#1a1c1c] border-[#3d4943]' 
-                  : 'bg-white border-[#3eb489]/15 soft-shadow-light'
-              }`}>
-                <Icon name="checkCircle2" className="w-5 h-5 text-[#3eb489] mx-auto mb-1" />
-                <p className="text-[10px] font-mono font-bold">UNBIASED</p>
+            {/* Stats Horizontal */}
+            <div className="flex justify-center items-center gap-6 pt-4 text-xs font-bold">
+              <div className="flex items-center gap-1.5">
+                <Icon name="checkCircle2" className="w-4 h-4 text-[#3eb489]" />
+                <span>정답 없음</span>
               </div>
-              <div className={`p-3 rounded-xl transition-all border ${
-                isDark 
-                  ? 'bg-[#1a1c1c] border-[#3d4943]' 
-                  : 'bg-white border-[#3eb489]/15 soft-shadow-light'
-              }`}>
-                <Icon name="timer" className="w-5 h-5 text-[#3eb489] mx-auto mb-1" />
-                <p className="text-[10px] font-mono font-bold">2 MINS</p>
+              <div className="flex items-center gap-1.5">
+                <Icon name="timer" className="w-4 h-4 text-[#3eb489]" />
+                <span>약 2분 소요</span>
               </div>
-              <div className={`p-3 rounded-xl transition-all border ${
-                isDark 
-                  ? 'bg-[#1a1c1c] border-[#3d4943]' 
-                  : 'bg-white border-[#3eb489]/15 soft-shadow-light'
-              }`}>
-                <Icon name="info" className="w-5 h-5 text-[#3eb489] mx-auto mb-1" />
-                <p className="text-[10px] font-mono font-bold">REFERENCE</p>
+              <div className="flex items-center gap-1.5">
+                <Icon name="info" className="w-4 h-4 text-[#3eb489]" />
+                <span>참고용 리포트</span>
               </div>
             </div>
 
@@ -183,40 +140,18 @@ export default function IntroScreen({ theme, onStart, toggleTheme }) {
               </button>
 
               <p className={`font-mono text-[10px] tracking-widest uppercase opacity-50 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                INSTITUTIONAL GRADE ASSESSMENT V2.4.0
+                개미의 우산 ver.0.2 · 투자성향 진단
               </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Decorative Side Elements */}
-        <div className="absolute left-8 bottom-12 hidden xl:block w-48 opacity-40 font-mono text-[11px] space-y-2 text-slate-500">
-          <div className={`h-[1px] w-full ${isDark ? 'bg-[#3d4943]' : 'bg-[#3eb489]/20'}`} />
-          <p><span className="text-[#3eb489] font-bold">MARKET_VOLATILITY:</span> LOW</p>
-          <div className={`h-[1px] w-1/2 ${isDark ? 'bg-[#3d4943]' : 'bg-[#3eb489]/20'}`} />
-          <p><span className="text-[#3eb489] font-bold">SYSTEM_LATENCY:</span> 12ms</p>
-        </div>
-
-        <div className="absolute right-8 top-24 hidden xl:block w-64 opacity-35 font-mono">
-          <div className={`p-4 rounded-xl border transition-all ${
-            isDark ? 'bg-[#1e2020] border-[#3d4943]' : 'bg-white border-[#3eb489]/15 soft-shadow-light'
-          }`}>
-            <div className="flex justify-between mb-2 text-xs font-bold">
-              <span>Risk Vector</span>
-              <span className="text-[#3eb489]">0.82</span>
-            </div>
-            <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDark ? 'bg-[#0d0f0f]' : 'bg-slate-200'}`}>
-              <div className="bg-[#3eb489] h-full w-[82%]" />
             </div>
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className={`fixed bottom-0 left-0 right-0 h-12 flex justify-between items-center px-6 z-30 transition-all text-[10px] font-mono ${
+      <footer className={`w-full h-12 flex justify-between items-center px-6 z-30 transition-all text-[10px] font-mono border-t ${
         isDark 
-          ? 'bg-[#0d0f0f]/90 border-t border-[#3d4943] text-slate-500' 
-          : 'bg-[#f4f9f7]/90 backdrop-blur-md border-t border-[#3eb489]/20 text-slate-600 font-bold'
+          ? 'bg-[#0d0f0f]/90 border-[#3d4943] text-slate-500' 
+          : 'bg-[#f4f9f7]/90 backdrop-blur-md border-[#3eb489]/20 text-slate-600 font-bold'
       }`}>
         <div>
           <span>© 2026 ANTS UMBRELLA. ALL RIGHTS RESERVED.</span>

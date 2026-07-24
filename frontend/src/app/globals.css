@@ -88,3 +88,17 @@ html, body {
     0 8px 32px rgba(62, 180, 137, 0.14),
     0 0 0 1px rgba(62, 180, 137, 0.12);
 }
+
+/* ── Hover cursor pointer 강제 ── */
+button, 
+a, 
+select, 
+input[type="button"], 
+input[type="submit"], 
+input[type="range"],
+[role="button"],
+.cursor-pointer,
+[onClick],
+[onclick] {
+  cursor: pointer !important;
+}

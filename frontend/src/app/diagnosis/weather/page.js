@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '../../hooks/useTheme';
-import Header from '../../components/layout/Header';
 import Icon from '../../components/Icon';
 import { DEMO_PROFILE, kosdaqIndex, PORTFOLIO_PRESETS } from '../../data/mockData';
 
@@ -39,9 +38,9 @@ function calculateWeather(portfolio, band) {
 
 export default function DiagnosisWeatherPage() {
   const router = useRouter();
-  const { isDark, toggleTheme } = useTheme();
+  const { isDark } = useTheme();
   const [profile, setProfile] = useState(DEMO_PROFILE);
-  const [activePortfolio, setActivePortfolio] = useState(PORTFOLIO_PRESETS[0]);
+  const [selectedId, setSelectedId] = useState(1);
 
   // 마운트 시 저장된 프로필 및 활성 포트폴리오 읽기
   useEffect(() => {
@@ -53,11 +52,14 @@ export default function DiagnosisWeatherPage() {
     if (typeof window !== 'undefined') {
       const savedPortId = sessionStorage.getItem('ants_selected_portfolio');
       if (savedPortId) {
-        const found = PORTFOLIO_PRESETS.find(p => p.id === Number(savedPortId));
-        if (found) setActivePortfolio(found);
+        setSelectedId(Number(savedPortId));
       }
     }
   }, []);
+
+  const activePortfolio = useMemo(() => {
+    return PORTFOLIO_PRESETS.find(p => p.id === selectedId) || PORTFOLIO_PRESETS[0];
+  }, [selectedId]);
 
   const stockList = useMemo(() => activePortfolio.stockWeatherList || [], [activePortfolio]);
 
@@ -77,13 +79,11 @@ export default function DiagnosisWeatherPage() {
   }).join(' ');
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-300 ${isDark ? 'bg-[#080b08] text-[#e2e2e2]' : 'bg-[#f5f6f4] text-[#0f1713]'}`}>
-      <Header isDark={isDark} toggleTheme={toggleTheme} title="위험 진단" />
+    <div className="w-full">
+      <main className="pt-2 pb-10 px-1 max-w-4xl">
 
-      <main className="pt-14 pb-10 px-4 max-w-4xl lg:ml-60 lg:w-[calc(100%-240px)]">
-
-        {/* ── 단계 내비게이션 ── */}
-        <div className="pt-6 pb-4 flex items-center gap-2">
+        {/* ── 2단계 탭 내비게이션 ── */}
+        <div className="pt-2 pb-4 flex items-center gap-2">
           <button
             onClick={() => router.push('/diagnosis')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${isDark ? 'bg-white/5 text-slate-500 hover:text-slate-300' : 'bg-white text-slate-400 border border-slate-200 hover:text-slate-600'}`}
@@ -111,7 +111,7 @@ export default function DiagnosisWeatherPage() {
           </div>
 
           {/* 날씨 상세 + 보조 그래프 */}
-          <div className="flex items-stretch gap-4">
+          <div className="flex flex-col md:flex-row items-stretch gap-4">
             <div className={`flex-1 rounded-xl p-4 flex flex-col items-center justify-center gap-3 ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}>
               <Icon name={atmosphere.icon} className={`w-14 h-14 ${atmosphere.color}`} />
               <div className="text-center">
@@ -120,7 +120,9 @@ export default function DiagnosisWeatherPage() {
                   종합 위험도 {atmosphere.score.toFixed(1)}점
                 </p>
               </div>
-              <div className="w-full flex gap-1">
+
+              {/* 맑음~번개 스펙트럼 */}
+              <div className="w-full flex gap-1 mt-2">
                 {['맑음','구름','비','번개'].map((l, i) => (
                   <div key={l} className={`flex-1 h-1.5 rounded-full ${
                     (atmosphere.label === l)
@@ -131,8 +133,8 @@ export default function DiagnosisWeatherPage() {
               </div>
             </div>
 
-            <div className={`w-44 rounded-xl p-4 flex flex-col justify-between ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}>
-              <p className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>지수 추이</p>
+            <div className={`w-full md:w-52 rounded-xl p-4 flex flex-col justify-between ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}>
+              <p className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>지수 추이 (최근 7일)</p>
               <svg width="100%" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="h-14 w-full my-1">
                 <defs>
                   <linearGradient id="diagGrad" x1="0" y1="0" x2="0" y2="1">
@@ -143,13 +145,9 @@ export default function DiagnosisWeatherPage() {
                 <polyline points={points + ` ${w},${h} 0,${h}`} fill="url(#diagGrad)" stroke="none" />
                 <polyline points={points} fill="none" stroke={isDark ? '#69dbad' : '#3eb489'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <p className={`text-[10px] ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>최근 7거래일</p>
+              <p className={`text-[10px] ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>최근 7거래일 KOSPI 변동 폭</p>
             </div>
           </div>
-
-          <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-            보유 종목의 뉴스·공시 리스크에 투자 성향 민감도({getSensitivityFactor(profile?.target_risk_band || 'BALANCED')}배)를 적용하여 산출한 결과입니다.
-          </p>
         </div>
 
         {/* ── 📋 활성 포트폴리오 종목별 위험 요약 리스트 (터치/클릭 시 종목 상세 페이지 바로 이동!) ── */}
@@ -170,7 +168,7 @@ export default function DiagnosisWeatherPage() {
                 <div className="flex items-center gap-2">
                   <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>{s.name}</p>
                   <span className={`text-[10px] font-mono font-bold px-2 py-0.2 rounded-full ${isDark ? 'bg-white/10 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
-                    {s.ticker}
+                    {s.ticker} · 비중 {s.weight || 25}%
                   </span>
                 </div>
                 {s.detail?.reason && (
