@@ -284,39 +284,45 @@ export default function AssetSummaryCard({ summary, radarScores, isDark, weather
   const tabInactive = isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600';
 
   return (
-    <div className={`rounded-2xl border p-5 transition-all duration-300 ${
-      isDark ? `bg-[#1e2220] ${border} card-glow-dark` : `bg-white ${border} shadow-sm card-glow-light`
+    <div className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
+      isDark ? `bg-[#141715] ${border} card-glow-dark` : `bg-white ${border} shadow-sm card-glow-light`
     }`}>
-      {/* ── 헤더 ── */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <p className={`text-[10px] font-bold tracking-wider uppercase ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-            보유 자산
-          </p>
-          <div className="flex items-baseline gap-1 mt-3">
+      {/* ── 헤더 (종목별 날씨 카드 헤더와 100% 수평 Y축 픽셀 라인 맞춤) ── */}
+      <div className={`flex items-center justify-between px-5 py-3.5 border-b ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-50'}`}>
+        <p className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+          보유 자산
+        </p>
+        <a
+          href="/portfolio/register"
+          className={`text-xs font-bold flex items-center gap-1 transition-all ${
+            isDark ? 'text-[#69dbad] hover:text-[#52c49b]' : 'text-[#3eb489] hover:text-[#2ea070]'
+          }`}
+        >
+          <Icon name="edit" className="w-3 h-3" />
+          <span>편집</span>
+        </a>
+      </div>
+
+      {/* ── 카드 본문 (p-5) ── */}
+      <div className="p-5">
+        {/* 하단 라인: 총 자산 금액(좌) + 우측 위험자산 뱃지(우) */}
+        <div className="flex items-center justify-between gap-2 mb-4">
+          <div className="flex items-baseline gap-1">
             <span className={`text-lg font-black font-mono ${accent}`}>₩</span>
-            <span className={`text-2xl font-black font-mono leading-tight ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+            <span className={`text-2xl font-black font-mono leading-none ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
               {formatted}
             </span>
           </div>
+
+          <div className="flex items-center justify-end">
+            <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1 flex-shrink-0 ${
+              isDark ? 'bg-rose-950/40 border-rose-500/30 text-rose-300' : 'bg-rose-50 border-rose-200 text-rose-600'
+            }`}>
+              <span>위험자산</span>
+              <span className="font-mono font-black">{riskAssetRatio}%</span>
+            </span>
+          </div>
         </div>
-        <div className="flex flex-col items-end gap-1">
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-            isDark ? 'bg-red-900/30 text-red-400' : 'bg-red-50 text-red-500'
-          }`}>
-            위험자산 {riskAssetRatio}%
-          </span>
-          <a
-            href="/portfolio/register"
-            className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
-              isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            <Icon name="edit" className="w-3 h-3" />
-            편집
-          </a>
-        </div>
-      </div>
 
       {/* ── 탭 버튼 ── */}
       <div className={`flex gap-1 mb-4 p-0.5 rounded-xl ${isDark ? 'bg-white/5' : 'bg-slate-100'}`}>
@@ -349,6 +355,7 @@ export default function AssetSummaryCard({ summary, radarScores, isDark, weather
           isDark={isDark}
         />
       )}
+      </div>
     </div>
   );
 }
