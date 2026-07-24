@@ -1,6 +1,42 @@
-﻿import React, { useState } from 'react';
+"use client";
+
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+const NAME_TO_TICKER = {
+  'SK하이닉스': '000660',
+  '삼성전자': '005930',
+  '현대차': '005380',
+  'NAVER': '035420',
+  '신한지주': '055550',
+  'SK텔레콤': '017670',
+  'POSCO홀딩스': '005490',
+  'S-Oil': '010950',
+  '삼성물산': '028260',
+  '기아': '000270',
+  '셀트리온': '068270',
+  '카카오': '035720',
+  'LG화학': '051910',
+  'LG': '003550',
+  '엔씨소프트': '036570',
+  'LG에너지솔루션': '373220',
+  '삼성SDI': '006400',
+  '에코프로': '086520',
+  '에코프로비엠': '247540',
+  '알테오젠': '196170',
+  '삼성생명': '032830',
+  'KT&G': '033780',
+  'KB금융': '105560',
+  '포스코인터': '047050',
+  '포스코인터내셔널': '047050',
+  '한국가스공사': '036460',
+  '삼성전기': '009150',
+  '한진': '011200',
+  '넷마블': '251270',
+};
 
 export default function AssetChart({ theme, weights }) {
+  const router = useRouter();
   const isDark = theme === 'dark';
   const [hoveredCategory, setHoveredCategory] = useState(null);
 
@@ -17,6 +53,13 @@ export default function AssetChart({ theme, weights }) {
   });
 
   const activeHoveredAsset = activeWeights.find(w => w.category === hoveredCategory);
+
+  const handleNavigate = (categoryName) => {
+    const ticker = NAME_TO_TICKER[categoryName];
+    if (ticker) {
+      router.push(`/stock/${ticker}`);
+    }
+  };
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-center gap-6 py-2">
@@ -52,6 +95,7 @@ export default function AssetChart({ theme, weights }) {
                 strokeLinecap="butt"
                 onMouseEnter={() => setHoveredCategory(asset.category)}
                 onMouseLeave={() => setHoveredCategory(null)}
+                onClick={() => handleNavigate(asset.category)}
                 className="transition-all duration-300 cursor-pointer"
                 style={{
                   filter: isDark && isHovered ? `drop-shadow(0 0 6px ${asset.color})` : 'none',
@@ -60,7 +104,6 @@ export default function AssetChart({ theme, weights }) {
             );
           })}
         </svg>
-
 
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           <span className={`font-mono text-2xl font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
@@ -80,6 +123,7 @@ export default function AssetChart({ theme, weights }) {
               key={asset.category}
               onMouseEnter={() => setHoveredCategory(asset.category)}
               onMouseLeave={() => setHoveredCategory(null)}
+              onClick={() => handleNavigate(asset.category)}
               className={`p-2.5 rounded-xl transition-all flex items-center justify-between border cursor-pointer ${
                 isHovered 
                   ? isDark 

@@ -6,7 +6,6 @@ import { useTheme } from '../../hooks/useTheme';
 import Icon from '../../components/Icon';
 import { DEMO_PROFILE, kosdaqIndex, PORTFOLIO_PRESETS } from '../../data/mockData';
 
-// 날씨 계산 (ResultsScreen.js와 동일 로직)
 function getSensitivityFactor(band) {
   switch (band) {
     case 'CONSERVATIVE': return 2.0;
@@ -23,11 +22,11 @@ function calculateWeather(portfolio, band) {
   portfolio.forEach(stock => {
     let stockRisk = 0;
     if (stock.direction === 'down') {
-      if (stock.confidence === 'strong') stockRisk = 10;
-      else if (stock.confidence === 'medium') stockRisk = 6;
+      if (stock.confidence === 'strong' || stock.weather === 'thunder') stockRisk = 10;
+      else if (stock.confidence === 'medium' || stock.weather === 'rainy') stockRisk = 6;
       else stockRisk = 3;
     }
-    totalScore += (stockRisk * stock.weight) / 100;
+    totalScore += (stockRisk * (stock.weight || 15)) / 100;
   });
   const finalScore = totalScore * getSensitivityFactor(band);
 
@@ -43,31 +42,33 @@ export default function DiagnosisWeatherPage() {
   const [profile, setProfile] = useState(DEMO_PROFILE);
   const [selectedId, setSelectedId] = useState(1);
 
+  // 마운트 시 저장된 프로필 및 활성 포트폴리오 읽기
   useEffect(() => {
-    const saved = localStorage.getItem('ants_result_profile');
-    if (saved) {
-      try { setProfile(JSON.parse(saved)); } catch { /* noop */ }
+    const savedProfile = localStorage.getItem('ants_result_profile');
+    if (savedProfile) {
+      try { setProfile(JSON.parse(savedProfile)); } catch { /* noop */ }
     }
+
     if (typeof window !== 'undefined') {
-      const savedId = sessionStorage.getItem('ants_selected_portfolio');
-      if (savedId) {
-        setSelectedId(Number(savedId));
+      const savedPortId = sessionStorage.getItem('ants_selected_portfolio');
+      if (savedPortId) {
+        setSelectedId(Number(savedPortId));
       }
     }
   }, []);
 
-  const currentPreset = useMemo(() => {
+  const activePortfolio = useMemo(() => {
     return PORTFOLIO_PRESETS.find(p => p.id === selectedId) || PORTFOLIO_PRESETS[0];
   }, [selectedId]);
 
-  const portfolioList = currentPreset.stockWeatherList;
+  const stockList = useMemo(() => activePortfolio.stockWeatherList || [], [activePortfolio]);
 
   const atmosphere = useMemo(
-    () => calculateWeather(portfolioList, profile?.target_risk_band || 'BALANCED'),
-    [portfolioList, profile]
+    () => calculateWeather(stockList, profile?.target_risk_band || 'BALANCED'),
+    [stockList, profile]
   );
 
-  // 보조 그래프: sparkline 데이터를 위험 점수로 노멀라이즈
+  // 보조 미니 그래프
   const sparkline = kosdaqIndex.sparkline;
   const w = 160, h = 56;
   const min = Math.min(...sparkline), max = Math.max(...sparkline), range = max - min || 1;
@@ -79,49 +80,49 @@ export default function DiagnosisWeatherPage() {
 
   return (
     <div className="w-full">
-      {/* 단계 표시 */}
-      <div className="pb-4 flex items-center gap-2">
-        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${isDark ? 'bg-white/5 text-slate-500' : 'bg-white text-slate-400 border border-slate-200'}`}>
-          <span className="w-4 h-4 rounded-full bg-slate-300 flex items-center justify-center text-white text-[9px] font-black">1</span>
-          위험 레이더
-        </div>
-        <Icon name="arrowRight" className={`w-3.5 h-3.5 ${isDark ? 'text-slate-600' : 'text-slate-300'}`} />
-        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${isDark ? 'bg-[#3eb489]/15 text-[#69dbad]' : 'bg-[#3eb489]/10 text-[#3eb489]'}`}>
-          <span className="w-4 h-4 rounded-full flex items-center justify-center text-white text-[9px] font-black" style={{backgroundColor: isDark ? '#69dbad' : '#3eb489'}}>2</span>
-          포트폴리오 날씨
-        </div>
-      </div>
+      <main className="pt-2 pb-10 px-1 max-w-4xl">
 
-      {/* 날씨 + 보조 그래프 카드 */}
-      <div className={`rounded-2xl border p-6 space-y-6 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
-        <div className="flex flex-col md:flex-row justify-between items-start gap-6">
-          
-          {/* 날씨 상세 */}
-          <div className="space-y-4 flex-1">
-            <div>
-              <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>포트폴리오 날씨</p>
-              <h1 className={`text-xl font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-                오늘 나의 포트폴리오 날씨
-              </h1>
-            </div>
+        {/* ── 2단계 탭 내비게이션 ── */}
+        <div className="pt-2 pb-4 flex items-center gap-2">
+          <button
+            onClick={() => router.push('/diagnosis')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${isDark ? 'bg-white/5 text-slate-500 hover:text-slate-300' : 'bg-white text-slate-400 border border-slate-200 hover:text-slate-600'}`}
+          >
+            <span className="w-4 h-4 rounded-full bg-slate-300 flex items-center justify-center text-white text-[9px] font-black">1</span>
+            위험 레이더
+          </button>
+          <Icon name="arrowRight" className={`w-3.5 h-3.5 ${isDark ? 'text-slate-600' : 'text-slate-300'}`} />
+          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${isDark ? 'bg-[#3eb489]/15 text-[#69dbad]' : 'bg-[#3eb489]/10 text-[#3eb489]'}`}>
+            <span className="w-4 h-4 rounded-full flex items-center justify-center text-white text-[9px] font-black" style={{backgroundColor: isDark ? '#69dbad' : '#3eb489'}}>2</span>
+            포트폴리오 날씨 ({activePortfolio.label})
+          </div>
+        </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-6 justify-between p-5 rounded-xl border border-[#3eb489]/20 bg-[#3eb489]/5">
-              <div className="space-y-1.5 flex-1">
-                <h2 className={`text-sm font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-                  {profile?.titleKo || '균형투자형'} 성향 기준 날씨 : <span className={atmosphere.color}>{atmosphere.label}</span>
-                </h2>
-                <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                  내가 가진 종목들의 뉴스·공시 리스크에 내 투자 성향 민감도({getSensitivityFactor(profile?.target_risk_band || 'BALANCED')}배)를 쏙 반영해 계산한 결과예요! ☔
+        {/* ── ☀️ 포트폴리오 날씨 카드 ── */}
+        <div className={`rounded-2xl border p-6 space-y-6 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+          <div>
+            <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+              오늘 내 포트폴리오 날씨 ({activePortfolio.label} - {activePortfolio.totalLabel})
+            </p>
+            <h1 className={`text-xl font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+              현재 날씨:{' '}
+              <span className={atmosphere.color}>{atmosphere.label}</span>
+            </h1>
+          </div>
+
+          {/* 날씨 상세 + 보조 그래프 */}
+          <div className="flex flex-col md:flex-row items-stretch gap-4">
+            <div className={`flex-1 rounded-xl p-4 flex flex-col items-center justify-center gap-3 ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}>
+              <Icon name={atmosphere.icon} className={`w-14 h-14 ${atmosphere.color}`} />
+              <div className="text-center">
+                <p className={`text-2xl font-black ${atmosphere.color}`}>{atmosphere.label}</p>
+                <p className={`text-xs mt-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                  종합 위험도 {atmosphere.score.toFixed(1)}점
                 </p>
               </div>
-              <div className={`w-16 h-16 rounded-full flex items-center justify-center border shadow-inner ${isDark ? 'bg-zinc-800/80 border-zinc-700/50' : 'bg-white border-slate-100'}`}>
-                <Icon name={atmosphere.icon} className={`w-8 h-8 ${atmosphere.color}`} />
-              </div>
-            </div>
 
-            {/* 맑음~번개 스펙트럼 */}
-            <div className="space-y-2">
-              <div className="w-full flex gap-1">
+              {/* 맑음~번개 스펙트럼 */}
+              <div className="w-full flex gap-1 mt-2">
                 {['맑음','구름','비','번개'].map((l, i) => (
                   <div key={l} className={`flex-1 h-1.5 rounded-full ${
                     (atmosphere.label === l)
@@ -131,61 +132,72 @@ export default function DiagnosisWeatherPage() {
                 ))}
               </div>
             </div>
-          </div>
 
-          {/* 지수 변동성 미니 차트 (우측 정렬) */}
-          <div className={`w-full md:w-52 rounded-xl p-4 flex flex-col justify-between ${isDark ? 'bg-black/20 border border-white/5' : 'bg-slate-50 border border-slate-200/50'}`}>
-            <div>
-              <p className={`text-[9px] font-black uppercase ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>코스닥 변동성 (최근 7일)</p>
-              <p className={`text-xs font-black font-mono ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>768.42</p>
+            <div className={`w-full md:w-52 rounded-xl p-4 flex flex-col justify-between ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}>
+              <p className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>지수 추이 (최근 7일)</p>
+              <svg width="100%" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="h-14 w-full my-1">
+                <defs>
+                  <linearGradient id="diagGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3eb489" stopOpacity="0.2" />
+                    <stop offset="100%" stopColor="#3eb489" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <polyline points={points + ` ${w},${h} 0,${h}`} fill="url(#diagGrad)" stroke="none" />
+                <polyline points={points} fill="none" stroke={isDark ? '#69dbad' : '#3eb489'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <p className={`text-[10px] ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>최근 7거래일 KOSPI 변동 폭</p>
             </div>
-            <svg width="100%" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="h-16 w-full my-2">
-              <defs>
-                <linearGradient id="diagGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#3eb489" stopOpacity="0.2" />
-                  <stop offset="100%" stopColor="#3eb489" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <polyline points={points + ` ${w},${h} 0,${h}`} fill="url(#diagGrad)" stroke="none" />
-              <polyline points={points} fill="none" stroke={isDark ? '#69dbad' : '#3eb489'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
           </div>
-
         </div>
-      </div>
 
-      {/* 보유 종목 상세 예측 상태 목록 */}
-      <div className="mt-6 space-y-3">
-        <p className={`text-xs font-black uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>보유 종목별 기상 세부</p>
-        {portfolioList.map(s => (
-          <button
-            key={s.ticker}
-            onClick={() => router.push(`/stock/${s.ticker}`)}
-            className={`w-full flex items-center justify-between p-4 rounded-xl border text-left cursor-pointer transition-all ${
-              isDark ? 'bg-[#1e2220] border-white/5 hover:bg-[#252a27]' : 'bg-white border-slate-100 hover:bg-slate-50 shadow-sm'
-            }`}
-          >
-            <div className="flex-grow">
-              <p className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>{s.name}</p>
-              <p className={`text-[10px] font-mono mt-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{s.ticker} · 비중 {s.weight}%</p>
-            </div>
-            <span className={`text-xs font-black mr-3 ${s.direction === 'up' ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : 'text-red-500'}`}>
-              {s.direction === 'up' ? '▲' : '▼'} {s.confidence === 'strong' ? '강' : s.confidence === 'medium' ? '중' : '약'}
-            </span>
-            <Icon name="chevronRight" className={`w-4 h-4 ${isDark ? 'text-slate-700' : 'text-slate-300'}`} />
-          </button>
-        ))}
-      </div>
+        {/* ── 📋 활성 포트폴리오 종목별 위험 요약 리스트 (터치/클릭 시 종목 상세 페이지 바로 이동!) ── */}
+        <div className={`mt-4 rounded-2xl border overflow-hidden ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
+          <div className={`px-5 py-3 border-b text-xs font-black flex items-center justify-between ${isDark ? 'border-white/5 text-white' : 'border-slate-50 text-[#0f1713]'}`}>
+            <span>종목별 위험 요약 ({activePortfolio.label} 보유 종목)</span>
+            <span className="text-[10px] text-[#3eb489] font-bold">클릭 시 AI 종합 리포트 이동</span>
+          </div>
+          {stockList.map((s, idx) => (
+            <button
+              key={s.ticker}
+              onClick={() => router.push(`/stock/${s.ticker}`)}
+              className={`w-full flex items-center px-5 py-3.5 text-left transition-colors ${
+                idx < stockList.length - 1 ? (isDark ? 'border-b border-white/5' : 'border-b border-slate-50') : ''
+              } ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}
+            >
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>{s.name}</p>
+                  <span className={`text-[10px] font-mono font-bold px-2 py-0.2 rounded-full ${isDark ? 'bg-white/10 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                    {s.ticker} · 비중 {s.weight || 25}%
+                  </span>
+                </div>
+                {s.detail?.reason && (
+                  <p className={`text-xs mt-0.5 truncate max-w-md ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    {s.detail.reason}
+                  </p>
+                )}
+              </div>
 
-      <button
-        onClick={() => router.push('/')}
-        className={`mt-6 w-full py-3.5 rounded-2xl text-sm font-black flex items-center justify-center gap-2 transition-all ${
-          isDark ? 'bg-white/5 text-slate-300 hover:bg-white/10' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
-        }`}
-      >
-        <Icon name="home" className="w-4 h-4" />
-        홈으로 돌아가기
-      </button>
+              <div className="flex items-center gap-3">
+                <span className={`text-xs font-black ${s.direction === 'up' ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : 'text-rose-500'}`}>
+                  {s.direction === 'up' ? '▲ 상승' : '▼ 하락'} ({s.change > 0 ? `+${s.change}%` : `${s.change}%`})
+                </span>
+                <Icon name="chevronRight" className={`w-4 h-4 ${isDark ? 'text-slate-600' : 'text-slate-400'}`} />
+              </div>
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={() => router.push('/')}
+          className={`mt-6 w-full py-3.5 rounded-2xl text-sm font-black flex items-center justify-center gap-2 transition-all ${
+            isDark ? 'bg-white/5 text-slate-300 hover:bg-white/10' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+          }`}
+        >
+          <Icon name="home" className="w-4 h-4" />
+          홈으로 돌아가기
+        </button>
+      </main>
     </div>
   );
 }
