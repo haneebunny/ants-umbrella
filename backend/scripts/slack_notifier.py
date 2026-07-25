@@ -90,7 +90,7 @@ def send_slack_alert():
             filtered.sort(key=lambda x: x.get("date", ""), reverse=True)
             docs = filtered[:5]
             
-        # 2. 테스트 모드이거나 수집된 오늘의 데이터가 없을 때 폴백 테스트 데이터 주입
+        # 2. 테스트 모드이거나 수집된 오늘의 데이터가 없을 때 폴백 처리
         if not docs:
             if is_test_mode:
                 print("[INFO] No risk events found today. Test mode enabled: inserting mock data.")
@@ -107,9 +107,39 @@ def send_slack_alert():
                     }
                 ]
             else:
-                # 오늘 분석된 중요 리스크가 아니면 조용히 넘어가기
-                print(f"[INFO] No critical risk events found for today ({today_str}). Silently skipping Slack alert.")
-                return
+                # esg_events에 오늘 데이터가 없으면, daily_risk_score의 최신 하락 예측으로 폴백
+                print(f"[INFO] No esg_events for today ({today_str}). Falling back to daily_risk_score high-risk stocks...")
+                try:
+                    risk_col = get_collection("daily_risk_score")
+                    # 최신 날짜의 direction=down, confidence=strong/medium 종목 최대 5개
+                    risk_docs = list(
+                        risk_col.find(
+                            {"direction": "down", "confidence_tier": {"$in": ["strong", "medium"]}}
+                        ).sort("date", -1).limit(5)
+                    )
+                    if risk_docs:
+                        # daily_risk_score 도큐먼트를 esg_events 형식으로 변환
+                        docs = [
+                            {
+                                "ticker": d.get("ticker", "005930"),
+                                "news_category": "주가 하락 위험 (Price Risk)",
+                                "news_direction": "negative",
+                                "is_material": 1,
+                                "date": d.get("date", today_str),
+                                "_from_risk_score": True,
+                                "_prob_up": d.get("prob_up", 0.0),
+                                "_confidence_tier": d.get("confidence_tier", "medium"),
+                            }
+                            for d in risk_docs
+                        ]
+                        latest_date = risk_docs[0].get("date", today_str)
+                        print(f"[INFO] daily_risk_score 폴백 사용: {len(docs)}건 (최신 기준: {latest_date})")
+                    else:
+                        print(f"[INFO] No high-risk stocks in daily_risk_score either. Skipping Slack alert.")
+                        return
+                except Exception as e:
+                    print(f"[WARN] daily_risk_score 폴백 조회 실패: {e}. Skipping Slack alert.")
+                    return
 
         # 3. 사용자 설정에 따른 카테고리 필터링 적용 ──────────────────────
         try:
@@ -175,14 +205,23 @@ def send_slack_alert():
             # 슬랙 mrkdwn 링크 포맷 적용
             details_str = f"<{url}|{title}>" if url and url.startswith("http") else title
             
+            # daily_risk_score 폴백 데이터인 경우 확률값 및 신뢰도 표시 추가
+            extra_info = ""
+            if doc.get("_from_risk_score"):
+                prob_down_pct = round((1 - doc.get("_prob_up", 0.5)) * 100, 1)
+                tier_map = {"strong": "🔴 강", "medium": "🟡 중", "weak": "🟢 약"}
+                tier_str = tier_map.get(doc.get("_confidence_tier", "medium"), "중")
+                extra_info = f"\n*하락 위험도*: {prob_down_pct}% (신뢰도: {tier_str})\n*데이터 기준일*: {doc.get('date', today_str)}"
+            
             blocks.append({
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"*대상 종목*: *{name}* (`{ticker}`)\n*이슈 유형*: `[{doc.get('news_category', '리스크')}]`\n*상세 내용*: {details_str}\n*분석 시각*: {doc.get('date', today_str)}"
+                    "text": f"*대상 종목*: *{name}* (`{ticker}`)\n*이슈 유형*: `[{doc.get('news_category', '리스크')}]`\n*상세 내용*: {details_str}{extra_info}"
                 }
             })
             blocks.append({"type": "divider"})
+
 
         # 대시보드 바로가기 버튼 링크 추가
         blocks.append({
