@@ -26,7 +26,7 @@ export default function AlertsPage() {
   const { isDark } = useTheme();
   // ── ⚙️ 알림 설정 관련 상태 ──────────────────────────────────────────
   const [showSettings, setShowSettings] = useState(false);
-  const [alertTimes, setAlertTimes] = useState(['07:00', '10:20']);
+  const [alertTimes, setAlertTimes] = useState(['07:00', '10:27']);
   const [categories, setCategories] = useState({
     price_risk: true,
     esg_news: true,
@@ -34,7 +34,7 @@ export default function AlertsPage() {
   });
   
   // 변경 사항 저장을 위한 임시 상태 (딸깍할 때마다 요청가지 않게 제어)
-  const [tempAlertTimes, setTempAlertTimes] = useState(['07:00', '10:20']);
+  const [tempAlertTimes, setTempAlertTimes] = useState(['07:00', '10:27']);
   const [tempCategories, setTempCategories] = useState({
     price_risk: true,
     esg_news: true,
@@ -275,7 +275,7 @@ export default function AlertsPage() {
                   지정한 시간마다 최신 마켓 및 ESG 데이터를 분석해 슬랙 알림을 보냅니다.
                 </p>
                 <div className="flex flex-wrap gap-2 pt-1">
-                  {['07:00', '09:00', '10:00', '10:20', '12:00', '15:00', '18:00', '21:00'].map(time => {
+                  {['07:00', '09:00', '10:00', '10:20', '10:27', '12:00', '15:00', '18:00', '21:00'].map(time => {
                     const isSelected = tempAlertTimes.includes(time);
                     const isDisabled = !isSelected && tempAlertTimes.length >= 3;
                     return (

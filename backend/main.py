@@ -70,10 +70,10 @@ def startup_event():
         settings_col = get_collection("user_settings")
         # JSON Mock DB 및 복합 인덱스 매칭을 위해 ticker/date를 settings/alert_config로 처리
         cfg = settings_col.find_one({"ticker": "settings", "date": "alert_config"})
-        alert_times = cfg.get("alert_times", ["07:00", "10:20"]) if cfg else ["07:00", "10:20"]
+        alert_times = cfg.get("alert_times", ["07:00", "10:27"]) if cfg else ["07:00", "10:27"]
     except Exception as e:
         print(f"[SCHEDULER] 기존 알림 시간 스케줄 로드 실패: {e}")
-        alert_times = ["07:00", "10:20"]
+        alert_times = ["07:00", "10:27"]
     reschedule_alert_jobs(alert_times)
 
 
@@ -1267,7 +1267,7 @@ def get_alert_config():
         cfg = col.find_one({"ticker": "settings", "date": "alert_config"})
         if not cfg:
             return {
-                "alert_times": ["07:00", "10:20"],
+                "alert_times": ["07:00", "10:27"],
                 "categories": {
                     "price_risk": True,
                     "esg_news": True,
@@ -1275,7 +1275,7 @@ def get_alert_config():
                 }
             }
         return {
-            "alert_times": cfg.get("alert_times", ["07:00", "10:20"]),
+            "alert_times": cfg.get("alert_times", ["07:00", "10:27"]),
             "categories": cfg.get("categories", {
                 "price_risk": True,
                 "esg_news": True,
@@ -1289,7 +1289,7 @@ def get_alert_config():
 
 @app.post("/api/settings/alert-config")
 def save_alert_config(body: dict):
-    alert_times = body.get("alert_times", ["07:00", "10:20"])
+    alert_times = body.get("alert_times", ["07:00", "10:27"])
     categories = body.get("categories", {
         "price_risk": True,
         "esg_news": True,
