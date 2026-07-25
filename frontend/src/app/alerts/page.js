@@ -365,10 +365,26 @@ export default function AlertsPage() {
 
         {/* ── 알림 리스트 ── */}
         <div className={`rounded-2xl border overflow-hidden transition-all ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
-          {filteredAlerts.length === 0 ? (
+          {loading ? (
+            /* 로딩 스켈레톤 */
+            <div className="divide-y divide-white/5">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center gap-4 px-5 py-4 animate-pulse">
+                  <div className={`w-8 h-8 rounded-xl flex-shrink-0 ${isDark ? 'bg-white/10' : 'bg-slate-100'}`} />
+                  <div className="flex-1 space-y-2">
+                    <div className={`h-2.5 rounded-full w-1/4 ${isDark ? 'bg-white/10' : 'bg-slate-100'}`} />
+                    <div className={`h-3 rounded-full w-3/4 ${isDark ? 'bg-white/10' : 'bg-slate-100'}`} />
+                    <div className={`h-2 rounded-full w-1/3 ${isDark ? 'bg-white/5' : 'bg-slate-50'}`} />
+                  </div>
+                  <div className={`w-14 h-4 rounded-full flex-shrink-0 ${isDark ? 'bg-white/5' : 'bg-slate-100'}`} />
+                </div>
+              ))}
+            </div>
+          ) : filteredAlerts.length === 0 ? (
             <div className="p-8 text-center text-xs text-slate-400">
               해당하는 알림 내역이 없습니다. ☀️
             </div>
+
           ) : (
             filteredAlerts.map((alert, idx) => {
               const cfg = LEVEL_CFG[alert.level] || LEVEL_CFG.info;

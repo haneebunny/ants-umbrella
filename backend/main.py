@@ -1111,7 +1111,10 @@ def get_alerts():
     alerts = []
     try:
         esg_col = get_collection("esg_events")
-        docs = list(esg_col.find({}, sort=[("date", -1)]).limit(50))  # 필터링 후 최대 15건을 위해 넉넉히 조회
+        # DB 레벨에서 긍정 뉴스 선필터 + 필요 필드만 projection으로 조회 (속도 개선)
+        query = {"news_direction": {"$ne": "positive"}}
+        projection = {"ticker": 1, "date": 1, "news_direction": 1, "is_material": 1, "news_category": 1, "_id": 0}
+        docs = list(esg_col.find(query, projection, sort=[("date", -1)]).limit(15))
 
         for i, d in enumerate(docs):
             ticker = d.get("ticker", "005930")
@@ -1119,10 +1122,6 @@ def get_alerts():
 
             is_mat = d.get("is_material", 0)
             direction = d.get("news_direction", "negative")
-
-            # ── 핵심 필터: 긍정 뉴스는 알림에서 제외 ──────────────────────
-            if direction == "positive":
-                continue
 
             level = "danger" if (is_mat == 1 and direction == "negative") else "caution"
 
@@ -1151,9 +1150,6 @@ def get_alerts():
                 "read": False,
                 "category": cat
             })
-
-            if len(alerts) >= 15:  # 최대 15건으로 제한
-                break
     except Exception as e:
         print(f"[WARN] Alerts API failed: {e}")
         # fallback
