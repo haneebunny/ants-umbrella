@@ -43,7 +43,9 @@ jobs:
         cd backend
         poetry install --no-interaction
 
+    # 데이터 수집/피처 생성 — 실패해도 다음 스텝 계속 실행 (continue-on-error)
     - name: Run Data Collection & Feature Generation
+      continue-on-error: true
       env:
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
         NCP_API_KEY_ID: ${{ secrets.NCP_API_KEY_ID }}
@@ -62,14 +64,18 @@ jobs:
         poetry run python scripts/add_sector.py
         poetry run python scripts/join_features.py
 
+    # XGBoost 추론/DB 적재 — 실패해도 슬랙 알림은 계속 실행
     - name: Update MongoDB Risk Scores (XGBoost Inference)
+      continue-on-error: true
       env:
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
       run: |
         cd backend
         poetry run python scripts/save_risk_scores.py
 
+    # 슬랙 알림 — 앞 스텝 성공/실패와 무관하게 항상 실행 (if: always())
     - name: Send Slack Alert
+      if: always()
       env:
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
