@@ -62,6 +62,8 @@ export default function Home() {
   const [showSurveyPrompt, setShowSurveyPrompt] = useState(false);
   const [kospiIndex, setKospiIndex] = useState(kosdaqIndex);
   const [apiLoading, setApiLoading] = useState(false);
+  const [aiSummary, setAiSummary] = useState(null); // 캐싱된 Gemini 판단근거
+
 
   // 마운트 시 localStorage에서 완료된 진단 결과 복원 및 게스트 모달 처리
   useEffect(() => {
@@ -147,10 +149,42 @@ export default function Home() {
   // 실제로 렌더링할 종목 목록 (API 성공 → live, 실패/로딩 → mock)
   const stockWeatherList = liveStockList || mockPortfolio.stockWeatherList;
 
-  // 전체 날씨: live 데이터가 있으면 재집계, 없으면 mockData 사용
-  const overallWeather = liveStockList
-    ? { ...aggregateWeather(liveStockList), summary: mockPortfolio.overallWeather.summary, updatedAt: new Date().toISOString() }
+  // 전체 날씨 계산
+  const baseWeather = liveStockList
+    ? { ...aggregateWeather(liveStockList), updatedAt: new Date().toISOString() }
     : mockPortfolio.overallWeather;
+
+  // dynamic aiSummary가 있으면 그걸 덮어씌움
+  const overallWeather = {
+    ...baseWeather,
+    summary: aiSummary || baseWeather.summary
+  };
+
+  // 날씨 상태 또는 구성 종목의 리스크 정보 변동 시에만 백엔드에 캐시된 브리핑 요청
+  useEffect(() => {
+    if (!overallWeather?.status) return;
+    const riskyTickers = stockWeatherList
+      .filter(s => s.direction === 'down')
+      .map(s => ({ name: s.name, direction: s.direction }));
+
+    fetch(`${API_BASE}/api/weather-briefing`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        portfolio_id: selectedPortfolioId,
+        weather_status: overallWeather.status === 'thunder' ? 'thunder'
+                      : overallWeather.status === 'rainy'   ? 'rainy'
+                      : overallWeather.status === 'cloudy'  ? 'cloudy'
+                      : 'sunny',
+        weather_label: overallWeather.label,
+        risky_tickers: riskyTickers,
+      }),
+    })
+      .then(r => r.json())
+      .then(data => { if (data?.summary?.length) setAiSummary(data.summary); })
+      .catch(() => setAiSummary(null));
+  }, [overallWeather?.status, overallWeather?.label, selectedPortfolioId, stockWeatherList, API_BASE]);
+
 
   const { assetSummary, profile, radarScores } = mockPortfolio;
 

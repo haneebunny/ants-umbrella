@@ -198,7 +198,7 @@ except Exception as e:
     print(f"[WARN] Gemini Client 초기화 실패 (API 키 누락 가능성): {e}")
     gemini_client = None
 
-GEMINI_MODEL = "gemini-3.5-flash"
+GEMINI_MODEL = "gemini-3.1-flash-lite"
 
 try:
     class CategoryResult(BaseModel):

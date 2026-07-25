@@ -182,3 +182,5 @@
 | 2026-07-24 | Antigravity | GitHub Actions 자동화 배치(.github/workflows/daily_batch.yml)의 cron 실행 스케줄을 매일 아침 7시 KST (UTC 22시)로 변경 완료 |
 | 2026-07-24 | Antigravity | 메인 대시보드 진입 시 로컬스토리지에 완료된 진단 기록이 없는 신규 게스트의 경우 강제 리다이렉트시키는 대신, 대시보드 데모 모드를 개방하고 투자성향 진단을 권유하는 세련된 팝업 모달을 띄우도록 사용자 유입 흐름 전면 개선 완료 |
 | 2026-07-24 | Antigravity | 위험 진단(radar) 아이콘의 윗부분 와이파이 모양 호(arc)들의 Y좌표를 2px씩 아래로 하향 조절하여 상하 시각적 밸런스를 개선하고, 데일리 배치 종료 직후 실시간 감지된 핵심 리스크(is_material == 1 및 negative) 뉴스 5건을 슬랙 채널로 즉각 전송해 주는 Block Kit 기반 자동 연동 스크립트(backend/scripts/slack_notifier.py) 및 GitHub Actions 워크플로우 연동 완료 |
+| 2026-07-25 | Antigravity | 날씨 상태 및 구성 변동 시에만 작동하는 제미나이(Gemini) 캐싱 기반 포트폴리오 기상 예보 및 AI 판단 근거 3줄 브리핑 백엔드 API 연동 및 메인 대시보드, 상세 페이지 UI 연동 완료 |
+

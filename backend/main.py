@@ -6,6 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.db import get_collection
 from app.schemas import DailyRiskScore
 import FinanceDataReader as fdr
+from dotenv import load_dotenv
+
+# .env 파일 로드 (KIS_APP_KEY, KIS_APP_SECRET 등)
+load_dotenv()
 
 app = FastAPI()
 
@@ -311,36 +315,6 @@ def get_watchlist_prices(tickers: str = ""):
         except Exception as e:
             print(f"[WARN] KIS 토큰 발급 에러: {e}")
 
-    REAL_MARKET_PRICES = {
-        '055550': {'price': 55200,  'change': 750,   'change_rate': 1.38, 'direction': 'up'},
-        '005930': {'price': 78400,  'change': 900,   'change_rate': 1.16, 'direction': 'up'},
-        '000660': {'price': 189500, 'change': 3300,  'change_rate': 1.77, 'direction': 'up'},
-        '005380': {'price': 245000, 'change': 3600,  'change_rate': 1.49, 'direction': 'up'},
-        '035420': {'price': 182000, 'change': -900,  'change_rate': -0.49, 'direction': 'down'},
-        '035720': {'price': 37900,  'change': -450,  'change_rate': -1.17, 'direction': 'down'},
-        '373220': {'price': 372500, 'change': -3000, 'change_rate': -0.80, 'direction': 'down'},
-        '006400': {'price': 395000, 'change': 2300,  'change_rate': 0.59, 'direction': 'up'},
-        '086520': {'price': 94200,  'change': -2000, 'change_rate': -2.08, 'direction': 'down'},
-        '247540': {'price': 184000, 'change': -2800, 'change_rate': -1.50, 'direction': 'down'},
-        '196170': {'price': 284500, 'change': 6600,  'change_rate': 2.38, 'direction': 'up'},
-        '005490': {'price': 275200, 'change': -1100, 'change_rate': -0.40, 'direction': 'down'},
-        '068270': {'price': 192000, 'change': 2100,  'change_rate': 1.11, 'direction': 'up'},
-        '051910': {'price': 345000, 'change': -6300, 'change_rate': -1.79, 'direction': 'down'},
-        '105560': {'price': 84500,  'change': 1200,  'change_rate': 1.44, 'direction': 'up'},
-        '017670': {'price': 54200,  'change': 350,   'change_rate': 0.65, 'direction': 'up'},
-        '028260': {'price': 142000, 'change': 1000,  'change_rate': 0.71, 'direction': 'up'},
-        '000270': {'price': 112500, 'change': 1300,  'change_rate': 1.17, 'direction': 'up'},
-        '010950': {'price': 68400,  'change': -550,  'change_rate': -0.80, 'direction': 'down'},
-        '032830': {'price': 98500,  'change': 900,   'change_rate': 0.92, 'direction': 'up'},
-        '033780': {'price': 94800,  'change': 450,   'change_rate': 0.48, 'direction': 'up'},
-        '047050': {'price': 52100,  'change': -470,  'change_rate': -0.89, 'direction': 'down'},
-        '036460': {'price': 42500,  'change': -450,  'change_rate': -1.05, 'direction': 'down'},
-        '096770': {'price': 42500,  'change': -450,  'change_rate': -1.05, 'direction': 'down'},
-        '009150': {'price': 148000, 'change': 1900,  'change_rate': 1.30, 'direction': 'up'},
-        '011200': {'price': 20500,  'change': 80,    'change_rate': 0.39, 'direction': 'up'},
-        '251270': {'price': 56200,  'change': -400,  'change_rate': -0.71, 'direction': 'down'},
-    }
-
     for ticker in ticker_list:
         ticker_formatted = ticker.zfill(6)
         data = None
@@ -380,55 +354,142 @@ def get_watchlist_prices(tickers: str = ""):
             except Exception as e:
                 print(f"[WARN] KIS 실시간가 개별 조회 실패 ({ticker_formatted}): {e}")
         
-        # 2. 실적에 기반한 정밀 시세 맵 적용 (FDR 이상치 자동 교정)
-        if not data or data.get("price", 0) <= 0:
-            market_item = REAL_MARKET_PRICES.get(ticker_formatted)
-            if market_item:
-                data = {
-                    "ticker": ticker_formatted,
-                    "price": market_item["price"],
-                    "change": market_item["change"],
-                    "change_rate": market_item["change_rate"],
-                    "direction": market_item["direction"]
-                }
-            else:
-                data = {
-                    "ticker": ticker_formatted,
-                    "price": 55000,
-                    "change": 0,
-                    "change_rate": 0.0,
-                    "direction": "up"
-                }
+        # 2. FDR fallback — 네이버 기반 실제 시장 종가 (신뢰도 높음)
+        if not data:
+            try:
+                df = fdr.DataReader(ticker_formatted)
+                if not df.empty and len(df) >= 2:
+                    latest = df.iloc[-1]
+                    prev = df.iloc[-2]
+                    price = int(latest["Close"])
+                    prev_price = int(prev["Close"])
+                    change = price - prev_price
+                    change_rate = round((change / prev_price) * 100, 2)
+                    data = {
+                        "ticker": ticker_formatted,
+                        "price": price,
+                        "change": change,
+                        "change_rate": change_rate,
+                        "direction": "up" if change >= 0 else "down"
+                    }
+            except Exception as e:
+                print(f"[WARN] FDR fallback 실패 ({ticker_formatted}): {e}")
+
+        # 3. 최종 fallback
+        if not data:
+            data = {
+                "ticker": ticker_formatted,
+                "price": 0,
+                "change": 0,
+                "change_rate": 0.0,
+                "direction": "up"
+            }
                 
         results.append(data)
             
     return results
 
+def _call_gemini(prompt: str) -> str:
+    """Gemini REST API 직접 호출 (google-generativeai 패키지 불필요)."""
+    import requests as req_lib
+    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    # 유저가 .env에 설정한 모델명 사용 (없을 경우 fallback 모델)
+    model_name = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash").strip()
+    
+    if not api_key:
+        return ""
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+    body = {"contents": [{"parts": [{"text": prompt}]}]}
+    try:
+        res = req_lib.post(url, json=body, timeout=10)
+        if res.status_code == 200:
+            candidates = res.json().get("candidates", [])
+            if candidates:
+                return candidates[0]["content"]["parts"][0]["text"].strip()
+    except Exception as e:
+        print(f"[WARN] Gemini API 호출 실패: {e}")
+    return ""
+
+
 def generate_ai_briefing(ticker_name: str, ticker: str, prob_up: float, direction: str, confidence_tier: str, esg_count: int = 0) -> str:
+    import hashlib
+    from datetime import datetime
+
     prob_down_pct = int((1 - prob_up) * 100)
     prob_up_pct = int(prob_up * 100)
-    
-    # 예측 확신도(confidence_tier)를 직관적인 한글로 매핑
     conf_map = {"strong": "높음", "medium": "보통", "weak": "낮음"}
     conf_ko = conf_map.get(str(confidence_tier).lower(), "낮음")
-    
-    # ESG 이슈 여부에 따른 동적 묘사
-    if esg_count > 0:
-        esg_phrase = "최근 이 회사에 관한 ESG/산업 부정적 노이즈가 포착된 상황이고,"
-    else:
-        esg_phrase = "최근 ESG 평판이나 사회적 중대성 부문의 눈에 띄는 악재 기사는 탐지되지 않았지만,"
-        
-    # 뉴닉(NEWNEEK) 톤앤매너 스타일로 초보자에게 친근하게 주가 예보 풀이
+
+    # ESG 건수 구간화 (0건 / 1-3건 / 4건+) — 미미한 수치 변동엔 LLM 재호출 안 함
+    esg_bucket = 0 if esg_count == 0 else (1 if esg_count <= 3 else 2)
+
+    # ── 1. fingerprint 계산 ──────────────────────────────────────────
+    fp_raw = f"{ticker}|{direction}|{confidence_tier}|{esg_bucket}|{int(prob_up * 10)}"
+    fingerprint = hashlib.md5(fp_raw.encode()).hexdigest()[:12]
+
+    # ── 2. 캐시 조회 (변동 없으면 즉시 반환) ──────────────────────────
+    try:
+        cache_col = get_collection("ai_briefings")
+        cached = cache_col.find_one({"ticker": ticker}, sort=[("date", -1)])
+        if cached and cached.get("fingerprint") == fingerprint and cached.get("briefing"):
+            print(f"[CACHE HIT] ai_briefings: {ticker} (fp={fingerprint})")
+            return cached["briefing"]
+    except Exception as e:
+        print(f"[WARN] ai_briefings 캐시 조회 실패: {e}")
+
+    # ── 3. 템플릿 fallback (Gemini 실패 시 사용) ──────────────────────
+    esg_phrase = ("최근 이 회사에 관한 ESG/산업 부정적 노이즈가 포착된 상황이고,"
+                  if esg_count > 0 else
+                  "최근 ESG 평판이나 사회적 중대성 부문의 눈에 띄는 악재는 탐지되지 않았지만,")
     if direction == "down":
-        return (f"🐜 안녕 나개미! 최근 **{ticker_name}**의 주가 날씨 예보를 전하러 왔어! "
-                f"**개미의 우산 AI 진단 시스템**이 정교하게 시세 판정을 해보니, 20거래일 안에 주가가 급락(-10% 이상 하락)할 확률이 **{prob_down_pct}%**(예측 확신도: '{conf_ko}')로 집계되었어! ⚡ "
-                f"{esg_phrase} "
-                f"금리나 환율 같은 시장 거시 경제 피처 지표들이 주가에 하방 압력을 더하고 있는 것으로 판단했어. 비를 피할 준비를 해야 할 것 같아! ☔")
+        fallback = (f"🐜 안녕 나개미! 최근 **{ticker_name}**의 주가 날씨 예보를 전하러 왔어! "
+                    f"20거래일 안에 주가가 급락(-10% 이상)할 확률이 **{prob_down_pct}%**(예측 확신도: '{conf_ko}')로 집계됐어! ⚡ "
+                    f"{esg_phrase} 금리·환율 같은 거시 지표들이 하방 압력을 더하고 있어. 비를 피할 준비를 해야 할 것 같아! ☔")
     else:
-        return (f"🐜 좋은 소식이야, 나개미! **{ticker_name}**의 20거래일 내 주가 예보는 아주 '맑음'으로 예측됐어! "
-                f"상승할 확률이 **{prob_up_pct}%**(예측 확신도: '{conf_ko}')나 된다고 **개미의 우산**이 알려줬어! 🎉 "
-                f"최근 ESG 관련 지표에서도 별다른 리스크나 노이즈가 없었고, "
-                f"주가 변동성이나 수급 등의 긍정적인 신호들이 하락하지 않도록 든든히 지탱해 주고 있어. 편안한 마음으로 지켜보자! ☀️")
+        fallback = (f"🐜 좋은 소식이야, 나개미! **{ticker_name}**의 20거래일 내 주가 예보는 '맑음'으로 예측됐어! "
+                    f"상승할 확률이 **{prob_up_pct}%**(예측 확신도: '{conf_ko}')나 된다고 **개미의 우산**이 알려줬어! 🎉 "
+                    f"주가 변동성·수급 신호들이 든든하게 지탱해 주고 있어. 편안한 마음으로 지켜보자! ☀️")
+
+    # ── 4. Gemini로 신규 브리핑 생성 ──────────────────────────────────
+    prompt = f"""당신은 주식 초보자에게 친근하게 정보를 전달하는 '나개미' 캐릭터입니다.
+뉴닉(NEWNEEK) 스타일로 짧고 이해하기 쉽게, 이모지를 섞어서 2~3문장으로 브리핑해 주세요.
+
+[입력 데이터]
+- 종목: {ticker_name} ({ticker})
+- 20거래일 내 하락 확률: {prob_down_pct}% (상승 확률: {prob_up_pct}%)
+- 예측 방향: {"⚠️ 하락 주의" if direction == "down" else "☀️ 상승 전망"}
+- 예측 확신도: {conf_ko}
+- ESG/부정 뉴스 건수: {esg_count}건
+
+[작성 규칙]
+- "🐜 안녕 나개미!" 또는 "🐜 나개미야,"로 시작
+- 수치(확률, 확신도)를 자연스럽게 문장에 녹여서
+- 초보 투자자가 바로 이해할 수 있는 쉬운 용어
+- 2~3문장, 마지막 이모지로 마무리
+- **굵게** 강조 필요한 단어에 마크다운 볼드 사용"""
+
+    briefing = _call_gemini(prompt) or fallback
+
+    # ── 5. 결과 캐싱 (fingerprint 저장) ───────────────────────────────
+    try:
+        cache_col.update_one(
+            {"ticker": ticker},
+            {"$set": {
+                "ticker": ticker,
+                "fingerprint": fingerprint,
+                "briefing": briefing,
+                "date": datetime.now().strftime("%Y-%m-%d"),
+                "updated_at": datetime.now().isoformat(),
+            }},
+            upsert=True
+        )
+        print(f"[CACHE SET] ai_briefings: {ticker} (fp={fingerprint})")
+    except Exception as e:
+        print(f"[WARN] ai_briefings 캐시 저장 실패: {e}")
+
+    return briefing
+
+
 
 def generate_nagame_tip(ticker_name: str, title: str, category: str, direction: str) -> str:
     # 주식 초보 나개미 페르소나를 위한 친절한 뉴닉 스타일 팁
@@ -872,7 +933,110 @@ def get_alerts():
         
     return alerts
 
+@app.post("/api/weather-briefing")
+def get_weather_briefing(body: dict):
+    """
+    포트폴리오 날씨 AI 판단 근거 — 날씨 상태/구성 변동 시에만 Gemini 호출, 캐시 활용.
+    body: { portfolio_id, weather_status, weather_label, risky_tickers: [{name, direction}] }
+    """
+    import hashlib
+    from datetime import datetime
+
+    portfolio_id = body.get("portfolio_id", 0)
+    weather_status = body.get("weather_status", "sunny")   # sunny/cloudy/rainy/thunder
+    weather_label  = body.get("weather_label", "맑음")
+    risky_tickers  = body.get("risky_tickers", [])         # [{"name":"삼성전자","direction":"down"}, ...]
+
+    # ── 1. fingerprint 계산 ──────────────────────────────────────────
+    risky_str = ",".join(sorted([f"{t['name']}:{t['direction']}" for t in risky_tickers]))
+    fp_raw = f"weather|{portfolio_id}|{weather_status}|{risky_str}"
+    fingerprint = hashlib.md5(fp_raw.encode()).hexdigest()[:12]
+
+    cache_key = f"weather_{portfolio_id}"
+
+    # ── 2. 캐시 조회 ────────────────────────────────────────────────
+    try:
+        cache_col = get_collection("ai_briefings")
+        cached = cache_col.find_one({"ticker": cache_key})
+        if cached and cached.get("fingerprint") == fingerprint and cached.get("briefing"):
+            print(f"[CACHE HIT] weather_briefing: portfolio={portfolio_id} (fp={fingerprint})")
+            return {"summary": cached["briefing"].split("\n"), "cached": True}
+    except Exception as e:
+        print(f"[WARN] weather_briefing 캐시 조회 실패: {e}")
+
+    # ── 3. 날씨별 fallback 멘트 ─────────────────────────────────────
+    FALLBACK = {
+        "thunder": [
+            "⚡️ 포트폴리오 전반에 고위험 신호가 다수 감지됐어요! 지금은 신중하게 상황을 점검할 타이밍이에요.",
+            "🔴 하락 방향 예측 종목들이 집중돼 있어서 단기 손실 위험이 높아요. 손절 기준선을 미리 확인해 두는 게 좋아요.",
+            "🚨 고위험 종목 비중을 줄이거나 방어주로 일부 교체를 고려해 보세요!",
+        ],
+        "rainy": [
+            "🌧️ 일부 종목에서 하락 리스크가 감지되고 있어요. 전체적으로 살짝 흐린 상황이에요.",
+            "📉 약세 신호가 중간 수준이에요. 비중 조절과 현금 비중 확보를 고려해 볼 수 있어요.",
+            "🌂 리밸런싱 전략을 점검하고 안정적인 종목 비중을 늘려보세요.",
+        ],
+        "cloudy": [
+            "⛅ 포트폴리오 전반은 크게 문제없지만, 일부 종목에서 불확실성이 보여요.",
+            "🟡 단기 하락 리스크 신호가 일부 있어요. 지켜보면서 대응하면 충분해요.",
+            "📊 분산 구성을 유지하면서 위험 종목만 추가 점검해 보세요!",
+        ],
+        "sunny": [
+            "☀️ 배당 우량주 중심 구성 덕분에 포트폴리오 전반이 안정적인 흐름을 유지하고 있어요! 🛡️",
+            "📈 보유 종목들의 상승 신호가 고루 확인되고, ESG 평판 리스크도 낮아서 안심할 수 있는 구간이에요!",
+            "💸 현재 위험 수준은 허용 범위 아래에 있어요. 원한다면 분산 투자를 더 늘려봐도 좋아요!",
+        ],
+    }
+    fallback_lines = FALLBACK.get(weather_status, FALLBACK["sunny"])
+
+    # ── 4. Gemini로 동적 브리핑 생성 ────────────────────────────────
+    risky_desc = ", ".join([f"{t['name']}(하락)" for t in risky_tickers if t.get("direction") == "down"]) or "없음"
+    prompt = f"""당신은 주식 초보자에게 친근하게 정보를 전달하는 '나개미' 캐릭터입니다.
+뉴닉 스타일로 아래 포트폴리오 상황을 분석해서 AI 판단 근거를 3줄 bullet point로 작성해 주세요.
+
+[포트폴리오 상황]
+- 전체 날씨: {weather_label} ({weather_status})
+- 하락 위험 종목: {risky_desc}
+
+[작성 규칙]
+- 각 줄을 이모지로 시작
+- 초보자 눈높이의 쉬운 용어
+- 날씨({weather_label})에 맞는 톤 (번개=긴급경고, 비=주의권고, 구름=중립, 맑음=안심)
+- 각 줄은 완결된 한 문장
+- 총 3줄만 출력, 다른 부가 설명 없이"""
+
+    gemini_result = _call_gemini(prompt)
+    if gemini_result:
+        summary_lines = [l.strip() for l in gemini_result.split("\n") if l.strip()][:3]
+        if len(summary_lines) < 2:
+            summary_lines = fallback_lines
+    else:
+        summary_lines = fallback_lines
+
+    briefing_text = "\n".join(summary_lines)
+
+    # ── 5. 캐싱 ─────────────────────────────────────────────────────
+    try:
+        cache_col.update_one(
+            {"ticker": cache_key},
+            {"$set": {
+                "ticker": cache_key,
+                "fingerprint": fingerprint,
+                "briefing": briefing_text,
+                "date": datetime.now().strftime("%Y-%m-%d"),
+                "updated_at": datetime.now().isoformat(),
+            }},
+            upsert=True
+        )
+        print(f"[CACHE SET] weather_briefing: portfolio={portfolio_id} (fp={fingerprint})")
+    except Exception as e:
+        print(f"[WARN] weather_briefing 캐시 저장 실패: {e}")
+
+    return {"summary": summary_lines, "cached": False}
+
+
 @app.get("/api/kospi-index")
+
 def get_kospi_index():
     import os
     import requests
