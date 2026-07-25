@@ -27,7 +27,9 @@ dependencies = [
     "sentence-transformers (>=5.6.0,<6.0.0)",
     "sentencepiece (>=0.2.2,<0.3.0)",
     "tiktoken (>=0.13.0,<0.14.0)",
-    "protobuf (>=7.35.1,<8.0.0)"
+    "protobuf (>=7.35.1,<8.0.0)",
+    "websockets (>=16.1.1,<17.0.0)",
+    "ipykernel (>=7.3.0,<8.0.0)"
 ]
 
 

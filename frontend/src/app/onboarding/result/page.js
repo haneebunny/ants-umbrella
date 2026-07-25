@@ -3,11 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '../../hooks/useTheme';
-import DiagnosisResultView from '../../components/DiagnosisResultView';
+import ResultsScreen from '../../components/ResultsScreen';
+import { DEMO_PROFILE } from '../../data/mockData';
 
 export default function OnboardingResultPage() {
   const router = useRouter();
-  const { isDark } = useTheme();
+  const { isDark, toggleTheme } = useTheme();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -80,7 +81,7 @@ export default function OnboardingResultPage() {
   };
 
   return (
-    <div className="w-full space-y-6 max-w-7xl mx-auto pb-10">
+    <div className="w-full space-y-6">
       {/* 안내 배너 (대시보드로 가기 버튼 제공) */}
       <div className={`p-5 rounded-2xl border ${
         isDark ? 'bg-[#191d1a] border-emerald-900/40' : 'bg-emerald-50/70 border-emerald-100'
@@ -95,17 +96,19 @@ export default function OnboardingResultPage() {
         </div>
         <button
           onClick={handleStartWithDemo}
-          className="w-full md:w-auto px-5 py-2.5 rounded-xl bg-[#3eb489] text-[#002115] font-black text-xs hover:bg-[#329e76] transition-colors shadow-md cursor-pointer text-center whitespace-nowrap"
+          className="w-full md:w-auto px-5 py-2.5 rounded-xl bg-[#3eb489] text-[#002115] font-black text-xs hover:bg-[#329e76] transition-colors shadow-md cursor-pointer text-center"
         >
           🎯 샘플데이터로 대시보드 바로보기
         </button>
       </div>
 
-      {/* 투자성향 종합 리포트 뷰 */}
-      <DiagnosisResultView
+      <ResultsScreen
+        theme={isDark ? 'dark' : 'light'}
         profile={profile}
-        isDark={isDark}
-        onReDiagnose={() => router.push('/onboarding')}
+        onReset={() => router.push('/onboarding')}
+        toggleTheme={toggleTheme}
+        isDemoMode={false}
+        inShell={true}
       />
     </div>
   );

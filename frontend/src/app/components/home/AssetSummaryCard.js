@@ -250,7 +250,7 @@ function RadarChart({ scores, weatherStatus, isDark }) {
  */
 export default function AssetSummaryCard({ summary, radarScores, isDark, weatherStatus = 'sunny' }) {
   const [activeTab, setActiveTab] = useState('donut'); // 'donut' | 'radar'
-  const { totalAsset = 0, riskAssetRatio = 0, holdings = [] } = summary || {};
+  const { totalAsset = 0, riskAssetRatio = 0, holdings = [], totalProfitLossRate = 0, totalQuantity = 0, totalPurchaseAsset = 0, totalProfitLoss = 0 } = summary || {};
 
   const palette = WEATHER_PALETTES[weatherStatus] || WEATHER_PALETTES.sunny;
   const chartWeights = holdings.map((h, i) => ({
@@ -292,7 +292,7 @@ export default function AssetSummaryCard({ summary, radarScores, isDark, weather
       {/* ── 헤더 (종목별 날씨 카드 헤더와 100% 수평 Y축 픽셀 라인 맞춤) ── */}
       <div className={`flex items-center justify-between px-5 py-3.5 border-b ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-50'}`}>
         <p className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-          보유 자산
+          주식 보유량
         </p>
         <a
           href="/portfolio/register"
@@ -308,7 +308,7 @@ export default function AssetSummaryCard({ summary, radarScores, isDark, weather
       {/* ── 카드 본문 (p-5) ── */}
       <div className="p-5">
         {/* 하단 라인: 총 자산 금액(좌) + 우측 위험자산 뱃지(우) */}
-        <div className="flex items-center justify-between gap-2 mb-4">
+        <div className="flex flex-col gap-2 mb-4">
           <div className="flex items-baseline gap-1">
             <span className={`text-lg font-black font-mono ${accent}`}>₩</span>
             <span className={`text-2xl font-black font-mono leading-none ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
@@ -316,7 +316,33 @@ export default function AssetSummaryCard({ summary, radarScores, isDark, weather
             </span>
           </div>
 
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-between mt-1.5">
+            {/* 보유 액수 | 수익(손실) 액수 | 수익률 */}
+            <div className="flex items-center gap-1.5 text-[11px] font-bold">
+              {/* 보유 액수 (검정색 / 다크모드는 회색 계열) */}
+              <span className={isDark ? 'text-slate-300' : 'text-black'}>
+                보유 ₩{new Intl.NumberFormat('ko-KR').format(totalPurchaseAsset)}
+              </span>
+              <span className={isDark ? 'text-slate-800' : 'text-slate-200'}>|</span>
+              {/* 수익(손실) 액수 */}
+              <span className={
+                totalProfitLoss >= 0
+                  ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]')
+                  : 'text-rose-500'
+              }>
+                {totalProfitLoss >= 0 ? '+' : '-'}₩{new Intl.NumberFormat('ko-KR').format(Math.abs(totalProfitLoss))}
+              </span>
+              <span className={isDark ? 'text-slate-800' : 'text-slate-200'}>|</span>
+              {/* 수익률 */}
+              <span className={
+                totalProfitLossRate >= 0
+                  ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]')
+                  : 'text-rose-500'
+              }>
+                {totalProfitLossRate >= 0 ? '+' : ''}{totalProfitLossRate.toFixed(2)}%
+              </span>
+            </div>
+
             <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1 flex-shrink-0 ${
               isDark ? 'bg-rose-950/40 border-rose-500/30 text-rose-300' : 'bg-rose-50 border-rose-200 text-rose-600'
             }`}>
@@ -348,7 +374,7 @@ export default function AssetSummaryCard({ summary, radarScores, isDark, weather
 
       {/* ── 탭 콘텐츠 ── */}
       {activeTab === 'donut' && chartWeights.length > 0 && (
-        <AssetChart theme={isDark ? 'dark' : 'light'} weights={chartWeights} />
+        <AssetChart theme={isDark ? 'dark' : 'light'} weights={chartWeights} data={holdings} />
       )}
 
       {activeTab === 'radar' && radarScores && (
