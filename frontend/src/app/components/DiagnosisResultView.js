@@ -280,7 +280,7 @@ export default function DiagnosisResultView({ profile, isDark }) {
     if (currentRecs && currentRecs.length > 0) {
       fetchBackendCachedReasons();
     }
-  }, [selectedBand, setIndex]);
+  }, [selectedBand, setIndex, currentRecs]);
 
   if (!profile) return null;
 
