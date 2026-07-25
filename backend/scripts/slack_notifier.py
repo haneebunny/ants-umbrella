@@ -107,7 +107,7 @@ def send_slack_alert():
                     }
                 ]
             else:
-                # 오늘 분석된 중요 리스크가 아니면 조용히 넘어가기
+                # 오늘 분석된 중요 리스크가 없으면 조용히 스킵
                 print(f"[INFO] No critical risk events found for today ({today_str}). Silently skipping Slack alert.")
                 return
 
@@ -183,6 +183,8 @@ def send_slack_alert():
                 }
             })
             blocks.append({"type": "divider"})
+
+
 
         # 대시보드 바로가기 버튼 링크 추가
         blocks.append({
