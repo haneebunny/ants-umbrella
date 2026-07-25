@@ -22,8 +22,9 @@ export default function KosdaqMiniChart({ index, isDark }) {
     return `${x},${y}`;
   }).join(' ');
 
-  const color = isUp ? '#3eb489' : '#ff6b6b';
-  const colorDark = isUp ? '#69dbad' : '#ff8b8b';
+  const isRising = change >= 0;
+  const color = isRising ? '#3eb489' : '#ff6b6b';
+  const colorDark = isRising ? '#69dbad' : '#ff8b8b';
   const lineColor = isDark ? colorDark : color;
 
   return (
@@ -44,12 +45,12 @@ export default function KosdaqMiniChart({ index, isDark }) {
           </p>
         </div>
         <div className="flex flex-col items-end">
-          <div className={`flex items-center gap-1 text-sm font-black ${isUp ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : 'text-red-500'}`}>
-            <Icon name={isUp ? 'trendingUp' : 'trendingDown'} className="w-4 h-4" />
-            {isUp ? '+' : ''}{changeRate.toFixed(2)}%
+          <div className={`flex items-center gap-1 text-sm font-black ${isRising ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : (isDark ? 'text-[#ff8b8b]' : 'text-red-500')}`}>
+            <Icon name={isRising ? 'trendingUp' : 'trendingDown'} className="w-4 h-4" />
+            {isRising ? '+' : '-'}{Math.abs(changeRate).toFixed(2)}%
           </div>
           <p className={`text-[11px] font-mono font-bold ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-            {isUp ? '+' : '-'}{Math.abs(change).toFixed(2)}
+            {isRising ? '+' : '-'}{Math.abs(change).toFixed(2)}
           </p>
         </div>
       </div>
