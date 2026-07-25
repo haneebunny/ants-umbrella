@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-INPUT_PATH = PROJECT_ROOT / "data" / "processed" / "price_features_raw.csv"
+INPUT_PATH = PROJECT_ROOT / "data" / "price_features_raw.csv"
 OUTPUT_PATH = PROJECT_ROOT / "data" / "price_features_labeled.csv"
 
 WINDOW = 20  # 20거래일

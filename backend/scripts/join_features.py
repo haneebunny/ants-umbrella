@@ -130,7 +130,11 @@ if __name__ == "__main__":
         news_csv = data_dir / "news_features_day2.csv"
     if not news_csv.exists():
         news_csv = data_dir / "news_features_dummy.csv"
-        
+        if not news_csv.exists():
+            print("[INFO] news_features_dummy.csv 파일이 없어 빈 템플릿 파일을 생성합니다.")
+            df_empty = pd.DataFrame(columns=["ticker", "date", "news_related", "news_direction", "news_severity", "news_category", "is_material", "confidence_score"])
+            df_empty.to_csv(news_csv, index=False)
+            
     price_csv = data_dir / "price_features_labeled.csv"
     macro_csv = data_dir / "macro_features.csv"
     supp_csv = data_dir / "supplementary_signals.csv"

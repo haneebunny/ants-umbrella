@@ -108,13 +108,48 @@ def send_slack_alert():
                 print(f"[INFO] No critical risk events found for today ({today_str}). Silently skipping Slack alert.")
                 return
 
-        # 3. 슬랙 Block Kit 페이로드 구성
+        # 3. 사용자 설정에 따른 카테고리 필터링 적용 ──────────────────────
+        try:
+            settings_col = get_collection("user_settings")
+            cfg = settings_col.find_one({"ticker": "settings", "date": "alert_config"})
+            categories = cfg.get("categories", {"price_risk": True, "esg_news": True, "disclosure": True}) if cfg else {"price_risk": True, "esg_news": True, "disclosure": True}
+        except Exception as e:
+            print(f"[WARN] Failed to load alert config for Slack notifier: {e}")
+            categories = {"price_risk": True, "esg_news": True, "disclosure": True}
+
+        def get_alert_category(title: str, news_category: str = None) -> str:
+            title_lower = title.lower()
+            if any(k in title_lower for k in ["공시", "사채", "증자", "발행", "결정", "보고서"]):
+                return "disclosure"
+            if news_category == "ESG" or any(k in title_lower for k in ["esg", "환경", "지배구조", "노사", "탄소", "상생"]):
+                return "esg_news"
+            return "price_risk"
+
+        filtered_docs = []
+        for doc in docs:
+            ticker = doc.get("ticker", "005930")
+            name, title, url = get_event_details(ticker, today_str)
+            cat = get_alert_category(title, doc.get("news_category"))
+            if categories.get(cat, True):
+                doc["_event_title"] = title
+                doc["_event_name"] = name
+                doc["_event_url"] = url
+                doc["_event_category"] = cat
+                filtered_docs.append(doc)
+        
+        docs = filtered_docs
+
+        if not docs:
+            print(f"[INFO] All critical risk events were filtered out by user category preferences. Skipping Slack alert.")
+            return
+
+        # 4. 슬랙 Block Kit 페이로드 구성
         blocks = [
             {
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": "🚨 개미의 우산 - 중대 리스크 감지 🚨",
+                    "text": "🚨 개미의 우산 - 중대 리스크 요인 감지 🚨",
                     "emoji": True
                 }
             },
@@ -130,7 +165,9 @@ def send_slack_alert():
         
         for doc in docs:
             ticker = doc.get("ticker", "005930")
-            name, title, url = get_event_details(ticker, today_str)
+            name = doc.get("_event_name", "알 수 없는 종목")
+            title = doc.get("_event_title", "중대 리스크 요인 감지")
+            url = doc.get("_event_url", "#")
             
             # 슬랙 mrkdwn 링크 포맷 적용
             details_str = f"<{url}|{title}>" if url and url.startswith("http") else title

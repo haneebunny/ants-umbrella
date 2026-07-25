@@ -16,11 +16,13 @@ os.chdir(BACKEND_DIR)
 
 # 실행할 스크립트 리스트 및 설명
 PIPELINE_STEPS = [
-    ("scripts/collect_price.py", "1. 16개 포트폴리오 종목 주가 수집 (FinanceDataReader/pykrx)"),
-    ("scripts/generate_labels.py", "2. 주가 라벨 정의 (20거래일 내 -10% 하락 여부)"),
-    ("scripts/add_sector.py", "3. 종목별 업종(섹터) 정보 매핑"),
-    ("scripts/join_features.py", "4. 최종 학습/추론 통합 피처 데이터셋 병합 (코랩 가공 뉴스 반영)"),
-    ("scripts/compare_features.py", "5. XGBoost 피처 중요도 및 성능 비교 실험")
+    ("scripts/collect_macro.py", "1. 거시경제 피처 수집 (기준금리/환율)"),
+    ("scripts/collect_dart.py", "2. 기업공시 피처 수집 (유상증자/CB 등)"),
+    ("scripts/collect_price.py", "3. 16개 포트폴리오 종목 주가 수집 (FinanceDataReader/pykrx)"),
+    ("scripts/generate_labels.py", "4. 주가 라벨 정의 (20거래일 내 -10% 하락 여부)"),
+    ("scripts/add_sector.py", "5. 종목별 업종(섹터) 정보 매핑"),
+    ("scripts/join_features.py", "6. 최종 학습/추론 통합 피처 데이터셋 병합 (코랩 가공 뉴스 반영)"),
+    ("scripts/compare_features.py", "7. XGBoost 피처 중요도 및 성능 비교 실험")
 ]
 
 def run_step(script_name: str, description: str, log_file) -> bool:

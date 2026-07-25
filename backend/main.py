@@ -13,6 +13,70 @@ load_dotenv()
 
 app = FastAPI()
 
+# ── ⏰ APScheduler 동적 배치 스케줄러 ───────────────────────────────
+from apscheduler.schedulers.background import BackgroundScheduler
+import subprocess
+import sys
+from datetime import datetime
+
+scheduler = BackgroundScheduler(timezone="Asia/Seoul")
+
+def run_daily_batch_job():
+    print(f"[SCHEDULER] 배치 작업 시작 시간: {datetime.now().isoformat()}")
+    try:
+        from pathlib import Path
+        project_root = Path(__file__).resolve().parent.parent
+        run_pipeline_path = project_root / "backend" / "scripts" / "run_pipeline.py"
+        slack_notifier_path = project_root / "backend" / "scripts" / "slack_notifier.py"
+        
+        # run_pipeline.py 비동기 실행 (출력물은 백엔드 프로세스 로그에 남김)
+        print(f"[SCHEDULER] run_pipeline.py 실행: {run_pipeline_path}")
+        p1 = subprocess.Popen([sys.executable, str(run_pipeline_path)])
+        p1.wait() # 파이프라인 구동 대기
+        
+        # slack_notifier.py 실행
+        print(f"[SCHEDULER] slack_notifier.py 실행: {slack_notifier_path}")
+        p2 = subprocess.Popen([sys.executable, str(slack_notifier_path)])
+        p2.wait()
+        print("[SCHEDULER] 배치 작업 및 슬랙 알림 발송 완료.")
+    except Exception as e:
+        print(f"[SCHEDULER] 배치 작업 실행 중 에러 발생: {e}")
+
+def reschedule_alert_jobs(alert_times: list[str]):
+    # 기존에 등록된 모든 잡 삭제
+    scheduler.remove_all_jobs()
+    for time_str in alert_times:
+        try:
+            hour, minute = map(int, time_str.split(":"))
+            job_id = f"batch_{hour:02d}_{minute:02d}"
+            scheduler.add_job(
+                run_daily_batch_job,
+                "cron",
+                hour=hour,
+                minute=minute,
+                id=job_id,
+                name=f"Daily Batch at {time_str}"
+            )
+            print(f"[SCHEDULER] 크론 잡 등록 완료: {job_id} ({time_str})")
+        except Exception as e:
+            print(f"[SCHEDULER] 스케줄 등록 에러 ({time_str}): {e}")
+
+@app.on_event("startup")
+def startup_event():
+    scheduler.start()
+    print("[SCHEDULER] APScheduler 백그라운드 스케줄러 시작 완료.")
+    # DB에서 기존 설정값 읽어와서 복원
+    try:
+        settings_col = get_collection("user_settings")
+        # JSON Mock DB 및 복합 인덱스 매칭을 위해 ticker/date를 settings/alert_config로 처리
+        cfg = settings_col.find_one({"ticker": "settings", "date": "alert_config"})
+        alert_times = cfg.get("alert_times", ["07:00", "10:27"]) if cfg else ["07:00", "10:27"]
+    except Exception as e:
+        print(f"[SCHEDULER] 기존 알림 시간 스케줄 로드 실패: {e}")
+        alert_times = ["07:00", "10:27"]
+    reschedule_alert_jobs(alert_times)
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -37,32 +101,108 @@ try:
 except Exception as e:
     print(f"[WARN] SECTOR_MAP 로드 실패: {e}")
 
-def get_realtime_price_via_kis(ticker: str) -> dict:
+# ── 🔑 KIS 토큰 파일 기반 캐싱 및 도메인 자동 전환 ─────────────────────
+def get_kis_access_token_and_domain() -> tuple[str, str]:
+    import time
+    import json
+    from pathlib import Path
+    
+    project_root = Path(__file__).resolve().parent.parent
+    cache_path = project_root / "data" / "kis_token_cache.json"
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    now = time.time()
+    token = None
+    domain = "https://openapi.koreainvestment.com:9443"
+    expires_at = 0
+    
+    # 1. 파일에서 캐시 로드
+    if cache_path.exists():
+        try:
+            with open(cache_path, "r", encoding="utf-8") as f:
+                cached = json.load(f)
+                token = cached.get("token")
+                domain = cached.get("domain", "https://openapi.koreainvestment.com:9443")
+                expires_at = cached.get("expires_at", 0)
+        except Exception as e:
+            print(f"[WARN] KIS 토큰 파일 캐시 로드 실패: {e}")
+            
+    # 2. 유효 캐시 즉시 반환 (여유 10분)
+    if token and expires_at > now + 600:
+        return token, domain
+        
+    # 3. 최근 60초 이내에 실패가 있었으면 쿨다운 적용하여 추가 호출 방지
+    if token is None and expires_at > now:
+        print("[INFO] KIS API 토큰 요청 쿨다운 중... API 호출을 스킵하고 폴백을 유지합니다.")
+        return None, domain
+        
+    # 4. KIS API 호출하여 새 토큰 받기
     kis_key = (os.environ.get("KIS_APP_KEY") or os.environ.get("KIS_APPKEY") or "").strip()
     kis_secret = (os.environ.get("KIS_APP_SECRET") or os.environ.get("KIS_APPSECRET") or "").strip()
     if not kis_key or not kis_secret:
+        return None, domain
+        
+    headers = {"content-type": "application/json"}
+    body = {
+        "grant_type": "client_credentials",
+        "appkey": kis_key,
+        "appsecret": kis_secret
+    }
+    
+    real_domain = "https://openapi.koreainvestment.com:9443"
+    mock_domain = "https://openapivts.koreainvestment.com:29443"
+    
+    try:
+        res = requests.post(f"{real_domain}/oauth2/tokenP", headers=headers, data=json.dumps(body), timeout=5)
+        if res.status_code == 200:
+            data = res.json()
+            token = data.get("access_token")
+            domain = real_domain
+            expires_at = now + int(data.get("expires_in", 7200))
+            
+            with open(cache_path, "w", encoding="utf-8") as f:
+                json.dump({"token": token, "domain": domain, "expires_at": expires_at}, f)
+            print(f"[SUCCESS] KIS Real Domain token saved to cache file. Expires at {datetime.fromtimestamp(expires_at).isoformat()}")
+            return token, domain
+            
+        res_json = res.json()
+        if res_json.get("error_code") == "EGW00103" or "AppKey" in res_json.get("error_description", ""):
+            print("[INFO] KIS 실전투자 키가 아님 감지 -> 모의투자(VTS) 도메인으로 시도합니다.")
+            res_mock = requests.post(f"{mock_domain}/oauth2/tokenP", headers=headers, data=json.dumps(body), timeout=5)
+            if res_mock.status_code == 200:
+                data = res_mock.json()
+                token = data.get("access_token")
+                domain = mock_domain
+                expires_at = now + int(data.get("expires_in", 7200))
+                
+                with open(cache_path, "w", encoding="utf-8") as f:
+                    json.dump({"token": token, "domain": domain, "expires_at": expires_at}, f)
+                print(f"[SUCCESS] KIS Mock Domain token saved to cache file. Expires at {datetime.fromtimestamp(expires_at).isoformat()}")
+                return token, domain
+                
+        # 다른 원인으로 실패 시 60초 쿨다운을 expires_at에 임시 설정하여 저장
+        expires_at = now + 60
+        with open(cache_path, "w", encoding="utf-8") as f:
+            json.dump({"token": None, "domain": real_domain, "expires_at": expires_at}, f)
+        print(f"[WARN] KIS Real Domain token issue failed (60s cooldown cached): {res.text}")
+    except Exception as e:
+        print(f"[ERROR] KIS 토큰 발급/캐싱 도중 예외 발생: {e}")
+        
+    return None, domain
+
+
+def get_realtime_price_via_kis(ticker: str) -> dict:
+    access_token, domain = get_kis_access_token_and_domain()
+    if not access_token:
         return None
     try:
-        # 1. 접근 토큰 발급
-        auth_url = "https://openapi.koreainvestment.com:9443/oauth2/tokenP"
-        headers = {"content-type": "application/json"}
-        body = {
-            "grant_type": "client_credentials",
-            "appkey": kis_key,
-            "appsecret": kis_secret
-        }
-        res = requests.post(auth_url, headers=headers, data=json.dumps(body), timeout=5)
-        if res.status_code != 200:
-            return None
-        access_token = res.json().get("access_token")
-        
         # 2. 실시간 현재가 조회
-        price_url = "https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/quotations/inquire-price"
+        price_url = f"{domain}/uapi/domestic-stock/v1/quotations/inquire-price"
         price_headers = {
             "content-type": "application/json; charset=utf-8",
             "authorization": f"Bearer {access_token}",
-            "appkey": kis_key,
-            "appsecret": kis_secret,
+            "appkey": (os.environ.get("KIS_APP_KEY") or os.environ.get("KIS_APPKEY") or "").strip(),
+            "appsecret": (os.environ.get("KIS_APP_SECRET") or os.environ.get("KIS_APPSECRET") or "").strip(),
             "tr_id": "FHKST01010100"
         }
         params = {
@@ -296,24 +436,9 @@ def get_watchlist_prices(tickers: str = ""):
     ticker_list = [t.strip() for t in tickers.split(",") if t.strip()]
     results = []
     
-    access_token = None
+    access_token, domain = get_kis_access_token_and_domain()
     kis_key = (os.environ.get("KIS_APP_KEY") or os.environ.get("KIS_APPKEY") or "").strip()
     kis_secret = (os.environ.get("KIS_APP_SECRET") or os.environ.get("KIS_APPSECRET") or "").strip()
-    
-    if kis_key and kis_secret:
-        try:
-            auth_url = "https://openapi.koreainvestment.com:9443/oauth2/tokenP"
-            headers = {"content-type": "application/json"}
-            body = {
-                "grant_type": "client_credentials",
-                "appkey": kis_key,
-                "appsecret": kis_secret
-            }
-            res = requests.post(auth_url, headers=headers, data=json.dumps(body), timeout=3)
-            if res.status_code == 200:
-                access_token = res.json().get("access_token")
-        except Exception as e:
-            print(f"[WARN] KIS 토큰 발급 에러: {e}")
 
     for ticker in ticker_list:
         ticker_formatted = ticker.zfill(6)
@@ -322,7 +447,7 @@ def get_watchlist_prices(tickers: str = ""):
         # 1. KIS 실시간 API 조회 시도
         if access_token:
             try:
-                price_url = "https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/quotations/inquire-price"
+                price_url = f"{domain}/uapi/domestic-stock/v1/quotations/inquire-price"
                 price_headers = {
                     "content-type": "application/json; charset=utf-8",
                     "authorization": f"Bearer {access_token}",
@@ -816,36 +941,26 @@ def get_risk_evidences(ticker: str):
     change_percent = 0.0
     if kis_key and kis_secret:
         try:
-            # 실시간 API 토큰 요청
-            auth_url = "https://openapi.koreainvestment.com:9443/oauth2/tokenP"
-            headers = {"content-type": "application/json"}
-            body = {
-                "grant_type": "client_credentials",
-                "appkey": kis_key,
-                "appsecret": kis_secret
-            }
-            res = requests.post(auth_url, headers=headers, data=json.dumps(body), timeout=3)
-            if res.status_code == 200:
-                access_token = res.json().get("access_token")
-                if access_token:
-                    price_url = "https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/quotations/inquire-price"
-                    price_headers = {
-                        "content-type": "application/json; charset=utf-8",
-                        "authorization": f"Bearer {access_token}",
-                        "appkey": kis_key,
-                        "appsecret": kis_secret,
-                        "tr_id": "FHKST01010100"
-                    }
-                    params = {
-                        "FID_COND_MRKT_DIV_CODE": "J",
-                        "FID_INPUT_ISCD": ticker.zfill(6)
-                    }
-                    res_p = requests.get(price_url, headers=price_headers, params=params, timeout=3)
-                    if res_p.status_code == 200:
-                        output = res_p.json().get("output", {})
-                        if output:
-                            current_price = int(output.get("stck_prpr", 0))
-                            change_percent = float(output.get("prdy_ctrt", 0.0))
+            access_token, domain = get_kis_access_token_and_domain()
+            if access_token:
+                price_url = f"{domain}/uapi/domestic-stock/v1/quotations/inquire-price"
+                price_headers = {
+                    "content-type": "application/json; charset=utf-8",
+                    "authorization": f"Bearer {access_token}",
+                    "appkey": kis_key,
+                    "appsecret": kis_secret,
+                    "tr_id": "FHKST01010100"
+                }
+                params = {
+                    "FID_COND_MRKT_DIV_CODE": "J",
+                    "FID_INPUT_ISCD": ticker.zfill(6)
+                }
+                res_p = requests.get(price_url, headers=price_headers, params=params, timeout=3)
+                if res_p.status_code == 200:
+                    output = res_p.json().get("output", {})
+                    if output:
+                        current_price = int(output.get("stck_prpr", 0))
+                        change_percent = float(output.get("prdy_ctrt", 0.0))
         except Exception as e:
             print(f"[WARN] Detail page KIS fetch failed: {e}")
 
@@ -882,6 +997,23 @@ def get_alerts():
     import pandas as pd
     from pathlib import Path
     
+    # ── 1. DB에서 사용자 알림 설정 조회 ──────────────────────────────────
+    try:
+        settings_col = get_collection("user_settings")
+        cfg = settings_col.find_one({"ticker": "settings", "date": "alert_config"})
+        categories = cfg.get("categories", {"price_risk": True, "esg_news": True, "disclosure": True}) if cfg else {"price_risk": True, "esg_news": True, "disclosure": True}
+    except Exception as e:
+        print(f"[WARN] Failed to load alert config for filtering alerts: {e}")
+        categories = {"price_risk": True, "esg_news": True, "disclosure": True}
+
+    def get_alert_category(title: str, news_category: str = None) -> str:
+        title_lower = title.lower()
+        if any(k in title_lower for k in ["공시", "사채", "증자", "발행", "결정", "보고서"]):
+            return "disclosure"
+        if news_category == "ESG" or any(k in title_lower for k in ["esg", "환경", "지배구조", "노사", "탄소", "상생"]):
+            return "esg_news"
+        return "price_risk"
+
     project_root = Path(__file__).resolve().parent.parent
     corp_map_path = project_root / "data" / "corp_code_map.csv"
     corp_dict = {}
@@ -912,24 +1044,40 @@ def get_alerts():
                 level = "info"
                 
             dt_str = d.get("date", "2026.07.24")
+            news_title = d.get("news_title", "ESG 미디어 이슈 포착")
             
+            # 카테고리 판별 및 백엔드 필터링
+            cat = get_alert_category(news_title, d.get("news_category"))
+            if not categories.get(cat, True):
+                continue
+                
             alerts.append({
-                "id": i + 1,
+                "id": len(alerts) + 1,
                 "level": level,
                 "ticker_code": ticker,
                 "ticker": corp_name,
-                "title": d.get("news_title", "ESG 미디어 이슈 포착"),
+                "title": news_title,
                 "time": dt_str,
-                "read": False
+                "read": False,
+                "category": cat
             })
     except Exception as e:
         print(f"[WARN] Alerts API failed: {e}")
         # fallback
-        alerts = [
-            { "id": 1, "level": "danger", "ticker_code": "005930", "ticker": "삼성전자", "title": "단기 설비 투자 차입금 증가 결정 공시", "time": "오늘 09:12", "read": False },
-            { "id": 2, "level": "caution", "ticker_code": "000660", "ticker": "SK하이닉스", "title": "글로벌 테크 섹터 차익 실현 기사 보도", "time": "오늘 08:45", "read": False },
-            { "id": 3, "level": "info", "ticker_code": "055550", "ticker": "신한지주", "title": "금리 방어선 유지 및 대출 포트폴리오 자산 성장세 지속", "time": "어제 15:30", "read": True }
+        fallback_alerts = [
+            { "id": 1, "level": "danger", "ticker_code": "051910", "ticker": "LG화학", "title": "교환사채 2,000억 규모 발행 공시", "time": "오늘 09:12", "read": False },
+            { "id": 2, "level": "danger", "ticker_code": "005930", "ticker": "삼성전자", "title": "단기 설비 투자 차입금 증가 결정 공시", "time": "오늘 08:45", "read": False },
+            { "id": 3, "level": "caution", "ticker_code": "005490", "ticker": "POSCO홀딩스", "title": "탄소 배출 규제 강화 관련 환경부 브리핑", "time": "어제 15:30", "read": True },
+            { "id": 4, "level": "caution", "ticker_code": "068270", "ticker": "셀트리온", "title": "임상 3상 중간 결과 발표 지연 안내", "time": "어제 11:00", "read": True },
+            { "id": 5, "level": "info", "ticker_code": "055550", "ticker": "신한지주", "title": "금리 방어선 유지 및 대출 포트폴리오 자산 성장세 지속", "time": "2일 전", "read": True }
         ]
+        
+        alerts = []
+        for item in fallback_alerts:
+            cat = get_alert_category(item["title"])
+            if categories.get(cat, True):
+                item["category"] = cat
+                alerts.append(item)
         
     return alerts
 
@@ -1070,45 +1218,36 @@ def get_kospi_index():
     
     if kis_key and kis_secret:
         try:
-            auth_url = "https://openapi.koreainvestment.com:9443/oauth2/tokenP"
-            headers = {"content-type": "application/json"}
-            body = {
-                "grant_type": "client_credentials",
-                "appkey": kis_key,
-                "appsecret": kis_secret
-            }
-            res = requests.post(auth_url, headers=headers, data=json.dumps(body), timeout=3)
-            if res.status_code == 200:
-                access_token = res.json().get("access_token")
-                if access_token:
-                    price_url = "https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/quotations/inquire-index-price"
-                    price_headers = {
-                        "content-type": "application/json; charset=utf-8",
-                        "authorization": f"Bearer {access_token}",
-                        "appkey": kis_key,
-                        "appsecret": kis_secret,
-                        "tr_id": "FHPUP02100000"
-                    }
-                    params = {
-                        "FID_COND_MRKT_DIV_CODE": "U",
-                        "FID_INPUT_ISCD": "0001" # KOSPI 업종코드
-                    }
-                    res_p = requests.get(price_url, headers=price_headers, params=params, timeout=3)
-                    if res_p.status_code == 200:
-                        output = res_p.json().get("output", {})
-                        if output:
-                            live_price = float(output.get("bstp_nmix_prpr", 0))
-                            live_change = float(output.get("bstp_nmix_prdy_vrss", 0))
-                            live_rate = float(output.get("bstp_nmix_prdy_ctrt", 0))
-                            sign = output.get("bstp_nmix_prdy_vrss_sign", "1")
-                            
-                            if live_price > 0:
-                                current_price = live_price
-                                change = live_change
-                                change_rate = live_rate
-                                is_up = sign in ["1", "2", "3"]
-                                if sparkline:
-                                    sparkline[-1] = current_price
+            access_token, domain = get_kis_access_token_and_domain()
+            if access_token:
+                price_url = f"{domain}/uapi/domestic-stock/v1/quotations/inquire-index-price"
+                price_headers = {
+                    "content-type": "application/json; charset=utf-8",
+                    "authorization": f"Bearer {access_token}",
+                    "appkey": kis_key,
+                    "appsecret": kis_secret,
+                    "tr_id": "FHPUP02100000"
+                }
+                params = {
+                    "FID_COND_MRKT_DIV_CODE": "U",
+                    "FID_INPUT_ISCD": "0001" # KOSPI 업종코드
+                }
+                res_p = requests.get(price_url, headers=price_headers, params=params, timeout=3)
+                if res_p.status_code == 200:
+                    output = res_p.json().get("output", {})
+                    if output:
+                        live_price = float(output.get("bstp_nmix_prpr", 0))
+                        live_change = float(output.get("bstp_nmix_prdy_vrss", 0))
+                        live_rate = float(output.get("bstp_nmix_prdy_ctrt", 0))
+                        sign = output.get("bstp_nmix_prdy_vrss_sign", "1")
+                        
+                        if live_price > 0:
+                            current_price = live_price
+                            change = live_change
+                            change_rate = live_rate
+                            is_up = sign in ["1", "2", "3"]
+                            if sparkline:
+                                sparkline[-1] = current_price
         except Exception as e:
             print(f"[WARN] KIS KOSPI live fetch failed: {e}")
 
@@ -1119,3 +1258,61 @@ def get_kospi_index():
         "isUp": is_up,
         "sparkline": sparkline
     }
+
+
+@app.get("/api/settings/alert-config")
+def get_alert_config():
+    try:
+        col = get_collection("user_settings")
+        cfg = col.find_one({"ticker": "settings", "date": "alert_config"})
+        if not cfg:
+            return {
+                "alert_times": ["07:00", "10:27"],
+                "categories": {
+                    "price_risk": True,
+                    "esg_news": True,
+                    "disclosure": True
+                }
+            }
+        return {
+            "alert_times": cfg.get("alert_times", ["07:00", "10:27"]),
+            "categories": cfg.get("categories", {
+                "price_risk": True,
+                "esg_news": True,
+                "disclosure": True
+            })
+        }
+    except Exception as e:
+        print(f"[ERROR] Failed to get alert config: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/settings/alert-config")
+def save_alert_config(body: dict):
+    alert_times = body.get("alert_times", ["07:00", "10:27"])
+    categories = body.get("categories", {
+        "price_risk": True,
+        "esg_news": True,
+        "disclosure": True
+    })
+    
+    try:
+        col = get_collection("user_settings")
+        col.update_one(
+            {"ticker": "settings", "date": "alert_config"},
+            {"$set": {
+                "ticker": "settings",
+                "date": "alert_config",
+                "alert_times": alert_times,
+                "categories": categories,
+                "updated_at": datetime.now().isoformat()
+            }},
+            upsert=True
+        )
+        # 스케줄러 즉시 갱신
+        reschedule_alert_jobs(alert_times)
+        return {"success": True}
+    except Exception as e:
+        print(f"[ERROR] Failed to save alert config: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
