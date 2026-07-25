@@ -30,7 +30,7 @@ const NEWNEEK_RECOMMENDATION_REASON_CACHE = {
         { ticker: '005380', name: '현대차', tag: '#대형우량', reason: '글로벌 완성차 실적도 좋고 자사주 소각 밸류업 모멘텀이 모락모락 피어올라 🚗', weight: '24%' },
       ],
       [
-        { ticker: '055550', name: '신한지주', tag: '#배당안정', reason: '지속가능한 ESG 금융 경영에 분기 배당으로 계좌를 오손도손 지켜줘 🏦', weight: '26%' },
+        { ticker: '055550', name: '신한지주', tag: '#배당안정', reason: '지속가능한 ESG 금융 경영에 분기 배당으로 계좌를 오순도순 지켜줘 🏦', weight: '26%' },
         { ticker: '017670', name: 'SK텔레콤', tag: '#통신방어주', reason: '탄탄한 통신 인프라 기반으로 매달 쏠쏠한 현금흐름과 높은 배당을 챙겨줘 📱', weight: '25%' },
         { ticker: '028260', name: '삼성물산', tag: '#지배구조우수', reason: '그룹 지배구조의 핵심이자 친환경 신사업까지 챙기는 안전한 버팀목이야 🏗️', weight: '25%' },
         { ticker: '010950', name: 'S-Oil', tag: '#정유대표', reason: '에너지 수급 안정성이 뛰어나고 단기 시장 변동성에도 끄떡없는 정유 대장이야 ⛽', weight: '24%' },
@@ -167,7 +167,7 @@ const NEWNEEK_RECOMMENDATION_REASON_CACHE = {
     colorTheme: '#f43f5e',
     riskProbThreshold: 75,
     maxLossDefault: 30,
-    rule1: '고변동 종목군 관련 급락 관련 소식이나 부정 공시가 뜨면 즉시 시렌 작동!',
+    rule1: '고변동 종목군 관련 급락 위험 소식이나 부정 공시가 뜨면 즉시 사이렌 작동!',
     rule2: 'AI 하락 확률 연산 결과 20일 내 -10% 하락 확률이 >75% 진입 시 비상 레벨 최고조!',
     rule3: '극위험 경보가 발동되면 전량 자산 보호선(손절매 및 리밸런싱)을 즉시 가동!',
     recommendationPools: [

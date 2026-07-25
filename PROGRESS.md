@@ -220,3 +220,4 @@
 | 2026-07-25 | Antigravity | 진단 결과 리포트 말투를 톡톡 튀는 뉴닉(NEWNEEK) 대화체 톤앤매너로 전면 교체하고, LLM API 불필요 호출 방지를 위한 종목별 추천 이유 및 멘탈 수칙 정적 로컬/DB 캐시 맵(`NEWNEEK_RECOMMENDATION_REASON_CACHE`) 구축 완료 |
 | 2026-07-25 | Antigravity | 백엔드 LLM(Anthropic API) 1회 생성 ➔ MongoDB/로컬 JSON(`recommendation_reasons`) 영구 적재 ➔ 0ms초 단위 재활용 'Cache-First' 파이프라인(`app/recommendation_service.py` & `/api/v1/recommendations/reasons`) 구축 완료 |
 | 2026-07-25 | Antigravity | 어려운 금융 전문용어를 제거하고 초보자도 단번에 이해하는 비유와 스토리텔링 기반의 쉬운 뉴닉 톤 '성향 분석 종합 브리핑' 개편 완료 |
+| 2026-07-25 | Antigravity | 위험 진단 페이지 텍스트 전반의 오타 및 맞춤법 점검 교정('시렌' ➔ '사이렌', '오손도손' ➔ '오순도순', '인삿말' ➔ '인사말') 100% 완료 |

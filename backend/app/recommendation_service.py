@@ -43,7 +43,7 @@ def generate_reason_with_llm(ticker: str, stock_name: str, risk_band: str, tag: 
 특징태그: {tag}
 투자자 성향: {risk_band} ({char_name})
 
-반드시 뉴닉 캐릭터 이모지와 함께 대화체로 흥미롭고 쉽게 작성해줘. 이외의 인삿말은 생략하고 텍스트만 출력해줘.
+반드시 뉴닉 캐릭터 이모지와 함께 대화체로 흥미롭고 쉽게 작성해줘. 이외의 인사말은 생략하고 텍스트만 출력해줘.
 """
             response = client.messages.create(
                 model="claude-3-haiku-20240307",
