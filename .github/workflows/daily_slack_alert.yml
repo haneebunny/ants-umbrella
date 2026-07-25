@@ -2,8 +2,8 @@ name: Daily ESG Risk Alert Pipeline
 
 on:
   schedule:
-    # 테스트: KST 오후 3시 54분 (UTC 6시 54분)
-    - cron: '54 6 * * *'
+    # 테스트: KST 오후 5시 45분 (UTC 8시 45분)
+    - cron: '45 8 * * *'
   workflow_dispatch: # GitHub 웹 UI에서 수동 실행 지원
     inputs:
       test_mode:
