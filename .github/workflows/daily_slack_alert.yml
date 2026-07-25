@@ -1,0 +1,78 @@
+name: Daily ESG Risk Alert Pipeline
+
+on:
+  schedule:
+    # 매일 한국 시간 아침 7시 (UTC 22시)에 실행
+    - cron: '0 22 * * *'
+    # 매일 한국 시간 오전 10시 (UTC 1시)에 테스트용 실행
+    - cron: '0 1 * * *'
+    # 임시 알람 테스트용 KST 10:20 및 10:27 스케줄 (UTC 1:20 및 1:27)
+    - cron: '20 1 * * *'
+    - cron: '27 1 * * *'
+  workflow_dispatch: # GitHub 웹 UI에서 수동 실행 지원
+
+jobs:
+  run-alert-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+
+    - name: Cache Poetry dependencies
+      uses: actions/cache@v4
+      with:
+        path: backend/.venv
+        key: ${{ runner.os }}-poetry-${{ hashFiles('backend/poetry.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-poetry-
+
+    - name: Install dependencies
+      run: |
+        cd backend
+        poetry install --no-interaction
+
+    - name: Run Data Collection & Feature Generation
+      env:
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        NCP_API_KEY_ID: ${{ secrets.NCP_API_KEY_ID }}
+        NCP_API_KEY: ${{ secrets.NCP_API_KEY }}
+        DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        KIS_APP_KEY: ${{ secrets.KIS_APP_KEY }}
+        KIS_APP_SECRET: ${{ secrets.KIS_APP_SECRET }}
+      run: |
+        cd backend
+        poetry run python scripts/collect_macro.py
+        poetry run python scripts/collect_dart.py
+        poetry run python scripts/collect_price.py
+        poetry run python scripts/generate_labels.py
+        poetry run python scripts/add_sector.py
+        poetry run python scripts/join_features.py
+
+    - name: Update MongoDB Risk Scores (XGBoost Inference)
+      env:
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      run: |
+        cd backend
+        poetry run python scripts/save_risk_scores.py
+
+    - name: Send Slack Alert
+      env:
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      run: |
+        cd backend
+        poetry run python scripts/slack_notifier.py
