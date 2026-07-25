@@ -1,15 +1,14 @@
-name: Daily ESG Risk Scoring Pipeline
+name: ML Ablation Experiment & Validation Pipeline
 
 on:
-  schedule:
-    # 매일 한국 시간 아침 7시 (UTC 22시)에 실행
-    - cron: '0 22 * * *'
-    # 매일 한국 시간 오전 10시 (UTC 1시)에 테스트용 실행
-    - cron: '0 1 * * *'
-  workflow_dispatch: # GitHub 웹 UI에서 수동 실행할 수 있는 버튼 활성화
+  pull_request:
+    branches:
+      - main
+      - 'feature/**'
+  workflow_dispatch: # 수동 실험 실행
 
 jobs:
-  run-pipeline:
+  run-experiments:
     runs-on: ubuntu-latest
 
     steps:
@@ -40,7 +39,7 @@ jobs:
         cd backend
         poetry install --no-interaction
 
-    - name: Run ESG pipeline
+    - name: Run Full ML Pipeline & Ablation Experiments
       env:
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
         NCP_API_KEY_ID: ${{ secrets.NCP_API_KEY_ID }}
@@ -48,8 +47,8 @@ jobs:
         DART_API_KEY: ${{ secrets.DART_API_KEY }}
         ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        KIS_APP_KEY: ${{ secrets.KIS_APP_KEY }}
+        KIS_APP_SECRET: ${{ secrets.KIS_APP_SECRET }}
       run: |
         cd backend
         poetry run python scripts/run_pipeline.py
-        poetry run python scripts/slack_notifier.py

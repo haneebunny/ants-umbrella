@@ -189,3 +189,4 @@
 | 2026-07-25 | Antigravity | slack_notifier.py 실행 시 sys.path 누락으로 인한 ModuleNotFoundError 및 PyMongo Collection 동적 속성 호출 오류('Collection' object is not iterable) 해결 완료 |
 | 2026-07-25 | Antigravity | 메인 날씨 배너 내 맑음/구름/비/번개 4가지 상태 수동 기상 컨트롤러 구현 및 AI 브리핑 스켈레톤 로더 UI 고도화 완료 |
 | 2026-07-25 | Antigravity | KIS API 토큰 호출 시 만료 전 토큰 재사용(도메인 기억/도메인 선제 매핑) 및 실패 시 기존 유효 토큰 미삭제 캐시 유지, 60초 분당 요청 잠금(EGW00133 차단) 로직 완벽 고도화 |
+| 2026-07-25 | Antigravity | GitHub Actions 워크플로우 분리 완료 (매일 수집/추론/슬랙 전송용 daily_slack_alert.yml과 모델 학습/실험 검증용 ml_ablation_experiment.yml로 이원화) |
