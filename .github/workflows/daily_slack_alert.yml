@@ -9,6 +9,10 @@ on:
     # 임시 알람 테스트용 KST 10:20 및 10:27 스케줄 (UTC 1:20 및 1:27)
     - cron: '20 1 * * *'
     - cron: '27 1 * * *'
+    # KST 오후 2시 (UTC 5시)
+    - cron: '0 5 * * *'
+    # KST 오후 2시 30분 (UTC 5시 30분)
+    - cron: '30 5 * * *'
   workflow_dispatch: # GitHub 웹 UI에서 수동 실행 지원
     inputs:
       test_mode:
