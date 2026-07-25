@@ -77,7 +77,7 @@ function RadarChart({ scores, weatherStatus, isDark }) {
   const perimeterApprox = R * 2 * Math.PI;
 
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className="flex flex-col items-center gap-2 px-6">
       <svg viewBox="0 0 220 220" className="w-full max-w-[280px]" style={{ overflow: 'visible' }}>
         {/* 배경 링 — 안쪽일수록 진하게 (depth 그라디언트) */}
         {rings.map((r, ri) => (
