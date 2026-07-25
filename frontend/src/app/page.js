@@ -183,7 +183,7 @@ export default function Home() {
       .then(r => r.json())
       .then(data => { if (data?.summary?.length) setAiSummary(data.summary); })
       .catch(() => setAiSummary(null));
-  }, [overallWeather?.status, overallWeather?.label, selectedPortfolioId, stockWeatherList, API_BASE]);
+  }, [overallWeather?.status, overallWeather?.label, selectedPortfolioId, stockWeatherList]);
 
 
   const { assetSummary, profile, radarScores } = mockPortfolio;
