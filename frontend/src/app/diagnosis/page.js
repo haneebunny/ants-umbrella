@@ -185,56 +185,6 @@ export default function DiagnosisPage() {
           <Icon name="arrowRight" className="w-4 h-4" />
         </button>
       </main>
-=======
-      {/* 위험 레이더 카드 */}
-      <div className={`rounded-2xl border p-6 space-y-6 ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
-        <div>
-          <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>위험 레이더</p>
-          <h1 className={`text-xl font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-            내 성향 대비 포트폴리오 위험 수준
-          </h1>
-        </div>
-
-        <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-black border ${sCfg.bg} ${sCfg.border} ${sCfg.color}`}>
-          <Icon name={riskStatus === 'safe' ? 'shieldCheck' : riskStatus === 'caution' ? 'alertTriangle' : 'alertCircle'} className="w-4 h-4" />
-          {sCfg.label} — 성향 {riskStatus === 'safe' ? '허용 범위 내' : riskStatus === 'caution' ? '한계 근접' : '초과'}
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <div className="flex justify-between text-xs mb-1.5">
-              <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>내 성향 위험 허용치</span>
-              <span className={`font-black font-mono ${isDark ? 'text-[#69dbad]' : 'text-[#3eb489]'}`}>{userTolerance}점</span>
-            </div>
-            <div className={`h-3 rounded-full ${isDark ? 'bg-white/5' : 'bg-slate-100'}`}>
-              <div className="h-full rounded-full bg-[#3eb489] transition-all duration-700" style={{ width: `${userTolerance}%` }} />
-            </div>
-          </div>
-          <div>
-            <div className="flex justify-between text-xs mb-1.5">
-              <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>현재 포트폴리오 위험</span>
-              <span className={`font-black font-mono ${sCfg.color}`}>{portfolioRisk}점</span>
-            </div>
-            <div className={`h-3 rounded-full ${isDark ? 'bg-white/5' : 'bg-slate-100'}`}>
-              <div className={`h-full rounded-full transition-all duration-700 ${riskStatus === 'safe' ? 'bg-[#3eb489]' : riskStatus === 'caution' ? 'bg-amber-400' : 'bg-red-500'}`} style={{ width: `${portfolioRisk}%` }} />
-            </div>
-          </div>
-        </div>
-
-        <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-          진단된 내 투자 성향({profile?.titleKo || '균형투자형'})의 위험 허용 범위와 현재 내 포트폴리오의 종합 위험 수준을 한눈에 비교해 드려요! 🔍
-        </p>
-      </div>
-
-      <button
-        onClick={() => router.push('/diagnosis/weather')}
-        className={`mt-6 w-full py-4 rounded-2xl text-sm font-black flex items-center justify-center gap-2 transition-all ${
-          isDark ? 'bg-[#3eb489] text-[#0a1f14] hover:bg-[#69dbad]' : 'bg-[#3eb489] text-white hover:bg-[#2d966e] shadow-[0_4px_20px_rgba(62,180,137,0.3)]'
-        }`}
-      >
-        다음: 오늘 내 포트폴리오 날씨 확인
-        <Icon name="arrowRight" className="w-4 h-4" />
-      </button>
     </div>
   );
 }
