@@ -11,6 +11,9 @@ export default function Icon({ name, className = "w-5 h-5", ...props }) {
     moon: (
       <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
     ),
+    activity: (
+      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+    ),
     shield: (
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     ),
