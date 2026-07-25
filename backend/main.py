@@ -115,6 +115,7 @@ def get_kis_access_token_and_domain() -> tuple[str, str]:
     token = None
     domain = "https://openapi.koreainvestment.com:9443"
     expires_at = 0
+    cooldown_until = 0
     
     # 1. 파일에서 캐시 로드
     if cache_path.exists():
@@ -124,18 +125,23 @@ def get_kis_access_token_and_domain() -> tuple[str, str]:
                 token = cached.get("token")
                 domain = cached.get("domain", "https://openapi.koreainvestment.com:9443")
                 expires_at = cached.get("expires_at", 0)
+                cooldown_until = cached.get("cooldown_until", 0)
         except Exception as e:
             print(f"[WARN] KIS 토큰 파일 캐시 로드 실패: {e}")
             
-    # 2. 유효 캐시 즉시 반환 (여유 10분)
-    if token and expires_at > now + 600:
-        return token, domain
-        
-    # 3. 최근 60초 이내에 실패가 있었으면 쿨다운 적용하여 추가 호출 방지
-    if token is None and expires_at > now:
-        print("[INFO] KIS API 토큰 요청 쿨다운 중... API 호출을 스킵하고 폴백을 유지합니다.")
+    # 2. 쿨다운 적용 중이고 유효한 이전 토큰도 없으면 빠르게 None 반환
+    if cooldown_until > now and not (token and expires_at > now + 5):
+        print(f"[INFO] KIS API 토큰 요청 쿨다운 중... {int(cooldown_until - now)}초 대기 필요. API 호출 스킵.")
         return None, domain
         
+    # 3. 유효한 캐시 즉시 반환 (완전 만료 1분 전까지 재사용)
+    if token and expires_at > now + 60:
+        if expires_at > now + 600:
+            return token, domain
+        if cooldown_until > now:
+            # 10분 이내로 남았더라도 쿨다운 대기 중인 경우 새 호출 방지 위해 기존 토큰 재사용
+            return token, domain
+
     # 4. KIS API 호출하여 새 토큰 받기
     kis_key = (os.environ.get("KIS_APP_KEY") or os.environ.get("KIS_APPKEY") or "").strip()
     kis_secret = (os.environ.get("KIS_APP_SECRET") or os.environ.get("KIS_APPSECRET") or "").strip()
@@ -152,43 +158,71 @@ def get_kis_access_token_and_domain() -> tuple[str, str]:
     real_domain = "https://openapi.koreainvestment.com:9443"
     mock_domain = "https://openapivts.koreainvestment.com:29443"
     
+    # 5. 기억된 캐시 도메인이 mock이면 mock 도메인부터 먼저 시도 (VTS 키일 때 속도 향상 및 실전 도메인 에러 스킵)
+    primary_domain = domain if domain in [real_domain, mock_domain] else real_domain
+    secondary_domain = mock_domain if primary_domain == real_domain else real_domain
+    
     try:
-        res = requests.post(f"{real_domain}/oauth2/tokenP", headers=headers, data=json.dumps(body), timeout=5)
+        # 기본 도메인 호출
+        res = requests.post(f"{primary_domain}/oauth2/tokenP", headers=headers, data=json.dumps(body), timeout=5)
         if res.status_code == 200:
             data = res.json()
             token = data.get("access_token")
-            domain = real_domain
+            domain = primary_domain
             expires_at = now + int(data.get("expires_in", 7200))
             
             with open(cache_path, "w", encoding="utf-8") as f:
-                json.dump({"token": token, "domain": domain, "expires_at": expires_at}, f)
-            print(f"[SUCCESS] KIS Real Domain token saved to cache file. Expires at {datetime.fromtimestamp(expires_at).isoformat()}")
+                json.dump({"token": token, "domain": domain, "expires_at": expires_at, "cooldown_until": 0}, f)
+            print(f"[SUCCESS] KIS ({domain}) token saved. Expires at {datetime.fromtimestamp(expires_at).isoformat()}")
             return token, domain
             
+        # 기본 도메인이 실패했고, 에러 코드가 잘못된 도메인(실전 vs 모의 키 불일치)을 나타낼 때 세컨더리 시도
         res_json = res.json()
-        if res_json.get("error_code") == "EGW00103" or "AppKey" in res_json.get("error_description", ""):
-            print("[INFO] KIS 실전투자 키가 아님 감지 -> 모의투자(VTS) 도메인으로 시도합니다.")
-            res_mock = requests.post(f"{mock_domain}/oauth2/tokenP", headers=headers, data=json.dumps(body), timeout=5)
+        error_code = res_json.get("error_code")
+        error_desc = res_json.get("error_description", "")
+        
+        is_invalid_key = (error_code == "EGW00103" or "AppKey" in error_desc)
+        
+        if is_invalid_key:
+            print(f"[INFO] KIS 도메인 전환 시도 ({primary_domain} -> {secondary_domain})")
+            res_mock = requests.post(f"{secondary_domain}/oauth2/tokenP", headers=headers, data=json.dumps(body), timeout=5)
             if res_mock.status_code == 200:
                 data = res_mock.json()
                 token = data.get("access_token")
-                domain = mock_domain
+                domain = secondary_domain
                 expires_at = now + int(data.get("expires_in", 7200))
                 
                 with open(cache_path, "w", encoding="utf-8") as f:
-                    json.dump({"token": token, "domain": domain, "expires_at": expires_at}, f)
-                print(f"[SUCCESS] KIS Mock Domain token saved to cache file. Expires at {datetime.fromtimestamp(expires_at).isoformat()}")
+                    json.dump({"token": token, "domain": domain, "expires_at": expires_at, "cooldown_until": 0}, f)
+                print(f"[SUCCESS] KIS ({domain}) token saved. Expires at {datetime.fromtimestamp(expires_at).isoformat()}")
                 return token, domain
                 
-        # 다른 원인으로 실패 시 60초 쿨다운을 expires_at에 임시 설정하여 저장
-        expires_at = now + 60
+        # 호출 실패 시 (예: EGW00133 1분 제한 등) 60초 쿨다운 적용
+        # 단, 기존에 사용 가능했던 유효 토큰이 남아 있으면, 캐시 파일에서 토큰 값을 지우지 않고 쿨다운 시간만 설정하여 저장!
+        new_cooldown = now + 60
+        old_token_valid = token and expires_at > now
+        
+        saved_token = token if old_token_valid else None
+        saved_expires = expires_at if old_token_valid else 0
+        
         with open(cache_path, "w", encoding="utf-8") as f:
-            json.dump({"token": None, "domain": real_domain, "expires_at": expires_at}, f)
-        print(f"[WARN] KIS Real Domain token issue failed (60s cooldown cached): {res.text}")
+            json.dump({
+                "token": saved_token, 
+                "domain": domain, 
+                "expires_at": saved_expires, 
+                "cooldown_until": new_cooldown
+            }, f)
+            
+        print(f"[WARN] KIS token issue failed. Applied 60s cooldown. "
+              f"Using old valid token: {old_token_valid} (expires_at={saved_expires})")
+              
+        if old_token_valid:
+            return token, domain
+            
     except Exception as e:
         print(f"[ERROR] KIS 토큰 발급/캐싱 도중 예외 발생: {e}")
         
-    return None, domain
+    return token, domain
 
 
 def get_realtime_price_via_kis(ticker: str) -> dict:

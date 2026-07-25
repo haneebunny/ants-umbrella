@@ -187,3 +187,5 @@
 | 2026-07-25 | Antigravity | 알림 설정 패널의 임시 상태 제어 및 일괄 저장 버튼 신설, KIS API 토큰/도메인을 로컬 파일 캐싱하여 EGW00133 1분 제한 차단 에러 원천 해결 및 테스트용 10:20/10:27 알람 스케줄 추가 완료 |
 | 2026-07-25 | Antigravity | 보유 자산 카드 내 도넛 차트 및 주식 목록의 반응형 레이아웃 버그 해결 (화면 너비에 따른 최적의 세로/가로 정렬 분기 구현 및 텍스트 넘침 방지) |
 | 2026-07-25 | Antigravity | slack_notifier.py 실행 시 sys.path 누락으로 인한 ModuleNotFoundError 및 PyMongo Collection 동적 속성 호출 오류('Collection' object is not iterable) 해결 완료 |
+| 2026-07-25 | Antigravity | 메인 날씨 배너 내 맑음/구름/비/번개 4가지 상태 수동 기상 컨트롤러 구현 및 AI 브리핑 스켈레톤 로더 UI 고도화 완료 |
+| 2026-07-25 | Antigravity | KIS API 토큰 호출 시 만료 전 토큰 재사용(도메인 기억/도메인 선제 매핑) 및 실패 시 기존 유효 토큰 미삭제 캐시 유지, 60초 분당 요청 잠금(EGW00133 차단) 로직 완벽 고도화 |

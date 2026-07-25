@@ -63,7 +63,8 @@ export default function Home() {
   const [kospiIndex, setKospiIndex] = useState(kosdaqIndex);
   const [apiLoading, setApiLoading] = useState(false);
   const [aiSummary, setAiSummary] = useState(null); // 캐싱된 Gemini 판단근거
-
+  const [briefingLoading, setBriefingLoading] = useState(false); // AI 판단근거 로딩 상태
+  const [forceWeather, setForceWeather] = useState(null); // 'sunny' | 'cloudy' | 'rainy' | 'thunder' | null
 
   // 마운트 시 localStorage에서 완료된 진단 결과 복원 및 게스트 모달 처리
   useEffect(() => {
@@ -140,6 +141,8 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    setAiSummary(null); // 포트폴리오 변경 즉시 AI 브리핑 초기화해서 스켈레톤 유도
+    setForceWeather(null); // 포트폴리오 변경 시 수동 날씨 조작 설정도 초기화
     if (globalWeatherCache[selectedPortfolioId]) {
       setLiveStockList(globalWeatherCache[selectedPortfolioId]);
     }
@@ -154,10 +157,18 @@ export default function Home() {
     ? { ...aggregateWeather(liveStockList), updatedAt: new Date().toISOString() }
     : mockPortfolio.overallWeather;
 
-  // dynamic aiSummary가 있으면 그걸 덮어씌움
+  // forceWeather가 설정되어 있으면 전체 날씨의 status 및 label을 오버라이드
+  const activeWeatherStatus = forceWeather || baseWeather.status;
+  const activeWeatherLabel = activeWeatherStatus === 'thunder' ? '번개'
+                           : activeWeatherStatus === 'rainy'   ? '비'
+                           : activeWeatherStatus === 'cloudy'  ? '구름'
+                           : '맑음';
+
   const overallWeather = {
     ...baseWeather,
-    summary: aiSummary || baseWeather.summary
+    status: activeWeatherStatus,
+    label: activeWeatherLabel,
+    summary: aiSummary || []
   };
 
   // 날씨 상태 또는 구성 종목의 리스크 정보 변동 시에만 백엔드에 캐시된 브리핑 요청
@@ -167,6 +178,9 @@ export default function Home() {
       .filter(s => s.direction === 'down')
       .map(s => ({ name: s.name, direction: s.direction }));
 
+    setBriefingLoading(true);
+    setAiSummary(null); // 이전 브리핑 캐시 비워 즉각 스켈레톤 상태 노출
+    
     fetch(`${API_BASE}/api/weather-briefing`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -181,8 +195,15 @@ export default function Home() {
       }),
     })
       .then(r => r.json())
-      .then(data => { if (data?.summary?.length) setAiSummary(data.summary); })
-      .catch(() => setAiSummary(null));
+      .then(data => { 
+        if (data?.summary?.length) {
+          setAiSummary(data.summary);
+        } else {
+          setAiSummary(null);
+        }
+      })
+      .catch(() => setAiSummary(null))
+      .finally(() => setBriefingLoading(false));
   }, [overallWeather?.status, overallWeather?.label, selectedPortfolioId, stockWeatherList]);
 
 
@@ -209,7 +230,14 @@ export default function Home() {
           <div className="flex flex-col gap-4 min-w-0">
 
             {/* 날씨 배너 (전체 폭) */}
-            <WeatherBanner weather={overallWeather} isDark={isDark} />
+            <WeatherBanner 
+              weather={overallWeather} 
+              isDark={isDark} 
+              isStatusLoading={apiLoading && !liveStockList}
+              isBriefingLoading={briefingLoading || (apiLoading && !liveStockList) || !aiSummary}
+              forceWeather={forceWeather}
+              onForceWeatherChange={setForceWeather}
+            />
 
             {/* 하단 3열 위젯 그리드: 12열 레이아웃으로 변경하여 좌측은 좁히고 종목별 날씨는 넓힘 */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 items-start">
