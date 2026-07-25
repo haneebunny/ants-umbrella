@@ -204,6 +204,33 @@ export default function WeatherBanner({ weather, isDark }) {
   const cfg = WEATHER_CONFIG[status] || WEATHER_CONFIG.sunny;
   const Decor = DECOR[status] || SunnyDecor;
 
+  // 날씨 상태별 AI 판단 근거 멘트 — status에 따라 항상 맞는 메시지 출력
+  const WEATHER_COMMENTS = {
+    thunder: [
+      '⚡️ 포트폴리오 전반에 걸쳐 고위험 신호가 다수 감지됐어요! 지금은 신중하게 상황을 점검할 타이밍이에요.',
+      '🔴 하락 방향 예측 종목들이 집중돼 있어서 단기 손실 위험이 높아요. 손절 기준선을 미리 확인해 두는 게 좋아요.',
+      '🚨 현재 위험 수준이 허용 한도를 크게 초과했어요. 고위험 종목 비중을 줄이거나 방어주로 교체를 고려해 보세요!',
+    ],
+    rainy: [
+      '🌧️ 일부 종목에서 하락 리스크가 감지되고 있어요. 전체적으로 살짝 흐린 상황이에요.',
+      '📉 약세 신호가 중간 수준으로 감지되고 있어요. 비중 조절과 현금 비중 확보를 고려해 볼 수 있어요.',
+      '🌂 시장 변동성이 높아지는 구간이에요. 리밸런싱 전략을 점검하고 안정적인 종목 비중을 늘려보세요.',
+    ],
+    cloudy: [
+      '⛅ 포트폴리오 전반은 크게 문제없지만, 일부 종목에서 불확실성이 보여요.',
+      '🟡 대부분 종목은 괜찮지만 단기 하락 리스크 신호가 일부 있어요. 지켜보면서 대응하면 충분해요.',
+      '📊 전반적으로 중립 수준이에요. 분산 구성을 유지하면서 위험 종목만 추가 점검해 보세요!',
+    ],
+    sunny: [
+      '☀️ 배당 우량주 중심 구성 덕분에 포트폴리오 전반이 편안하고 안정적인 흐름을 유지하고 있어요! 🛡️',
+      '📈 보유 종목들의 상승 신호가 고루 확인되고, ESG 평판 리스크도 낮아서 안심할 수 있는 구간이에요!',
+      '💸 현재 위험 수준은 허용 범위 아래에 있어요. 원한다면 분산 투자를 더 든든하게 늘려봐도 좋아요!',
+    ],
+  };
+  // weather.summary가 있으면 그걸 사용하고, 없으면 status별 static 멘트 사용
+  const dynamicSummary = weather?.summary || WEATHER_COMMENTS[status] || WEATHER_COMMENTS.sunny;
+
+
   const bgLinear = isDark
     ? `linear-gradient(135deg, ${cfg.darkBgFrom} 0%, ${cfg.darkBgMid || cfg.darkBgFrom} 50%, ${cfg.darkBgTo} 100%)`
     : `linear-gradient(135deg, ${cfg.bgFrom} 0%, ${cfg.bgMid || cfg.bgTo} 45%, ${cfg.bgTo} 100%)`;
@@ -269,8 +296,8 @@ export default function WeatherBanner({ weather, isDark }) {
             </a>
           </div>
 
-          {/* AI 판단 근거 */}
-          {weather?.summary && weather.summary.length > 0 && (
+          {/* AI 판단 근거 — 날씨 상태에 맞는 멘트 동적 표시 */}
+          {dynamicSummary.length > 0 && (
             <div
               className="rounded-xl p-3.5 space-y-2 backdrop-blur-sm"
               style={{ background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.45)' }}
@@ -280,7 +307,7 @@ export default function WeatherBanner({ weather, isDark }) {
               }`}>
                 AI 판단 근거
               </p>
-              {weather.summary.map((line, i) => (
+              {dynamicSummary.map((line, i) => (
                 <div key={i} className="flex items-start gap-2">
                   <span
                     className="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0"

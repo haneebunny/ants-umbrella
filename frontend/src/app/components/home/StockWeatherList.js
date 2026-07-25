@@ -188,13 +188,18 @@ export default function StockWeatherList({ stocks = [], isDark }) {
         isDark ? 'bg-[#1e2220] border-white/5 card-glow-dark' : 'bg-white border-slate-100 shadow-sm card-glow-light'
       }`}>
         {/* 헤더 */}
-        <div className={`flex items-center px-5 py-3.5 border-b ${isDark ? 'border-white/5' : 'border-slate-50'}`}>
-          <p className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-            종목별 날씨
-          </p>
-          <p className={`text-[10px] ml-2 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
-            종목을 클릭하면 상세 정보를 볼 수 있어요
-          </p>
+        <div className={`flex items-center justify-between px-5 py-3.5 border-b ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-50'}`}>
+          <div className="flex items-center gap-2">
+            <p className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+              종목별 날씨
+            </p>
+            <p className={`text-[10px] font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              종목 클릭 시 AI 상세 분석
+            </p>
+          </div>
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isDark ? 'bg-white/10 text-[#69dbad]' : 'bg-slate-100 text-slate-600'}`}>
+            실시간
+          </span>
         </div>
 
         {/* 목록 */}
@@ -209,11 +214,11 @@ export default function StockWeatherList({ stocks = [], isDark }) {
                 key={stock.ticker}
                 ref={el => { buttonRefs.current[stock.ticker] = el; }}
                 onClick={() => handleClick(stock)}
-                className={`w-full flex items-center px-5 py-3.5 text-left transition-colors ${
-                  !isLast ? (isDark ? 'border-b border-white/5' : 'border-b border-slate-50') : ''
+                className={`w-full flex items-center px-5 py-3.5 text-left transition-all ${
+                  !isLast ? (isDark ? 'border-b border-white/10' : 'border-b border-slate-50') : ''
                 } ${isOpen
-                    ? (isDark ? 'bg-white/8' : 'bg-slate-50')
-                    : (isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50')
+                    ? (isDark ? 'bg-white/15' : 'bg-slate-100')
+                    : (isDark ? 'hover:bg-white/10' : 'hover:bg-slate-50')
                 }`}
               >
                 {/* 선택 인디케이터 바 */}
@@ -226,7 +231,7 @@ export default function StockWeatherList({ stocks = [], isDark }) {
                   <p className={`text-sm font-bold truncate ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
                     {stock.name}
                   </p>
-                  <p className={`text-[10px] font-mono ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
+                  <p className={`text-[11px] font-mono font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                     {stock.ticker}
                   </p>
                 </div>
@@ -241,7 +246,7 @@ export default function StockWeatherList({ stocks = [], isDark }) {
                 <span className={`text-xs font-black font-mono w-14 text-right ${
                   stock.direction === 'up'
                     ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]')
-                    : 'text-red-500'
+                    : 'text-rose-400'
                 }`}>
                   {stock.direction === 'up' ? '+' : ''}{stock.change.toFixed(1)}%
                 </span>

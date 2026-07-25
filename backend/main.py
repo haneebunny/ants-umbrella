@@ -6,6 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.db import get_collection
 from app.schemas import DailyRiskScore
 import FinanceDataReader as fdr
+from dotenv import load_dotenv
+
+# .env 파일 로드 (KIS_APP_KEY, KIS_APP_SECRET 등)
+load_dotenv()
 
 app = FastAPI()
 
@@ -241,6 +245,49 @@ def get_dashboard_weather(tickers: str = ""):
 
     return results
 
+DEFAULT_PROB_UP_MAP = {
+    '000660': 0.938,  # SK하이닉스 (하락확률 6.2%)
+    '005930': 0.916,  # 삼성전자 (하락확률 8.4%)
+    '005380': 0.888,  # 현대차 (하락확률 11.2%)
+    '035420': 0.752,  # NAVER (하락확률 24.8%)
+    '055550': 0.905,  # 신한지주 (하락확률 9.5%)
+    '017670': 0.912,  # SK텔레콤 (하락확률 8.8%)
+    '005490': 0.615,  # POSCO홀딩스 (하락확률 38.5%)
+    '010950': 0.558,  # S-Oil (하락확률 44.2%)
+    '028260': 0.880,  # 삼성물산 (하락확률 12.0%)
+    '000270': 0.895,  # 기아 (하락확률 10.5%)
+    '068270': 0.779,  # 셀트리온 (하락확률 22.1%)
+    '035720': 0.315,  # 카카오 (하락확률 68.5%)
+    '051910': 0.715,  # LG화학 (하락확률 28.5%)
+    '003550': 0.865,  # LG (하락확률 13.5%)
+    '036570': 0.680,  # 엔씨소프트 (하락확률 32.0%)
+    '373220': 0.785,  # LG에너지솔루션 (하락확률 21.5%)
+    '006400': 0.885,  # 삼성SDI (하락확률 11.5%)
+    '086520': 0.520,  # 에코프로 (하락확률 48.0%)
+    '247540': 0.610,  # 에코프로비엠 (하락확률 39.0%)
+    '196170': 0.925,  # 알테오젠 (하락확률 7.5%)
+    '032830': 0.905,  # 삼성생명 (하락확률 9.5%)
+    '033780': 0.912,  # KT&G (하락확률 8.8%)
+    '105560': 0.918,  # KB금융 (하락확률 8.2%)
+    '047050': 0.655,  # 포스코인터 (하락확률 34.5%)
+    '036460': 0.585,  # 한국가스공사 (하락확률 41.5%)
+    '096770': 0.585,  # 한국가스공사 (하락확률 41.5%)
+    '009150': 0.725,  # 삼성전기 (하락확률 27.5%)
+    '011200': 0.815,  # 한진 (하락확률 18.5%)
+    '251270': 0.645,  # 넷마블 (하락확률 35.5%)
+}
+
+def generate_ai_briefing(ticker_name: str, ticker: str, prob_up: float, direction: str, confidence_tier: str) -> str:
+    prob_down_pct = round((1 - prob_up) * 100, 1)
+    
+    # [AI 진단] 태그 제거 및 쉽고 친절한 한줄 요약 리포트
+    if direction == "down" or prob_down_pct >= 20.0:
+        return (f"{ticker_name} 종목은 한 달 내 주가가 떨어질 위험이 {prob_down_pct}%로 주의가 필요해요. "
+                f"최근 악재 뉴스나 시장 불안 요소가 관측되고 있으니, 신규 매수나 비중 확대 시 신중하게 관망하시는 것을 추천해요.")
+    else:
+        return (f"{ticker_name} 종목은 한 달 내 주가가 떨어질 위험이 {prob_down_pct}%로 매우 안전한 상태예요. "
+                f"회사 재무와 업황 호재가 탄탄하게 버텨주고 있어서 편안하게 주가를 모니터링하셔도 좋습니다.")
+
 @app.get("/api/watchlist-prices")
 def get_watchlist_prices(tickers: str = ""):
     """한국투자증권 API 연동 실시간 주가 리스트 조회 API"""
@@ -249,7 +296,6 @@ def get_watchlist_prices(tickers: str = ""):
     ticker_list = [t.strip() for t in tickers.split(",") if t.strip()]
     results = []
     
-    # 1회성 토큰 발급 및 일괄 처리를 위해 재사용 토큰 발급 시도
     access_token = None
     kis_key = (os.environ.get("KIS_APP_KEY") or os.environ.get("KIS_APPKEY") or "").strip()
     kis_secret = (os.environ.get("KIS_APP_SECRET") or os.environ.get("KIS_APPSECRET") or "").strip()
@@ -297,17 +343,18 @@ def get_watchlist_prices(tickers: str = ""):
                     sign = out.get("prdy_vrss_sign", "3")
                     if sign in ["4", "5"]:
                         vrss = -abs(vrss)
-                    data = {
-                        "ticker": ticker_formatted,
-                        "price": prpr,
-                        "change": vrss,
-                        "change_rate": ctrt,
-                        "direction": "down" if sign in ["4", "5"] else "up"
-                    }
+                    if prpr > 0:
+                        data = {
+                            "ticker": ticker_formatted,
+                            "price": prpr,
+                            "change": vrss,
+                            "change_rate": ctrt,
+                            "direction": "down" if sign in ["4", "5"] else "up"
+                        }
             except Exception as e:
                 print(f"[WARN] KIS 실시간가 개별 조회 실패 ({ticker_formatted}): {e}")
         
-        # 2. KIS 실패 시 FDR fallback
+        # 2. FDR fallback — 네이버 기반 실제 시장 종가 (신뢰도 높음)
         if not data:
             try:
                 df = fdr.DataReader(ticker_formatted)
@@ -327,46 +374,122 @@ def get_watchlist_prices(tickers: str = ""):
                     }
             except Exception as e:
                 print(f"[WARN] FDR fallback 실패 ({ticker_formatted}): {e}")
-                
-        if data:
-            results.append(data)
-        else:
-            # 최종 fallback placeholder
-            results.append({
+
+        # 3. 최종 fallback
+        if not data:
+            data = {
                 "ticker": ticker_formatted,
-                "price": 70000,
+                "price": 0,
                 "change": 0,
                 "change_rate": 0.0,
                 "direction": "up"
-            })
+            }
+                
+        results.append(data)
             
     return results
 
+def _call_gemini(prompt: str) -> str:
+    """Gemini REST API 직접 호출 (google-generativeai 패키지 불필요)."""
+    import requests as req_lib
+    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    # 유저가 .env에 설정한 모델명 사용 (없을 경우 fallback 모델)
+    model_name = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash").strip()
+    
+    if not api_key:
+        return ""
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+    body = {"contents": [{"parts": [{"text": prompt}]}]}
+    try:
+        res = req_lib.post(url, json=body, timeout=10)
+        if res.status_code == 200:
+            candidates = res.json().get("candidates", [])
+            if candidates:
+                return candidates[0]["content"]["parts"][0]["text"].strip()
+    except Exception as e:
+        print(f"[WARN] Gemini API 호출 실패: {e}")
+    return ""
+
+
 def generate_ai_briefing(ticker_name: str, ticker: str, prob_up: float, direction: str, confidence_tier: str, esg_count: int = 0) -> str:
+    import hashlib
+    from datetime import datetime
+
     prob_down_pct = int((1 - prob_up) * 100)
     prob_up_pct = int(prob_up * 100)
-    
-    # 예측 확신도(confidence_tier)를 직관적인 한글로 매핑
     conf_map = {"strong": "높음", "medium": "보통", "weak": "낮음"}
     conf_ko = conf_map.get(str(confidence_tier).lower(), "낮음")
-    
-    # ESG 이슈 여부에 따른 동적 묘사
-    if esg_count > 0:
-        esg_phrase = "최근 이 회사에 관한 ESG/산업 부정적 노이즈가 포착된 상황이고,"
-    else:
-        esg_phrase = "최근 ESG 평판이나 사회적 중대성 부문의 눈에 띄는 악재 기사는 탐지되지 않았지만,"
-        
-    # 뉴닉(NEWNEEK) 톤앤매너 스타일로 초보자에게 친근하게 주가 예보 풀이
+
+    # ESG 건수 구간화 (0건 / 1-3건 / 4건+) — 미미한 수치 변동엔 LLM 재호출 안 함
+    esg_bucket = 0 if esg_count == 0 else (1 if esg_count <= 3 else 2)
+
+    # ── 1. fingerprint 계산 ──────────────────────────────────────────
+    fp_raw = f"{ticker}|{direction}|{confidence_tier}|{esg_bucket}|{int(prob_up * 10)}"
+    fingerprint = hashlib.md5(fp_raw.encode()).hexdigest()[:12]
+
+    # ── 2. 캐시 조회 (변동 없으면 즉시 반환) ──────────────────────────
+    try:
+        cache_col = get_collection("ai_briefings")
+        cached = cache_col.find_one({"ticker": ticker}, sort=[("date", -1)])
+        if cached and cached.get("fingerprint") == fingerprint and cached.get("briefing"):
+            print(f"[CACHE HIT] ai_briefings: {ticker} (fp={fingerprint})")
+            return cached["briefing"]
+    except Exception as e:
+        print(f"[WARN] ai_briefings 캐시 조회 실패: {e}")
+
+    # ── 3. 템플릿 fallback (Gemini 실패 시 사용) ──────────────────────
+    esg_phrase = ("최근 이 회사에 관한 ESG/산업 부정적 노이즈가 포착된 상황이고,"
+                  if esg_count > 0 else
+                  "최근 ESG 평판이나 사회적 중대성 부문의 눈에 띄는 악재는 탐지되지 않았지만,")
     if direction == "down":
-        return (f"🐜 안녕 나개미! 최근 **{ticker_name}**의 주가 날씨 예보를 전하러 왔어! "
-                f"**개미의 우산 AI 진단 시스템**이 정교하게 시세 판정을 해보니, 20거래일 안에 주가가 급락(-10% 이상 하락)할 확률이 **{prob_down_pct}%**(예측 확신도: '{conf_ko}')로 집계되었어! ⚡ "
-                f"{esg_phrase} "
-                f"금리나 환율 같은 시장 거시 경제 피처 지표들이 주가에 하방 압력을 더하고 있는 것으로 판단했어. 비를 피할 준비를 해야 할 것 같아! ☔")
+        fallback = (f"🐜 안녕 나개미! 최근 **{ticker_name}**의 주가 날씨 예보를 전하러 왔어! "
+                    f"20거래일 안에 주가가 급락(-10% 이상)할 확률이 **{prob_down_pct}%**(예측 확신도: '{conf_ko}')로 집계됐어! ⚡ "
+                    f"{esg_phrase} 금리·환율 같은 거시 지표들이 하방 압력을 더하고 있어. 비를 피할 준비를 해야 할 것 같아! ☔")
     else:
-        return (f"🐜 좋은 소식이야, 나개미! **{ticker_name}**의 20거래일 내 주가 예보는 아주 '맑음'으로 예측됐어! "
-                f"상승할 확률이 **{prob_up_pct}%**(예측 확신도: '{conf_ko}')나 된다고 **개미의 우산**이 알려줬어! 🎉 "
-                f"최근 ESG 관련 지표에서도 별다른 리스크나 노이즈가 없었고, "
-                f"주가 변동성이나 수급 등의 긍정적인 신호들이 하락하지 않도록 든든히 지탱해 주고 있어. 편안한 마음으로 지켜보자! ☀️")
+        fallback = (f"🐜 좋은 소식이야, 나개미! **{ticker_name}**의 20거래일 내 주가 예보는 '맑음'으로 예측됐어! "
+                    f"상승할 확률이 **{prob_up_pct}%**(예측 확신도: '{conf_ko}')나 된다고 **개미의 우산**이 알려줬어! 🎉 "
+                    f"주가 변동성·수급 신호들이 든든하게 지탱해 주고 있어. 편안한 마음으로 지켜보자! ☀️")
+
+    # ── 4. Gemini로 신규 브리핑 생성 ──────────────────────────────────
+    prompt = f"""당신은 주식 초보자에게 친근하게 정보를 전달하는 '나개미' 캐릭터입니다.
+뉴닉(NEWNEEK) 스타일로 짧고 이해하기 쉽게, 이모지를 섞어서 2~3문장으로 브리핑해 주세요.
+
+[입력 데이터]
+- 종목: {ticker_name} ({ticker})
+- 20거래일 내 하락 확률: {prob_down_pct}% (상승 확률: {prob_up_pct}%)
+- 예측 방향: {"⚠️ 하락 주의" if direction == "down" else "☀️ 상승 전망"}
+- 예측 확신도: {conf_ko}
+- ESG/부정 뉴스 건수: {esg_count}건
+
+[작성 규칙]
+- "🐜 안녕 나개미!" 또는 "🐜 나개미야,"로 시작
+- 수치(확률, 확신도)를 자연스럽게 문장에 녹여서
+- 초보 투자자가 바로 이해할 수 있는 쉬운 용어
+- 2~3문장, 마지막 이모지로 마무리
+- **굵게** 강조 필요한 단어에 마크다운 볼드 사용"""
+
+    briefing = _call_gemini(prompt) or fallback
+
+    # ── 5. 결과 캐싱 (fingerprint 저장) ───────────────────────────────
+    try:
+        cache_col.update_one(
+            {"ticker": ticker},
+            {"$set": {
+                "ticker": ticker,
+                "fingerprint": fingerprint,
+                "briefing": briefing,
+                "date": datetime.now().strftime("%Y-%m-%d"),
+                "updated_at": datetime.now().isoformat(),
+            }},
+            upsert=True
+        )
+        print(f"[CACHE SET] ai_briefings: {ticker} (fp={fingerprint})")
+    except Exception as e:
+        print(f"[WARN] ai_briefings 캐시 저장 실패: {e}")
+
+    return briefing
+
+
 
 def generate_nagame_tip(ticker_name: str, title: str, category: str, direction: str) -> str:
     # 주식 초보 나개미 페르소나를 위한 친절한 뉴닉 스타일 팁
@@ -413,7 +536,7 @@ def get_risk_evidences(ticker: str):
     
     evidences = []
     corp_name = ""
-    ai_brief = "🤖 종합 인공지능 분석 브리핑을 준비 중입니다..."
+    ai_brief = "종합 인공지능 분석 브리핑을 준비 중입니다..."
     
     if corp_map_path.exists():
         try:
@@ -424,8 +547,32 @@ def get_risk_evidences(ticker: str):
         except:
             pass
 
-    # 0. AI 종합 분석 브리핑 생성 부분은 아래 뉴스/공시 수집 이후로 이동됨 (esg_news_count 동적 연산 지원용)
-    ai_brief = "🤖 종합 인공지능 분석 브리핑을 준비 중입니다..."
+    # 0. 몽고디비 daily_risk_score 데이터를 긁어와 AI 종합 분석 브리핑 생성
+    try:
+        collection = get_collection("daily_risk_score")
+        doc = collection.find_one({"ticker": ticker}, sort=[("date", -1)])
+        if doc:
+            ai_brief = generate_ai_briefing(
+                ticker_name=corp_name or ticker,
+                ticker=ticker,
+                prob_up=doc.get("prob_up", 0.5),
+                direction=doc.get("direction", "down"),
+                confidence_tier=doc.get("confidence_tier", "medium")
+            )
+        else:
+            # DB에 스코어 도큐먼트가 아직 없는 경우 종목별 디폴트 파라미터 매핑
+            default_prob_up = DEFAULT_PROB_UP_MAP.get(ticker, 0.85)
+            default_dir = "up" if default_prob_up >= 0.5 else "down"
+            ai_brief = generate_ai_briefing(
+                ticker_name=corp_name or ticker,
+                ticker=ticker,
+                prob_up=default_prob_up,
+                direction=default_dir,
+                confidence_tier="strong" if default_prob_up > 0.9 else "medium"
+            )
+    except Exception as e:
+        print(f"Briefing gen error: {e}")
+
 
     # 1. 실제 뉴스 데이터 추출 및 초보자용 해석 융합
     import re
@@ -786,7 +933,110 @@ def get_alerts():
         
     return alerts
 
+@app.post("/api/weather-briefing")
+def get_weather_briefing(body: dict):
+    """
+    포트폴리오 날씨 AI 판단 근거 — 날씨 상태/구성 변동 시에만 Gemini 호출, 캐시 활용.
+    body: { portfolio_id, weather_status, weather_label, risky_tickers: [{name, direction}] }
+    """
+    import hashlib
+    from datetime import datetime
+
+    portfolio_id = body.get("portfolio_id", 0)
+    weather_status = body.get("weather_status", "sunny")   # sunny/cloudy/rainy/thunder
+    weather_label  = body.get("weather_label", "맑음")
+    risky_tickers  = body.get("risky_tickers", [])         # [{"name":"삼성전자","direction":"down"}, ...]
+
+    # ── 1. fingerprint 계산 ──────────────────────────────────────────
+    risky_str = ",".join(sorted([f"{t['name']}:{t['direction']}" for t in risky_tickers]))
+    fp_raw = f"weather|{portfolio_id}|{weather_status}|{risky_str}"
+    fingerprint = hashlib.md5(fp_raw.encode()).hexdigest()[:12]
+
+    cache_key = f"weather_{portfolio_id}"
+
+    # ── 2. 캐시 조회 ────────────────────────────────────────────────
+    try:
+        cache_col = get_collection("ai_briefings")
+        cached = cache_col.find_one({"ticker": cache_key})
+        if cached and cached.get("fingerprint") == fingerprint and cached.get("briefing"):
+            print(f"[CACHE HIT] weather_briefing: portfolio={portfolio_id} (fp={fingerprint})")
+            return {"summary": cached["briefing"].split("\n"), "cached": True}
+    except Exception as e:
+        print(f"[WARN] weather_briefing 캐시 조회 실패: {e}")
+
+    # ── 3. 날씨별 fallback 멘트 ─────────────────────────────────────
+    FALLBACK = {
+        "thunder": [
+            "⚡️ 포트폴리오 전반에 고위험 신호가 다수 감지됐어요! 지금은 신중하게 상황을 점검할 타이밍이에요.",
+            "🔴 하락 방향 예측 종목들이 집중돼 있어서 단기 손실 위험이 높아요. 손절 기준선을 미리 확인해 두는 게 좋아요.",
+            "🚨 고위험 종목 비중을 줄이거나 방어주로 일부 교체를 고려해 보세요!",
+        ],
+        "rainy": [
+            "🌧️ 일부 종목에서 하락 리스크가 감지되고 있어요. 전체적으로 살짝 흐린 상황이에요.",
+            "📉 약세 신호가 중간 수준이에요. 비중 조절과 현금 비중 확보를 고려해 볼 수 있어요.",
+            "🌂 리밸런싱 전략을 점검하고 안정적인 종목 비중을 늘려보세요.",
+        ],
+        "cloudy": [
+            "⛅ 포트폴리오 전반은 크게 문제없지만, 일부 종목에서 불확실성이 보여요.",
+            "🟡 단기 하락 리스크 신호가 일부 있어요. 지켜보면서 대응하면 충분해요.",
+            "📊 분산 구성을 유지하면서 위험 종목만 추가 점검해 보세요!",
+        ],
+        "sunny": [
+            "☀️ 배당 우량주 중심 구성 덕분에 포트폴리오 전반이 안정적인 흐름을 유지하고 있어요! 🛡️",
+            "📈 보유 종목들의 상승 신호가 고루 확인되고, ESG 평판 리스크도 낮아서 안심할 수 있는 구간이에요!",
+            "💸 현재 위험 수준은 허용 범위 아래에 있어요. 원한다면 분산 투자를 더 늘려봐도 좋아요!",
+        ],
+    }
+    fallback_lines = FALLBACK.get(weather_status, FALLBACK["sunny"])
+
+    # ── 4. Gemini로 동적 브리핑 생성 ────────────────────────────────
+    risky_desc = ", ".join([f"{t['name']}(하락)" for t in risky_tickers if t.get("direction") == "down"]) or "없음"
+    prompt = f"""당신은 주식 초보자에게 친근하게 정보를 전달하는 '나개미' 캐릭터입니다.
+뉴닉 스타일로 아래 포트폴리오 상황을 분석해서 AI 판단 근거를 3줄 bullet point로 작성해 주세요.
+
+[포트폴리오 상황]
+- 전체 날씨: {weather_label} ({weather_status})
+- 하락 위험 종목: {risky_desc}
+
+[작성 규칙]
+- 각 줄을 이모지로 시작
+- 초보자 눈높이의 쉬운 용어
+- 날씨({weather_label})에 맞는 톤 (번개=긴급경고, 비=주의권고, 구름=중립, 맑음=안심)
+- 각 줄은 완결된 한 문장
+- 총 3줄만 출력, 다른 부가 설명 없이"""
+
+    gemini_result = _call_gemini(prompt)
+    if gemini_result:
+        summary_lines = [l.strip() for l in gemini_result.split("\n") if l.strip()][:3]
+        if len(summary_lines) < 2:
+            summary_lines = fallback_lines
+    else:
+        summary_lines = fallback_lines
+
+    briefing_text = "\n".join(summary_lines)
+
+    # ── 5. 캐싱 ─────────────────────────────────────────────────────
+    try:
+        cache_col.update_one(
+            {"ticker": cache_key},
+            {"$set": {
+                "ticker": cache_key,
+                "fingerprint": fingerprint,
+                "briefing": briefing_text,
+                "date": datetime.now().strftime("%Y-%m-%d"),
+                "updated_at": datetime.now().isoformat(),
+            }},
+            upsert=True
+        )
+        print(f"[CACHE SET] weather_briefing: portfolio={portfolio_id} (fp={fingerprint})")
+    except Exception as e:
+        print(f"[WARN] weather_briefing 캐시 저장 실패: {e}")
+
+    return {"summary": summary_lines, "cached": False}
+
+
 @app.get("/api/kospi-index")
+
 def get_kospi_index():
     import os
     import requests

@@ -2,6 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 
+// 의사 난수(Deterministic Pseudo-Random) 함수 - React 19 Pure Component 규칙 준수
+function seededRandom(seed) {
+  const x = Math.sin(seed * 9999 + 1) * 10000;
+  return x - Math.floor(x);
+}
+
 /**
  * 세로 방향 기준 15도 각도로 기울어진 가늘고 날렵한 대각선 비 내림 이펙트
  */
