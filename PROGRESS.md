@@ -186,3 +186,4 @@
 | 2026-07-25 | Antigravity | GitHub Actions 데일리 배치 워크플로우에 오전 10시 KST (오전 1시 UTC) 테스트 구동용 스케줄 추가 완료 |
 | 2026-07-25 | Antigravity | 알림 설정 패널의 임시 상태 제어 및 일괄 저장 버튼 신설, KIS API 토큰/도메인을 로컬 파일 캐싱하여 EGW00133 1분 제한 차단 에러 원천 해결 및 테스트용 10:20/10:27 알람 스케줄 추가 완료 |
 | 2026-07-25 | Antigravity | 보유 자산 카드 내 도넛 차트 및 주식 목록의 반응형 레이아웃 버그 해결 (화면 너비에 따른 최적의 세로/가로 정렬 분기 구현 및 텍스트 넘침 방지) |
+| 2026-07-25 | Antigravity | slack_notifier.py 실행 시 sys.path 누락으로 인한 ModuleNotFoundError 및 PyMongo Collection 동적 속성 호출 오류('Collection' object is not iterable) 해결 완료 |
