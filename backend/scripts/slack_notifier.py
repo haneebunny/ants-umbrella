@@ -5,6 +5,9 @@ import requests
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
+
+# app 모듈 로드를 위한 경로 수정
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 from app.db import get_collection
 
 # 16개 포트폴리오 기업명 매핑
@@ -78,7 +81,7 @@ def send_slack_alert():
             except Exception as find_err:
                 print(f"[INFO] MongoDB query failed ({find_err}), trying JSON fallback.")
                 
-        if not docs and hasattr(esg_col, "data"):
+        if not docs and hasattr(esg_col, "data") and isinstance(getattr(esg_col, "data", None), list):
             # local JSON mock DB fallback
             filtered = [
                 d for d in esg_col.data 

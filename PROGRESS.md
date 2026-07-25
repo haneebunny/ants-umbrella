@@ -184,4 +184,6 @@
 | 2026-07-24 | Antigravity | 위험 진단(radar) 아이콘의 윗부분 와이파이 모양 호(arc)들의 Y좌표를 2px씩 아래로 하향 조절하여 상하 시각적 밸런스를 개선하고, 데일리 배치 종료 직후 실시간 감지된 핵심 리스크(is_material == 1 및 negative) 뉴스 5건을 슬랙 채널로 즉각 전송해 주는 Block Kit 기반 자동 연동 스크립트(backend/scripts/slack_notifier.py) 및 GitHub Actions 워크플로우 연동 완료 |
 | 2026-07-25 | Antigravity | 날씨 상태 및 구성 변동 시에만 작동하는 제미나이(Gemini) 캐싱 기반 포트폴리오 기상 예보 및 AI 판단 근거 3줄 브리핑 백엔드 API 연동 및 메인 대시보드, 상세 페이지 UI 연동 완료 |
 | 2026-07-25 | Antigravity | GitHub Actions 데일리 배치 워크플로우에 오전 10시 KST (오전 1시 UTC) 테스트 구동용 스케줄 추가 완료 |
-| 2026-07-25 | Antigravity | 알림 설정 패널의 임시 상태 제어 및 일괄 저장 버튼 신설, KIS API 토큰/도메인을 로컬 파일 캐싱하여 EGW00133 1분 제한 차단 에러 원천 해결 및 테스트용 10:20 알람 스케줄 추가 완료 |
+| 2026-07-25 | Antigravity | 알림 설정 패널의 임시 상태 제어 및 일괄 저장 버튼 신설, KIS API 토큰/도메인을 로컬 파일 캐싱하여 EGW00133 1분 제한 차단 에러 원천 해결 및 테스트용 10:20/10:27 알람 스케줄 추가 완료 |
+| 2026-07-25 | Antigravity | 보유 자산 카드 내 도넛 차트 및 주식 목록의 반응형 레이아웃 버그 해결 (화면 너비에 따른 최적의 세로/가로 정렬 분기 구현 및 텍스트 넘침 방지) |
+| 2026-07-25 | Antigravity | slack_notifier.py 실행 시 sys.path 누락으로 인한 ModuleNotFoundError 및 PyMongo Collection 동적 속성 호출 오류('Collection' object is not iterable) 해결 완료 |
