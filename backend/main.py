@@ -1115,38 +1115,53 @@ def get_alerts():
         except:
             pass
             
+    # ESG 뉴스 카테고리별 알림 제목 템플릿 (실제 기사 제목 미노출)
+    CATEGORY_TITLE_MAP = {
+        "환경": "ESG 환경(E) 미디어 이슈 포착",
+        "사회": "ESG 사회(S) 미디어 이슈 포착",
+        "지배구조": "ESG 지배구조(G) 미디어 이슈 포착",
+        "노동": "ESG 노동·상생 이슈 포착",
+        "탄소": "ESG 탄소배출 관련 이슈 포착",
+    }
+
     alerts = []
     try:
         esg_col = get_collection("esg_events")
-        docs = list(esg_col.find({}, sort=[("date", -1)]).limit(15))
-        
+        # DB 레벨에서 긍정 뉴스 선필터 + 필요 필드만 projection으로 조회 (속도 개선)
+        query = {"news_direction": {"$ne": "positive"}}
+        projection = {"ticker": 1, "date": 1, "news_direction": 1, "is_material": 1, "news_category": 1, "_id": 0}
+        docs = list(esg_col.find(query, projection, sort=[("date", -1)]).limit(15))
+
         for i, d in enumerate(docs):
             ticker = d.get("ticker", "005930")
             corp_name = corp_dict.get(ticker, ticker)
-            
+
             is_mat = d.get("is_material", 0)
             direction = d.get("news_direction", "negative")
-            
-            level = "caution"
-            if is_mat == 1 and direction == "negative":
-                level = "danger"
-            elif direction == "positive":
-                level = "info"
-                
+
+            level = "danger" if (is_mat == 1 and direction == "negative") else "caution"
+
             dt_str = d.get("date", "2026.07.24")
-            news_title = d.get("news_title", "ESG 미디어 이슈 포착")
-            
+            news_category = d.get("news_category", "")
+
+            # 실제 기사 제목 대신 카테고리 기반 범용 제목 사용
+            generic_title = "ESG 미디어 이슈 포착"
+            for keyword, label in CATEGORY_TITLE_MAP.items():
+                if keyword in str(news_category):
+                    generic_title = label
+                    break
+
             # 카테고리 판별 및 백엔드 필터링
-            cat = get_alert_category(news_title, d.get("news_category"))
+            cat = get_alert_category(generic_title, news_category)
             if not categories.get(cat, True):
                 continue
-                
+
             alerts.append({
                 "id": len(alerts) + 1,
                 "level": level,
                 "ticker_code": ticker,
                 "ticker": corp_name,
-                "title": news_title,
+                "title": generic_title,
                 "time": dt_str,
                 "read": False,
                 "category": cat
