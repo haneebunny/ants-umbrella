@@ -78,7 +78,8 @@ export default function ResultsScreen({ theme, profile, onReset, toggleTheme, is
     const fetchLiveEvidence = async () => {
       const tickers = initialHoldings.map(h => h.ticker).join(',');
       try {
-        const res = await fetch(`http://localhost:8000/api/dashboard-weather?tickers=${tickers}`);
+        const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const res = await fetch(`${API_BASE}/api/dashboard-weather?tickers=${tickers}`);
         if (!res.ok) throw new Error();
         const data = await res.json();
         const dataMap = {};

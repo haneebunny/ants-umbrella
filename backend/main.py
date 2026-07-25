@@ -79,7 +79,12 @@ def startup_event():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",                          # 로컬 개발
+        "https://ants-umbrella.vercel.app",               # Vercel 프로덕션
+        "https://ants-umbrella-production.up.railway.app", # Railway (자기 자신 참조 허용)
+        os.environ.get("FRONTEND_URL", ""),               # 추가 도메인 환경변수로 주입 가능
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
