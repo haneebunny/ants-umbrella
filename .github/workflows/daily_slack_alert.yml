@@ -4,12 +4,7 @@ on:
   schedule:
     # 매일 한국 시간 아침 7시 (UTC 22시)에 실행
     - cron: '0 22 * * *'
-    # 매일 한국 시간 오전 10시 (UTC 1시)에 테스트용 실행
-    - cron: '0 1 * * *'
-    # 임시 알람 테스트용 KST 10:20 및 10:27 스케줄 (UTC 1:20 및 1:27)
-    - cron: '20 1 * * *'
-    - cron: '27 1 * * *'
-  workflow_dispatch: # GitHub 웹 UI에서 수동 실행 지원
+  workflow_dispatch: # GitHub Actions 탭에서 수동 실행 (테스트 시 사용)
     inputs:
       test_mode:
         description: '테스트 알림 발송 (오늘 이벤트 없어도 목업 데이터로 강제 발송)'
