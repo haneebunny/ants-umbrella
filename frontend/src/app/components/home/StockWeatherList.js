@@ -248,7 +248,7 @@ export default function StockWeatherList({ stocks = [], isDark }) {
                     ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]')
                     : 'text-rose-400'
                 }`}>
-                  {stock.direction === 'up' ? '+' : ''}{stock.change.toFixed(1)}%
+                  {stock.direction === 'up' ? '+' : '-'}{Math.abs(stock.change).toFixed(1)}%
                 </span>
               </button>
             );

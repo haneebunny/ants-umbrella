@@ -79,7 +79,12 @@ def startup_event():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",                          # 로컬 개발
+        "https://ants-umbrella.vercel.app",               # Vercel 프로덕션
+        "https://ants-umbrella-production.up.railway.app", # Railway (자기 자신 참조 허용)
+        os.environ.get("FRONTEND_URL", ""),               # 추가 도메인 환경변수로 주입 가능
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -351,16 +356,53 @@ def get_portfolios():
         raise HTTPException(status_code=500, detail=f"포트폴리오 데이터 파일 로드 실패: {str(e)}")
 
 # ── prob_up → weather 변환 헬퍼 ─────────────────────────────────────
-def _prob_to_weather(prob_up: float, direction: str) -> str:
+# v2 임계값 재보정 + v3 횡단면(cross-sectional) 정규화.
+#
+# v2: 모델(20일 방향예측)의 prob_up 중앙값이 0.5 부근이라, 기존 임계값
+#     (thunder>=0.65)은 "방향이 하락 쪽"인 흔한 케이스까지 번개로 잡았음.
+#     prob_down 컷을 0.45/0.60/0.75로 상향해 번개를 하위 꼬리로 제한.
+#
+# v3: 시장 전체가 하락하는 날에는 거의 모든 종목의 prob_down이 동시에 치솟아
+#     (macro 피처 공통) 전 종목이 번개가 되는 쏠림이 발생. 시장 공통 하락분
+#     (market_pd - BASELINE)을 ALPHA만큼 각 종목에서 제거하여, 날씨가
+#     "시장 대비 종목 고유 위험"을 반영하도록 정규화한다.
+#       - 정상일(market_pd≈0.5): shift≈0 → v2 절대 임계값 그대로 적용
+#       - 하락일(market_pd 높음): 공통분을 빼 상대적으로 최악인 종목만 번개
+_WEATHER_ALPHA = 0.7      # 시장 공통분 제거 강도 (0=절대, 1=완전 상대화)
+_WEATHER_BASELINE = 0.50  # 중립 하락확률 기준선
+
+def _prob_to_weather(prob_up: float, direction: str = "up", market_pd: float = 0.50) -> str:
     prob_down = 1.0 - prob_up
-    if direction == "up" and prob_down < 0.35:
+    # 횡단면 정규화: 시장 공통 하락분을 부분 제거
+    shift = _WEATHER_ALPHA * (market_pd - _WEATHER_BASELINE)
+    pd_adj = min(max(prob_down - shift, 0.0), 1.0)
+    up = (1.0 - pd_adj) >= 0.5   # 보정 후 방향
+    if up and pd_adj < 0.45:
         return "sunny"
-    elif prob_down < 0.50:
+    elif pd_adj < 0.60:
         return "cloudy"
-    elif prob_down < 0.65:
+    elif pd_adj < 0.75:
         return "rainy"
     else:
         return "thunder"
+
+def _market_prob_down_baseline(collection) -> float:
+    """
+    최신 날짜의 전 종목 평균 하락확률 = 시장 공통 위험 수준.
+    횡단면 정규화의 기준(market_pd)으로 사용. 표본이 부족하면 0.50(중립) 반환
+    → shift=0 이 되어 절대 임계값(v2)으로 자연 폴백.
+    """
+    try:
+        latest = collection.find_one({}, sort=[("date", -1)])
+        if not latest:
+            return 0.50
+        docs = list(collection.find({"date": latest.get("date")}, {"prob_up": 1}))
+        if len(docs) < 5:
+            return 0.50
+        pds = [1.0 - float(x.get("prob_up", 0.5)) for x in docs]
+        return sum(pds) / len(pds)
+    except Exception:
+        return 0.50
 
 @app.get("/api/dashboard-weather")
 def get_dashboard_weather(tickers: str = ""):
@@ -379,6 +421,9 @@ def get_dashboard_weather(tickers: str = ""):
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"DB 연결 실패: {str(e)}")
 
+    # 횡단면 정규화 기준: 최신일 시장 전체 평균 하락확률 (요청당 1회 계산)
+    market_pd = _market_prob_down_baseline(collection)
+
     results = []
     for ticker in ticker_list:
         try:
@@ -390,7 +435,7 @@ def get_dashboard_weather(tickers: str = ""):
 
             prob_up   = float(doc.get("prob_up", 0.5))
             direction = doc.get("direction", "up")
-            weather   = _prob_to_weather(prob_up, direction)
+            weather   = _prob_to_weather(prob_up, direction, market_pd)
 
             # 1일 등락(log_return_1d)은 daily_risk_score에 없으므로 price_macro에서 보충
             change = None

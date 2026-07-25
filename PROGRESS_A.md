@@ -74,4 +74,7 @@
 | 2026-07-23 | Antigravity | Windows cp949 인코딩 에러 해결을 위해 run_pipeline.py, process_news_features.py, run_experiments.py 내 이모지 출력을 제거하거나 인코딩 우회 래핑 처리 |
 | 2026-07-23 | Antigravity | 오프라인 환경 대응을 위한 HF API 패스트 페일(Fast-fail) 모드를 process_news_features.py에 도입하여 1300여건의 뉴스 분석 속도를 수 시간에서 1분 이내로 단축 |
 | 2026-07-23 | Antigravity | 이벤트 스터디 통계 집계 스크립트(evnet_study.py) 개발: 회사명-종목코드 매칭, MongoDB Atlas 연결, (ticker, date) 인덱스 충돌 방지 로직 적용 및 55건 통계 데이터 적재 완료 |
-| 2026-07-23 | Antigravity | schemas.py 및 main.py 수정: /risk-score/{ticker} API 응답에 과거 적중률(hit_rate), 사례 수(sample_size), Fallback 배지(badge) 필드 추가 연동 완료 |
+| 2026-07-25 | Antigravity | KOSPI 지수 및 종목 리스크 변동률 표시에서 Math.abs를 사용하여 +- 부호 중복 표기 버그를 수정하고, 코스피 지수의 상승/하락 여부를 change >= 0 논리로 강제 바인딩하여 하락 시 라이트/다크 모드 전반에서 그래프 선과 글자 색상이 빨간색으로 일관되게 적용 완료 |
+| 2026-07-25 | Antigravity | 위험 진단 메뉴의 아이콘을 와이파이처럼 보이던 기존 'radar'에서 진단 및 활성 분석을 상징하는 'activity' (맥박/EKG) 아이콘으로 교체 완료 |
+| 2026-07-25 | Antigravity | 날씨가 맑음(sunny)일 때 개미 캐릭터(mimi_1.png)의 여백으로 인해 크기가 작아 보이던 버그를 scale-[1.25] 및 transition 애니메이션 적용을 통해 타 날씨와 일관되게 맞춤 완료 |
+| 2026-07-25 | Antigravity | 위험 진단 페이지(diagnosis/page.js) 내에 잔존하던 중복된 Git 병합 갈등(=======) 코드 및 미정의 변수(portfolioRisk) 호출 오류를 완전 제거하고, 미폐쇄된 JSX 태그(main/button)의 네스팅 구조를 수정하여 빌드/렌더링 정상화 완료 |
