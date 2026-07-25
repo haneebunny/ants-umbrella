@@ -199,7 +199,14 @@ const weatherKeyframes = `
 /**
  * 홈 최상단 날씨 예보 배너 (날씨 배경 시각화)
  */
-export default function WeatherBanner({ weather, isDark }) {
+export default function WeatherBanner({ 
+  weather, 
+  isDark, 
+  isStatusLoading = false, 
+  isBriefingLoading = false, 
+  forceWeather = null, 
+  onForceWeatherChange = () => {} 
+}) {
   const status = weather?.status || 'sunny';
   const cfg = WEATHER_CONFIG[status] || WEATHER_CONFIG.sunny;
   const Decor = DECOR[status] || SunnyDecor;
@@ -227,9 +234,9 @@ export default function WeatherBanner({ weather, isDark }) {
       '💸 현재 위험 수준은 허용 범위 아래에 있어요. 원한다면 분산 투자를 더 든든하게 늘려봐도 좋아요!',
     ],
   };
+  
   // weather.summary가 있으면 그걸 사용하고, 없으면 status별 static 멘트 사용
   const dynamicSummary = weather?.summary || WEATHER_COMMENTS[status] || WEATHER_COMMENTS.sunny;
-
 
   const bgLinear = isDark
     ? `linear-gradient(135deg, ${cfg.darkBgFrom} 0%, ${cfg.darkBgMid || cfg.darkBgFrom} 50%, ${cfg.darkBgTo} 100%)`
@@ -256,71 +263,144 @@ export default function WeatherBanner({ weather, isDark }) {
           />
         )}
 
-        {/* 날씨 배경 데코 */}
-        <Decor isDark={isDark} />
+        {/* 날씨 배경 데코 (로딩 중이 아닐 때만 렌더링) */}
+        {!isStatusLoading && <Decor isDark={isDark} />}
 
         {/* 콘텐츠 (z-index 위) */}
         <div className="relative z-10">
           {/* 날씨 상태 행 */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div
-                className="w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-sm"
-                style={{ background: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.6)' }}
-              >
-                <Icon
-                  name={cfg.icon}
-                  className={`w-10 h-10 ${isDark ? cfg.darkText : cfg.text}`}
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+            
+            {/* 왼쪽: 날씨 아이콘 & 레이블 (또는 로딩 스켈레톤) */}
+            {isStatusLoading ? (
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-16 h-16 rounded-full animate-pulse flex-shrink-0"
+                  style={{ background: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.45)' }}
                 />
+                <div className="space-y-2.5 animate-pulse">
+                  <div className={`h-2.5 w-24 rounded ${isDark ? 'bg-white/20' : 'bg-slate-900/20'}`} />
+                  <div className={`h-6 w-16 rounded ${isDark ? 'bg-white/30' : 'bg-slate-900/30'}`} />
+                </div>
               </div>
-              <div>
-                <p className={`text-[10px] font-bold tracking-wider uppercase ${
-                  isDark ? 'text-white/60' : cfg.subLabelOnBg
-                }`}>
-                  오늘 내 포트폴리오 날씨
-                </p>
-                <p className={`text-2xl font-medium leading-tight ${
-                  isDark ? 'text-white' : cfg.textOnBg
-                }`}>
-                  {cfg.label}
-                </p>
-              </div>
-            </div>
-
-            <a
-              href="/diagnosis"
-              className="text-xs font-black px-4 py-2 rounded-full flex items-center gap-1.5 transition-all bg-white/90 text-[#0f1713] hover:bg-white shadow-md hover:shadow-lg active:scale-95"
-            >
-              위험 진단
-              <Icon name="arrowRight" className="w-3.5 h-3.5" />
-            </a>
-          </div>
-
-          {/* AI 판단 근거 — 날씨 상태에 맞는 멘트 동적 표시 */}
-          {dynamicSummary.length > 0 && (
-            <div
-              className="rounded-xl p-3.5 space-y-2 backdrop-blur-sm"
-              style={{ background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.45)' }}
-            >
-              <p className={`text-[10px] font-black uppercase tracking-widest mb-2 ${
-                isDark ? 'text-white/60' : cfg.subLabelOnBg
-              }`}>
-                AI 판단 근거
-              </p>
-              {dynamicSummary.map((line, i) => (
-                <div key={i} className="flex items-start gap-2">
-                  <span
-                    className="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0"
-                    style={{ background: isDark ? cfg.darkAccent : cfg.accent }}
+            ) : (
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-sm flex-shrink-0"
+                  style={{ background: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.6)' }}
+                >
+                  <Icon
+                    name={cfg.icon}
+                    className={`w-10 h-10 ${isDark ? cfg.darkText : cfg.text}`}
                   />
-                  <p className={`text-xs leading-relaxed ${
-                    isDark ? 'text-white/80' : cfg.textOnBg
+                </div>
+                <div>
+                  <p className={`text-[10px] font-bold tracking-wider uppercase ${
+                    isDark ? 'text-white/60' : cfg.subLabelOnBg
                   }`}>
-                    {line}
+                    오늘 내 포트폴리오 날씨
+                  </p>
+                  <p className={`text-2xl font-medium leading-tight ${
+                    isDark ? 'text-white' : cfg.textOnBg
+                  }`}>
+                    {cfg.label}
                   </p>
                 </div>
-              ))}
+              </div>
+            )}
+
+            {/* 오른쪽: 날씨 조작 컨트롤러 & 위험 진단 버튼 */}
+            <div className="flex items-center gap-2">
+              {/* 테스트용 날씨 제어 컨트롤러 */}
+              <div className="flex items-center gap-1 bg-white/20 dark:bg-black/20 p-1 rounded-full backdrop-blur-sm border border-white/10 shadow-inner">
+                {[
+                  { id: 'sunny', label: '☀️', title: '맑음' },
+                  { id: 'cloudy', label: '☁️', title: '구름' },
+                  { id: 'rainy', label: '🌧️', title: '비' },
+                  { id: 'thunder', label: '⚡', title: '번개' },
+                ].map(w => (
+                  <button
+                    key={w.id}
+                    onClick={() => onForceWeatherChange(forceWeather === w.id ? null : w.id)}
+                    title={`테스트 날씨: ${w.title}`}
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs transition-all active:scale-90 ${
+                      forceWeather === w.id
+                        ? 'bg-white text-slate-900 shadow-md scale-110 font-bold'
+                        : 'hover:bg-white/15 text-white/90'
+                    }`}
+                  >
+                    {w.label}
+                  </button>
+                ))}
+                {forceWeather && (
+                  <button
+                    onClick={() => onForceWeatherChange(null)}
+                    title="자동 판정으로 복원"
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] hover:bg-white/15 text-white/90 transition-all active:scale-90"
+                  >
+                    🔄
+                  </button>
+                )}
+              </div>
+
+              <a
+                href="/diagnosis"
+                className="text-xs font-black px-4 py-2 rounded-full flex items-center gap-1.5 transition-all bg-white/90 text-[#0f1713] hover:bg-white shadow-md hover:shadow-lg active:scale-95 flex-shrink-0"
+              >
+                위험 진단
+                <Icon name="arrowRight" className="w-3.5 h-3.5" />
+              </a>
             </div>
+          </div>
+
+          {/* AI 판단 근거 (또는 로딩 스켈레톤) */}
+          {isBriefingLoading ? (
+            <div
+              className="rounded-xl p-3.5 space-y-3.5 backdrop-blur-sm animate-pulse"
+              style={{ background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.45)' }}
+            >
+              <div className="flex items-center justify-between">
+                <p className={`text-[10px] font-black uppercase tracking-widest ${
+                  isDark ? 'text-white/60' : cfg.subLabelOnBg
+                }`}>
+                  개미의 우산 AI 진단 시스템 분석 중...
+                </p>
+                <div className={`w-3.5 h-3.5 rounded-full border-2 border-t-transparent animate-spin ${
+                  isDark ? 'border-white/40' : 'border-slate-800/40'
+                }`} />
+              </div>
+              <div className="space-y-2">
+                <div className={`h-3 w-4/5 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+                <div className={`h-3 w-[92%] rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+                <div className={`h-3 w-3/4 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+              </div>
+            </div>
+          ) : (
+            dynamicSummary.length > 0 && (
+              <div
+                className="rounded-xl p-3.5 space-y-2 backdrop-blur-sm"
+                style={{ background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.45)' }}
+              >
+                <p className={`text-[10px] font-black uppercase tracking-widest mb-2 ${
+                  isDark ? 'text-white/60' : cfg.subLabelOnBg
+                }`}>
+                  AI 판단 근거
+                </p>
+                {dynamicSummary.map((line, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <span
+                      className="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0"
+                      style={{ background: isDark ? cfg.darkAccent : cfg.accent }}
+                    />
+                    <p className={`text-xs leading-relaxed ${
+                      isDark ? 'text-white/80' : cfg.textOnBg
+                    }`}>
+                      {line}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )
           )}
         </div>
       </div>
