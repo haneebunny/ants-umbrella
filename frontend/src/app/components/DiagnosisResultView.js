@@ -107,7 +107,7 @@ const NEWNEEK_RECOMMENDATION_REASON_CACHE = {
         { ticker: '005930', name: '삼성전자', tag: '#대형테크', reason: '메모리 수급 반등과 글로벌 반도체를 상징하는 대한민국 대표 대장주야 💻', weight: '26%' },
         { ticker: '051910', name: 'LG화학', tag: '#첨단소재', reason: '배터리 첨단 소재와 친환경 화학 소재의 황금 밸런스를 자랑해 🧪', weight: '25%' },
         { ticker: '028260', name: '삼성물산', tag: '#지배구조', reason: '그룹 지배구조 핵심에 신재생 에너지 사업 확대로 밸런스를 딱 잡아 🏢', weight: '25%' },
-        { ticker: '010950', name: 'S-Oil', tag: '#에너지전환', reason: '샤힌 프로젝트 중심의 석유화학 대형 투자로 미래 성장성을 더했어 🛢️', weight: '24%' },
+        { ticker: '010950', name: 'S-Oil', tag: '#energy전환', reason: '샤힌 프로젝트 중심의 석유화학 대형 투자로 미래 성장성을 더했어 🛢️', weight: '24%' },
       ],
       [
         { ticker: '000660', name: 'SK하이닉스', tag: '#AI반도체주도', reason: '차세대 HBM 시장 리더십으로 성장주와 우량주의 완벽 조화를 보여줘 🚀', weight: '26%' },
@@ -418,7 +418,7 @@ export default function DiagnosisResultView({ profile, isDark }) {
               </div>
             </div>
 
-            {/* 설명 본문 (초보자용 찰떡 쉬운 뉴닉 스토리텔링!) */}
+            {/* 설명 본문 */}
             <div className={`mt-5 p-4 rounded-2xl text-xs lg:text-sm leading-relaxed border ${
               isDark ? 'bg-white/[0.03] border-white/5 text-slate-300' : 'bg-emerald-50/60 border-emerald-100 text-slate-700'
             }`}>
@@ -431,7 +431,7 @@ export default function DiagnosisResultView({ profile, isDark }) {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
               <div>
                 <h3 className={`text-base font-black flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  💡 [{extras.characterName}] 맞춤 포트폴리오 조리법
+                  💡 [{extras.characterName}] 맞춤 포트폴리오 레시피 📜
                 </h3>
                 <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                   {extras.characterName} 성향에 꼭 맞춘 대표 추천 종목 조합이라구! (조합 {(setIndex % recPools.length) + 1}/{recPools.length})
@@ -524,7 +524,7 @@ export default function DiagnosisResultView({ profile, isDark }) {
         {/* ── [우측 4컬럼] 개미의 우산 쉴드 3단계 작동 규칙 & 뉴닉 대화체 멘탈 팁 말풍선 ── */}
         <div className="lg:col-span-4 space-y-6">
 
-          {/* 1. ☔ 내 맞춤 우산 쉴드 3단계 작동 규칙 카드 */}
+          {/* 1. ☔ 내 맞춤 우산 쉴드 3단계 작동 규칙 카드 (일체형 통합 완료!) */}
           <div className={`p-6 rounded-3xl border relative overflow-hidden transition-all ${
             isDark
               ? 'bg-gradient-to-br from-[#19221d] to-[#121614] border-emerald-500/20 shadow-xl'
@@ -573,13 +573,25 @@ export default function DiagnosisResultView({ profile, isDark }) {
                 </p>
               </div>
 
-              {/* 2단계 */}
+              {/* 2단계 (💡 하락 경보 모니터링 기준선 일체형 통합!) */}
               <div className={`p-3 rounded-2xl border ${isDark ? 'bg-white/5 border-white/5' : 'bg-white/80 border-emerald-100/60 shadow-sm'}`}>
-                <div className="text-[11px] font-black text-rose-400 mb-0.5 flex items-center gap-1">
+                <div className="text-[11px] font-black text-rose-400 mb-1 flex items-center justify-between">
                   <span>🚨 2단계: AI 경보 삐삐</span>
+                  
+                  {/* 미니 수치 뱃지 */}
+                  <div className="flex gap-1 text-[9px] font-mono">
+                    <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400">확률 &gt;{riskProbThreshold}%</span>
+                    <span className="px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-400">손실선 -{maxLossPercent}%</span>
+                  </div>
                 </div>
+                
                 <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                   {extras.rule2}
+                </p>
+
+                {/* 2단계 하단 수치 안내 꼬리표 */}
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 border-t border-slate-200 dark:border-white/5 pt-1">
+                  * {riskProbThreshold}%를 초과하는 순간 삐삐 알림이 발송되며, 전체 계좌 손실 방어선은 -{maxLossPercent}%로 모니터링해!
                 </p>
               </div>
 
@@ -595,32 +607,7 @@ export default function DiagnosisResultView({ profile, isDark }) {
             </div>
           </div>
 
-          {/* 2. 🚨 하락 경보 모니터링 기준선 카드 */}
-          <div className={`p-6 rounded-3xl border transition-all ${
-            isDark
-              ? 'bg-[#181c19] border-white/5 shadow-xl'
-              : 'bg-white border-slate-100 shadow-md'
-          } ${isDefenseOn ? '' : 'opacity-50'}`}>
-            <div className="flex items-center justify-between mb-3">
-              <span className={`text-xs font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                🚨 하락 경보 모니터링 기준선
-              </span>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md text-amber-500 bg-amber-500/10">
-                  확률 &gt;{riskProbThreshold}%
-                </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md text-rose-500 bg-rose-500/10">
-                  손실선 -{maxLossPercent}%
-                </span>
-              </div>
-            </div>
-
-            <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-              보유 종목의 <strong className="text-amber-400 font-semibold">20거래일 내 -10% 하락 확률이 {riskProbThreshold}%를 초과</strong>할 때 2단계 경보가 삐삐 울리고, 전체 계좌 손실이 <strong className="text-rose-400 font-semibold">-{maxLossPercent}%</strong>를 넘지 않게 실시간 모니터링이 작동해!
-            </p>
-          </div>
-
-          {/* 3. 💬 업그레이드된 뉴닉 톤 캐릭터 멘탈 케어 팁 말풍선 카드 */}
+          {/* 2. 💬 업그레이드된 뉴닉 톤 캐릭터 멘탈 케어 팁 말풍선 카드 */}
           <div className={`p-6 rounded-3xl border transition-all relative overflow-hidden ${
             isDark
               ? 'bg-[#181c19] border-white/5 shadow-xl'
