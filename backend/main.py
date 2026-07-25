@@ -605,8 +605,12 @@ def _call_gemini(prompt: str) -> str:
             candidates = res.json().get("candidates", [])
             if candidates:
                 return candidates[0]["content"]["parts"][0]["text"].strip()
+            print(f"[WARN] Gemini API 응답에 candidates 없음 (model={model_name}): {res.text[:300]}")
+        else:
+            # 404(모델 종료/오탈자), 429(쿼터 초과) 등 실패 상태코드를 로그로 남겨 원인 추적 가능하게 함
+            print(f"[WARN] Gemini API 호출 실패 (model={model_name}, status={res.status_code}): {res.text[:300]}")
     except Exception as e:
-        print(f"[WARN] Gemini API 호출 실패: {e}")
+        print(f"[WARN] Gemini API 호출 예외 (model={model_name}): {e}")
     return ""
 
 
@@ -627,10 +631,14 @@ def generate_ai_briefing(ticker_name: str, ticker: str, prob_up: float, directio
     fingerprint = hashlib.md5(fp_raw.encode()).hexdigest()[:12]
 
     # ── 2. 캐시 조회 (변동 없으면 즉시 반환) ──────────────────────────
+    # is_fallback=True로 저장된 캐시(과거 Gemini 호출 실패로 템플릿을 썼던 경우)는
+    # 히트로 치지 않고 매번 재시도한다. 그렇지 않으면 모델을 고쳐도 예전 실패 캐시가
+    # 영구히 재사용되어 "항상 같은 하드코딩 문구"처럼 보이는 문제가 생긴다.
     try:
         cache_col = get_collection("ai_briefings")
         cached = cache_col.find_one({"ticker": ticker}, sort=[("date", -1)])
-        if cached and cached.get("fingerprint") == fingerprint and cached.get("briefing"):
+        if (cached and cached.get("fingerprint") == fingerprint
+                and cached.get("briefing") and not cached.get("is_fallback")):
             print(f"[CACHE HIT] ai_briefings: {ticker} (fp={fingerprint})")
             return cached["briefing"]
     except Exception as e:
@@ -667,9 +675,11 @@ def generate_ai_briefing(ticker_name: str, ticker: str, prob_up: float, directio
 - 2~3문장, 마지막 이모지로 마무리
 - **굵게** 강조 필요한 단어에 마크다운 볼드 사용"""
 
-    briefing = _call_gemini(prompt) or fallback
+    gemini_text = _call_gemini(prompt)
+    briefing = gemini_text or fallback
+    used_fallback = not bool(gemini_text)
 
-    # ── 5. 결과 캐싱 (fingerprint 저장) ───────────────────────────────
+    # ── 5. 결과 캐싱 (fingerprint 저장, 폴백 여부도 함께 기록) ───────────
     try:
         cache_col.update_one(
             {"ticker": ticker},
@@ -677,6 +687,7 @@ def generate_ai_briefing(ticker_name: str, ticker: str, prob_up: float, directio
                 "ticker": ticker,
                 "fingerprint": fingerprint,
                 "briefing": briefing,
+                "is_fallback": used_fallback,
                 "date": datetime.now().strftime("%Y-%m-%d"),
                 "updated_at": datetime.now().isoformat(),
             }},
@@ -1177,10 +1188,13 @@ def get_weather_briefing(body: dict):
     cache_key = f"weather_{portfolio_id}"
 
     # ── 2. 캐시 조회 ────────────────────────────────────────────────
+    # is_fallback=True 캐시(과거 Gemini 실패로 템플릿을 썼던 경우)는 히트로 치지 않고
+    # 재시도한다 — 그래야 모델 설정을 고친 뒤 곧바로 실제 LLM 문구로 갱신된다.
     try:
         cache_col = get_collection("ai_briefings")
         cached = cache_col.find_one({"ticker": cache_key})
-        if cached and cached.get("fingerprint") == fingerprint and cached.get("briefing"):
+        if (cached and cached.get("fingerprint") == fingerprint
+                and cached.get("briefing") and not cached.get("is_fallback")):
             print(f"[CACHE HIT] weather_briefing: portfolio={portfolio_id} (fp={fingerprint})")
             return {"summary": cached["briefing"].split("\n"), "cached": True}
     except Exception as e:
@@ -1228,16 +1242,19 @@ def get_weather_briefing(body: dict):
 - 총 3줄만 출력, 다른 부가 설명 없이"""
 
     gemini_result = _call_gemini(prompt)
+    used_fallback = False
     if gemini_result:
         summary_lines = [l.strip() for l in gemini_result.split("\n") if l.strip()][:3]
         if len(summary_lines) < 2:
             summary_lines = fallback_lines
+            used_fallback = True
     else:
         summary_lines = fallback_lines
+        used_fallback = True
 
     briefing_text = "\n".join(summary_lines)
 
-    # ── 5. 캐싱 ─────────────────────────────────────────────────────
+    # ── 5. 캐싱 (폴백 여부도 함께 기록) ────────────────────────────────
     try:
         cache_col.update_one(
             {"ticker": cache_key},
@@ -1245,12 +1262,13 @@ def get_weather_briefing(body: dict):
                 "ticker": cache_key,
                 "fingerprint": fingerprint,
                 "briefing": briefing_text,
+                "is_fallback": used_fallback,
                 "date": datetime.now().strftime("%Y-%m-%d"),
                 "updated_at": datetime.now().isoformat(),
             }},
             upsert=True
         )
-        print(f"[CACHE SET] weather_briefing: portfolio={portfolio_id} (fp={fingerprint})")
+        print(f"[CACHE SET] weather_briefing: portfolio={portfolio_id} (fp={fingerprint}, fallback={used_fallback})")
     except Exception as e:
         print(f"[WARN] weather_briefing 캐시 저장 실패: {e}")
 
