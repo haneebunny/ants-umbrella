@@ -437,15 +437,29 @@ def get_dashboard_weather(tickers: str = ""):
             direction = doc.get("direction", "up")
             weather   = _prob_to_weather(prob_up, direction, market_pd)
 
-            # 1일 등락(log_return_1d)은 daily_risk_score에 없으므로 price_macro에서 보충
+            # 실시간 가격(currentPrice) 및 변동률(change) 처리
+            live_price = None
             change = None
             try:
-                price_col = get_collection("price_macro")
-                price_doc = price_col.find_one({"ticker": ticker}, sort=[("date", -1)])
-                if price_doc:
-                    change = round(float(price_doc.get("log_return_1d", 0)) * 100, 2)
-            except Exception:
-                pass
+                kis_data = get_realtime_price_via_kis(ticker)
+                if kis_data:
+                    live_price = kis_data.get("price")
+                    change = kis_data.get("change_rate")
+            except Exception as e:
+                print(f"[WARN] Failed KIS fetch for {ticker}: {e}")
+
+            if change is None:
+                try:
+                    price_col = get_collection("price_macro")
+                    price_doc = price_col.find_one({"ticker": ticker}, sort=[("date", -1)])
+                    if price_doc:
+                        change = round(float(price_doc.get("log_return_1d", 0)) * 100, 2)
+                        live_price = price_doc.get("close")
+                except Exception:
+                    pass
+
+            if live_price is None:
+                live_price = DEFAULT_MOCK_PRICES.get(ticker, 70000)
 
             results.append({
                 "ticker":           ticker,
@@ -455,6 +469,7 @@ def get_dashboard_weather(tickers: str = ""):
                 "prob_up":          round(prob_up, 4),
                 "confidence_tier":  doc.get("confidence_tier", "weak"),
                 "change":           change,
+                "currentPrice":     live_price,
                 "date":             str(doc.get("date", "")),
                 "esgScore":         None,   # esg_events에서 추후 집계 가능
             })
@@ -463,6 +478,37 @@ def get_dashboard_weather(tickers: str = ""):
             results.append({"ticker": ticker, "available": False})
 
     return results
+
+DEFAULT_MOCK_PRICES = {
+    '000660': 180000,  # SK하이닉스
+    '005930': 72000,   # 삼성전자
+    '005380': 250000,  # 현대차
+    '035420': 170000,  # NAVER
+    '055550': 50000,   # 신한지주
+    '017670': 52000,   # SK텔레콤
+    '005490': 360000,  # POSCO홀딩스
+    '010950': 68000,   # S-Oil
+    '028260': 140000,  # 삼성물산
+    '000270': 110000,  # 기아
+    '068270': 190000,  # 셀트리온
+    '035720': 42000,   # 카카오
+    '051910': 380000,  # LG화학
+    '003550': 78000,   # LG
+    '036570': 180000,  # 엔씨소프트
+    '373220': 390000,  # LG에너지솔루션
+    '006400': 370000,  # 삼성SDI
+    '086520': 90000,   # 에코프로
+    '247540': 180000,  # 에코프로비엠
+    '196170': 270000,  # 알테오젠
+    '032830': 80000,   # 삼성생명
+    '033780': 92000,   # KT&G
+    '105560': 78000,   # KB금융
+    '047050': 55000,   # 포스코인터
+    '036460': 42000,   # 한국가스공사
+    '009150': 140000,  # 삼성전기
+    '011200': 220000,  # 한진
+    '251270': 58000,   # 넷마블
+}
 
 DEFAULT_PROB_UP_MAP = {
     '000660': 0.938,  # SK하이닉스 (하락확률 6.2%)

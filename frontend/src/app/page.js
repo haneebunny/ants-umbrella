@@ -135,6 +135,8 @@ export default function Home() {
           weather:   live.weather   || stock.weather,
           direction: live.direction || stock.direction,
           change:    live.change    !== null ? live.change : stock.change,
+          prob_up:   live.prob_up   !== undefined ? live.prob_up : stock.prob_up,
+          currentPrice: live.currentPrice !== undefined ? live.currentPrice : stock.currentPrice,
         };
       });
 
@@ -250,7 +252,70 @@ export default function Home() {
   }, [overallWeather?.status, overallWeather?.label, selectedPortfolioId, stockWeatherList]);
 
 
-  const { assetSummary, profile, radarScores } = mockPortfolio;
+  const { profile, radarScores } = mockPortfolio;
+
+  // holdings에 실시간 가격을 매핑한 liveAssetSummary 생성
+  const liveAssetSummary = React.useMemo(() => {
+    const defaultHoldings = mockPortfolio.assetSummary.holdings;
+    
+    const stockMap = {};
+    stockWeatherList.forEach(s => {
+      stockMap[s.ticker] = s;
+    });
+
+    let totalEvaluationAsset = 0; // 총 평가 자산
+    let totalPurchaseAsset = 0; // 총 매수 자산
+    let totalQuantity = 0; // 총 주식 보유량
+
+    const updatedHoldings = [];
+    for (const h of defaultHoldings) {
+      const stockInfo = stockMap[h.ticker] || {};
+      const quantity = stockInfo.quantity || h.quantity || 0;
+      const purchasePrice = stockInfo.purchasePrice || h.purchasePrice || 0;
+      
+      const currentPrice = stockInfo.currentPrice !== undefined ? stockInfo.currentPrice 
+                         : (stockInfo.change !== undefined ? (purchasePrice * (1 + stockInfo.change / 100)) : purchasePrice);
+      
+      const evaluationValue = currentPrice * quantity;
+      const purchaseValue = purchasePrice * quantity;
+
+      totalEvaluationAsset += evaluationValue;
+      totalPurchaseAsset += purchaseValue;
+      totalQuantity += quantity;
+
+      const profitLoss = evaluationValue - purchaseValue;
+      const profitLossRate = purchaseValue > 0 ? (profitLoss / purchaseValue) * 100 : 0;
+
+      updatedHoldings.push({
+        ...h,
+        quantity,
+        purchasePrice,
+        currentPrice,
+        evaluationValue,
+        purchaseValue,
+        profitLoss,
+        profitLossRate,
+      });
+    }
+
+    const totalProfitLoss = totalEvaluationAsset - totalPurchaseAsset;
+    const totalProfitLossRate = totalPurchaseAsset > 0 ? (totalProfitLoss / totalPurchaseAsset) * 100 : 0;
+
+    const finalHoldings = updatedHoldings.map(h => {
+      const weight = totalEvaluationAsset > 0 ? Math.round((h.evaluationValue / totalEvaluationAsset) * 100) : h.weight;
+      return { ...h, weight };
+    });
+
+    return {
+      ...mockPortfolio.assetSummary,
+      totalAsset: totalEvaluationAsset,
+      totalPurchaseAsset,
+      totalProfitLoss,
+      totalProfitLossRate,
+      totalQuantity,
+      holdings: finalHoldings,
+    };
+  }, [mockPortfolio.assetSummary, stockWeatherList]);
 
   return (
     <div className="w-full relative">
@@ -310,7 +375,7 @@ export default function Home() {
               {/* 보유 자산 (md에서 2칸 차지, lg에서 4열 배정) */}
               <div className="md:col-span-2 lg:col-span-5 flex flex-col gap-4">
                 <AssetSummaryCard
-                  summary={assetSummary}
+                  summary={liveAssetSummary}
                   radarScores={radarScores}
                   isDark={isDark}
                   weatherStatus={overallWeather.status}
