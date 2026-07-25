@@ -35,12 +35,26 @@ const NAME_TO_TICKER = {
   '넷마블': '251270',
 };
 
-export default function AssetChart({ theme, weights }) {
+export default function AssetChart({ theme, weights, data, isDark: propIsDark }) {
   const router = useRouter();
-  const isDark = theme === 'dark';
+  const isDark = theme === 'dark' || propIsDark;
   const [hoveredCategory, setHoveredCategory] = useState(null);
 
-  const activeWeights = weights.filter(w => w.weight > 0);
+  const CHART_COLORS = [
+    '#ff5a79', '#3eb489', '#ffaa44', '#a855f7', '#06b6d4', 
+    '#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#84cc16'
+  ];
+
+  let resolvedWeights = weights || [];
+  if (!resolvedWeights.length && data && data.length) {
+    resolvedWeights = data.map((item, idx) => ({
+      category: item.name,
+      weight: item.weight,
+      color: item.color || CHART_COLORS[idx % CHART_COLORS.length]
+    }));
+  }
+
+  const activeWeights = resolvedWeights.filter(w => w.weight > 0);
   const size = 180;
   const radius = 65;
   const strokeWidth = isDark ? 16 : 20;
@@ -62,8 +76,8 @@ export default function AssetChart({ theme, weights }) {
   };
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-center gap-6 py-2">
-      <div className="relative w-[180px] h-[180px]">
+    <div className="flex flex-col md:flex-row lg:flex-col xl:flex-row items-center justify-center gap-4 md:gap-6 lg:gap-4 xl:gap-6 py-2 w-full">
+      <div className="relative w-[180px] h-[180px] flex-shrink-0">
         <svg width={size} height={size} className="transform -rotate-90">
           <circle
             cx={center}
@@ -115,8 +129,8 @@ export default function AssetChart({ theme, weights }) {
         </div>
       </div>
 
-      <div className="flex-1 space-y-3 w-full sm:w-auto">
-        {weights.map((asset) => {
+      <div className="flex-1 space-y-2.5 w-full min-w-[150px]">
+        {resolvedWeights.map((asset) => {
           const isHovered = hoveredCategory === asset.category;
           return (
             <div 
@@ -124,7 +138,7 @@ export default function AssetChart({ theme, weights }) {
               onMouseEnter={() => setHoveredCategory(asset.category)}
               onMouseLeave={() => setHoveredCategory(null)}
               onClick={() => handleNavigate(asset.category)}
-              className={`p-2.5 rounded-xl transition-all flex items-center justify-between border cursor-pointer ${
+              className={`p-2 rounded-xl transition-all flex items-center justify-between border cursor-pointer ${
                 isHovered 
                   ? isDark 
                     ? 'bg-[#1e2020] border-[#69dbad]' 
@@ -134,19 +148,19 @@ export default function AssetChart({ theme, weights }) {
                     : 'bg-white border border-[#3eb489]/10 soft-shadow-light'
               }`}
             >
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2 min-w-0">
                 <span 
-                  className="w-3.5 h-3.5 rounded-sm block border"
+                  className="w-3 h-3 rounded-full block border flex-shrink-0"
                   style={{ 
                     backgroundColor: asset.color,
                     borderColor: isDark ? 'transparent' : 'rgba(62, 180, 137, 0.3)'
                   }}
                 />
-                <span className={`text-xs font-bold font-sans ${isDark ? 'text-slate-300' : 'text-[#0f1713]'}`}>
+                <span className={`text-[11px] font-bold font-sans truncate ${isDark ? 'text-slate-300' : 'text-[#0f1713]'}`}>
                   {asset.category}
                 </span>
               </div>
-              <span className={`font-mono text-xs font-black ${isDark ? 'text-[#69dbad]' : 'text-[#3eb489]'}`}>
+              <span className={`font-mono text-[11px] font-black flex-shrink-0 pl-1 ${isDark ? 'text-[#69dbad]' : 'text-[#3eb489]'}`}>
                 {asset.weight}%
               </span>
             </div>
