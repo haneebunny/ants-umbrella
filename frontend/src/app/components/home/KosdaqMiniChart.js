@@ -9,7 +9,11 @@ import Icon from '../Icon';
  * @param {boolean} props.isDark
  */
 export default function KosdaqMiniChart({ index, isDark }) {
-  const { currentPrice = 0, change = 0, changeRate = 0, isUp = true, sparkline = [] } = index || {};
+  const { currentPrice = 0, change = 0, changeRate = 0, sparkline = [] } = index || {};
+
+  // 상승/하락은 isUp 플래그가 아니라 실제 등락률 부호로 판단 (부호·색 불일치 방지)
+  const up = changeRate > 0;
+  const down = changeRate < 0;
 
   // SVG 스파크라인 경로 계산
   const w = 96, h = 36;
@@ -22,8 +26,8 @@ export default function KosdaqMiniChart({ index, isDark }) {
     return `${x},${y}`;
   }).join(' ');
 
-  const color = isUp ? '#3eb489' : '#ff6b6b';
-  const colorDark = isUp ? '#69dbad' : '#ff8b8b';
+  const color = up ? '#3eb489' : down ? '#ff6b6b' : '#94a3b8';
+  const colorDark = up ? '#69dbad' : down ? '#ff8b8b' : '#94a3b8';
   const lineColor = isDark ? colorDark : color;
 
   return (
@@ -44,12 +48,12 @@ export default function KosdaqMiniChart({ index, isDark }) {
           </p>
         </div>
         <div className="flex flex-col items-end">
-          <div className={`flex items-center gap-1 text-sm font-black ${isUp ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : 'text-red-500'}`}>
-            <Icon name={isUp ? 'trendingUp' : 'trendingDown'} className="w-4 h-4" />
-            {isUp ? '+' : ''}{changeRate.toFixed(2)}%
+          <div className={`flex items-center gap-1 text-sm font-black ${up ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : down ? 'text-red-500' : (isDark ? 'text-slate-400' : 'text-slate-500')}`}>
+            <Icon name={up ? 'trendingUp' : 'trendingDown'} className="w-4 h-4" />
+            {up ? '+' : ''}{changeRate.toFixed(2)}%
           </div>
           <p className={`text-[11px] font-mono font-bold ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-            {isUp ? '+' : '-'}{Math.abs(change).toFixed(2)}
+            {change > 0 ? '+' : change < 0 ? '-' : ''}{Math.abs(change).toFixed(2)}
           </p>
         </div>
       </div>

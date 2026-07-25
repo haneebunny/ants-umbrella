@@ -213,10 +213,10 @@ export default function DiagnosisPage() {
           <div>
             <div className="flex justify-between text-xs mb-1.5">
               <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>현재 포트폴리오 위험</span>
-              <span className={`font-black font-mono ${sCfg.color}`}>{portfolioRisk}점</span>
+              <span className={`font-black font-mono ${sCfg.color}`}>{simulatedRisk}점</span>
             </div>
             <div className={`h-3 rounded-full ${isDark ? 'bg-white/5' : 'bg-slate-100'}`}>
-              <div className={`h-full rounded-full transition-all duration-700 ${riskStatus === 'safe' ? 'bg-[#3eb489]' : riskStatus === 'caution' ? 'bg-amber-400' : 'bg-red-500'}`} style={{ width: `${portfolioRisk}%` }} />
+              <div className={`h-full rounded-full transition-all duration-700 ${riskStatus === 'safe' ? 'bg-[#3eb489]' : riskStatus === 'caution' ? 'bg-amber-400' : 'bg-red-500'}`} style={{ width: `${simulatedRisk}%` }} />
             </div>
           </div>
         </div>
