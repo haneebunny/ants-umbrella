@@ -175,22 +175,15 @@ def send_slack_alert():
             # 슬랙 mrkdwn 링크 포맷 적용
             details_str = f"<{url}|{title}>" if url and url.startswith("http") else title
             
-            # daily_risk_score 폴백 데이터인 경우 확률값 및 신뢰도 표시 추가
-            extra_info = ""
-            if doc.get("_from_risk_score"):
-                prob_down_pct = round((1 - doc.get("_prob_up", 0.5)) * 100, 1)
-                tier_map = {"strong": "🔴 강", "medium": "🟡 중", "weak": "🟢 약"}
-                tier_str = tier_map.get(doc.get("_confidence_tier", "medium"), "중")
-                extra_info = f"\n*하락 위험도*: {prob_down_pct}% (신뢰도: {tier_str})\n*데이터 기준일*: {doc.get('date', today_str)}"
-            
             blocks.append({
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"*대상 종목*: *{name}* (`{ticker}`)\n*이슈 유형*: `[{doc.get('news_category', '리스크')}]`\n*상세 내용*: {details_str}{extra_info}"
+                    "text": f"*대상 종목*: *{name}* (`{ticker}`)\n*이슈 유형*: `[{doc.get('news_category', '리스크')}]`\n*상세 내용*: {details_str}\n*분석 시각*: {doc.get('date', today_str)}"
                 }
             })
             blocks.append({"type": "divider"})
+
 
 
         # 대시보드 바로가기 버튼 링크 추가

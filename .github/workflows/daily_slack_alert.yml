@@ -52,8 +52,22 @@ jobs:
         cd backend
         poetry install --no-interaction
 
-    # 데이터 수집/피처 생성 — 실패해도 다음 스텝 계속 실행 (continue-on-error)
-    - name: Run Data Collection & Feature Generation
+    # 1단계: 뉴스 수집 & ESG 분류 → esg_events MongoDB 저장
+    - name: Collect News & ESG Classification
+      continue-on-error: true
+      env:
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        NCP_API_KEY_ID: ${{ secrets.NCP_API_KEY_ID }}
+        NCP_API_KEY: ${{ secrets.NCP_API_KEY }}
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      run: |
+        cd backend
+        poetry run python scripts/collect_news.py
+        poetry run python scripts/process_news_features.py
+
+    # 2단계: 가격/거시 데이터 수집 & 피처 생성
+    - name: Run Price & Macro Data Collection
       continue-on-error: true
       env:
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
