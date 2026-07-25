@@ -14,6 +14,7 @@ export default function AppLayoutShell({ children }) {
   if (pathname === '/') pageTitle = '홈 대시보드';
   else if (pathname.startsWith('/stock/')) pageTitle = '종목 상세 분석';
   else if (pathname === '/diagnosis') pageTitle = '위험 진단';
+  else if (pathname === '/diagnosis/result') pageTitle = '성향 종합 리포트';
   else if (pathname === '/alerts') pageTitle = '위험 알림';
   else if (pathname === '/portfolio/register') pageTitle = '포트폴리오 관리';
   else if (pathname === '/onboarding') pageTitle = '투자성향 진단';

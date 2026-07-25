@@ -76,7 +76,7 @@ export default function AssetChart({ theme, weights, data, isDark: propIsDark })
   };
 
   return (
-    <div className="flex flex-col md:flex-row lg:flex-col xl:flex-row items-center justify-center gap-4 md:gap-6 lg:gap-4 xl:gap-6 py-2 w-full">
+    <div className="flex flex-col items-center gap-4 py-2 w-full overflow-hidden">
       <div className="relative w-[180px] h-[180px] flex-shrink-0">
         <svg width={size} height={size} className="transform -rotate-90">
           <circle
@@ -129,7 +129,7 @@ export default function AssetChart({ theme, weights, data, isDark: propIsDark })
         </div>
       </div>
 
-      <div className="flex-1 space-y-2.5 w-full min-w-[150px]">
+      <div className="flex-1 space-y-2.5 w-full min-w-0 overflow-hidden">
         {resolvedWeights.map((asset) => {
           const isHovered = hoveredCategory === asset.category;
           return (

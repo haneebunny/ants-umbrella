@@ -48,9 +48,9 @@ export default function KosdaqMiniChart({ index, isDark }) {
           </p>
         </div>
         <div className="flex flex-col items-end">
-          <div className={`flex items-center gap-1 text-sm font-black ${up ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : down ? 'text-red-500' : (isDark ? 'text-slate-400' : 'text-slate-500')}`}>
+          <div className={`flex items-center gap-1 text-sm font-black ${up ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : down ? (isDark ? 'text-[#ff8b8b]' : 'text-red-500') : (isDark ? 'text-slate-400' : 'text-slate-500')}`}>
             <Icon name={up ? 'trendingUp' : 'trendingDown'} className="w-4 h-4" />
-            {up ? '+' : ''}{changeRate.toFixed(2)}%
+            {up ? '+' : down ? '-' : ''}{Math.abs(changeRate).toFixed(2)}%
           </div>
           <p className={`text-[11px] font-mono font-bold ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
             {change > 0 ? '+' : change < 0 ? '-' : ''}{Math.abs(change).toFixed(2)}
