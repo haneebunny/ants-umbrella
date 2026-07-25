@@ -4,15 +4,15 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 /**
- * 💡 LLM 불필요 호출 방지 100% 로컬/DB 정적 캐시 데이터 맵 (뉴닉 대화체 톤)
+ * 💡 초보자도 찰떡같이 이해하는 뉴닉(NEWNEEK) 톤앤매너 쉬운 브리핑 및 추천 캐시 맵
  */
 const NEWNEEK_RECOMMENDATION_REASON_CACHE = {      
   // 보수형 (CONSERVATIVE)
   CONSERVATIVE: {
     characterName: '든든한 방패 개미',
     characterEmoji: '🛡️',
-    shieldDesc: '원금 손실은 절대 못 참아! 소폭의 악재 소식에도 든든한 방패로 딱 하방을 막아낸다구 🛡️',
-    fullDescription: '원금 보전을 1순위 목적으로 삼는 극보수형 방어자야! 단 1%의 손실에도 마음이 두근거릴 수 있으니까 변동성 노출은 극도로 경계하구 있어. 국공채, CMA, 그리고 탄탄한 고배당 방어주 위주로 자산을 나눠 담아서 인플레이션보다 똑똑하게 내 자산을 지켜내는 파수꾼이라구 든든하지?',
+    shieldDesc: '원금 손실은 절대 못 참아! 소폭의 악재 소식에도 든든한 방패로 하방을 딱 막아낸다구 🛡️',
+    fullDescription: '내 피 같은 원금은 단 1원도 잃을 수 없다구! 🛡️ 주가가 널뛰는 무서운 파도 대신, 은행 예적금보다 살짝 똑똑하게 "꼬박꼬박 배당금 나오는 튼튼한 회사의 주식"이랑 "안전한 채권"에 내 보물상자를 나눠 묻어두는 든든한 파수꾼이야!',
     mentalMindset: '주가가 살짝 출렁여도 조급해하거나 쫄지 말자구!',
     mentalAction: '혜자로운 고배당주의 분기 배당금 챙기면서 날씨가 맑아질 때까지 안전 대피하기 ☂️',
     badgeBg: 'bg-blue-500/15 text-blue-500 border-blue-500/30',
@@ -49,7 +49,7 @@ const NEWNEEK_RECOMMENDATION_REASON_CACHE = {
     characterName: '신중한 파수꾼 개미',
     characterEmoji: '🦉',
     shieldDesc: '예적금 이자는 아쉽지만 무리한 위험은 싫어! 대형 우량주로 차분하게 위험을 분산해 🦉',
-    fullDescription: '예적금 금리보다는 조금 더 높은 알파 수익을 차분하게 챙기고 싶은 안정추구 투자자야! 무리하게 날뛰는 고위험 테크주보다는 탄탄한 이익과 배당 여력을 갖춘 코스피 대형 우량주 위주로 자산을 무지개처럼 배치해서 주가 출렁임을 딱 제한한다구! 참 똑똑하지?',
+    fullDescription: '은행 이자만 받기엔 아깝지만 큰 위험은 질색이야! 🦉 이름만 대면 누구나 아는 대한민국 1등 대표 우량주들에 살포시 뿌리내리고, 주가가 좀 흔들려도 차분하게 배당 받으면서 야금야금 자산을 늘려가는 돌다리도 두들기는 신중파라구!',
     mentalMindset: '과도한 악재 찌라시 소문이나 뉴스에 뇌동매매 금지!',
     mentalAction: '우량주의 실적 체력을 믿되, AI 하락 확률 25% 진입 시 비중 30% 차분하게 조절하기 💡',
     badgeBg: 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30',
@@ -86,7 +86,7 @@ const NEWNEEK_RECOMMENDATION_REASON_CACHE = {
     characterName: '지혜로운 균형 개미',
     characterEmoji: '⚖️',
     shieldDesc: '안전과 수익 두 마리 토끼 다 잡을래! 성장성과 안전성의 황금 밸런스 ⚖️',
-    fullDescription: '수익성과 안전성 사이에서 황금 밸런스를 중시하는 밸런스 마스터야! 어느 정도의 시장 변동성은 자연스럽게 감수하면서도, 업종별 ESG 중대성(Materiality) 악재를 꼼꼼히 모니터링해서 급락 위험을 미연에 방지하는 우상향 포트폴리오를 만들어 낸다구!',
+    fullDescription: '안전도 챙기고 수익도 챙기는 황금 밸런스왕이야! ⚖️ 어느 정도 주가가 오르내리는 파도는 즐겁게 타면서도, 회사에 혹시나 나쁜 소식(ESG 악재)이 터져 급락할까봐 개미의 우산을 준비해 두는 똑똑한 투자자라구! 어느 한쪽으로 쏠리지 않는 게 내 필살기야!',
     mentalMindset: '시장의 일상적인 주가 파도를 자연스러운 현상으로 받아들이기!',
     mentalAction: '특정 테크주 몰빵은 금물! 업종 분산 포트폴리오 밸런스 딱 준수하기 ⚖️',
     badgeBg: 'bg-amber-500/15 text-amber-500 border-amber-500/30',
@@ -123,7 +123,7 @@ const NEWNEEK_RECOMMENDATION_REASON_CACHE = {
     characterName: '용감한 항해 개미',
     characterEmoji: '⛵',
     shieldDesc: '고수익을 위해서라면 파도쯤이야 감내한다구! 반도체·AI 성장 산업 항해사 ⛵',
-    fullDescription: '단기 주가 파도와 변동성을 즐거운 모험으로 받아들이며 높은 고수익을 향해 진격하는 성장형 항해사야! 반도체, AI, 2차전지 같은 차세대 고성장 산업 비중을 크게 가져가며, -10% 하락 경보가 발동하면 원칙대로 손절매 비중을 쿨하게 조절한다구!',
+    fullDescription: '큰 수익을 잡으려면 시원한 파도를 타야지! ⛵ 반도체·AI·2차전지처럼 앞으로 세상을 바꿀 핫한 테크 회사들에 돛을 달고 힘차게 나아가는 항해사야! 파도가 높아도 무서워하지 않고, 경보가 울릴 때만 스마트하게 위험을 피한다구!',
     mentalMindset: '테크·성장주의 높은 주가 변동성을 공포로 느끼지 않기!',
     mentalAction: 'AI 하락 경보가 울리면 머뭇거리지 않고 손절매 감축 원칙 사수하기 🌊',
     badgeBg: 'bg-cyan-500/15 text-cyan-500 border-cyan-500/30',
@@ -160,7 +160,7 @@ const NEWNEEK_RECOMMENDATION_REASON_CACHE = {
     characterName: '불꽃 개척 개미',
     characterEmoji: '🔥',
     shieldDesc: '변동성은 내 친구! 알파 수익률 극대화를 향해 불꽃처럼 돌진한다구 🔥',
-    fullDescription: '시장의 극심한 주가 파도와 변동성을 두려워하지 않고 단기 알파 수익률 극대화를 노리는 뜨거운 개척자야! high-risk high-return 성장주와 알파 모멘텀 종목에 집중 투자하며, 개미의 우산 급락 예측 경보망을 기지삼아 스마트하게 계좌를 방어한다구!',
+    fullDescription: '하이리스크 하이리턴! 뜨거운 알파 수익을 향해 불꽃처럼 돌진하는 열정 개척자야! 🔥 주가가 심하게 흔들려도 절대 쫄지 않고 고성장 모멘텀을 사냥하러 다니지! 대신 급락 경보가 빨간불을 켤 때는 우산을 펼치는 센스도 잊지 않는다구!',
     mentalMindset: '알파 수익을 향해 돌진하되 시장 열기에 눈이 멀지 않기!',
     mentalAction: 'AI 급락 확률 예측 지표가 빨간불을 켤 때 자산 보호선부터 챙기기 🔥',
     badgeBg: 'bg-rose-500/15 text-rose-500 border-rose-500/30',
@@ -418,11 +418,11 @@ export default function DiagnosisResultView({ profile, isDark }) {
               </div>
             </div>
 
-            {/* 설명 본문 (뉴닉 대화체) */}
+            {/* 설명 본문 (초보자용 찰떡 쉬운 뉴닉 스토리텔링!) */}
             <div className={`mt-5 p-4 rounded-2xl text-xs lg:text-sm leading-relaxed border ${
               isDark ? 'bg-white/[0.03] border-white/5 text-slate-300' : 'bg-emerald-50/60 border-emerald-100 text-slate-700'
             }`}>
-              💡 <strong className="font-bold">뉴닉 성향 분석 종합 브리핑:</strong> {extras.fullDescription}
+              💡 <strong className="font-bold">한눈에 보는 쉬운 성향 브리핑:</strong> {extras.fullDescription}
             </div>
           </div>
 
@@ -630,10 +630,10 @@ export default function DiagnosisResultView({ profile, isDark }) {
               <div className="flex items-center gap-2">
                 <span className="text-xl">{extras.characterEmoji}</span>
                 <div>
-                  <h4 className={`text-xs font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  <h4 className={`text-xs font-black tracking-tight ${isDark ? 'text-[#3eb489]' : 'text-[#2d966e]'}`}>
                     [{extras.characterName}]의 위기 대응 멘탈 수칙
                   </h4>
-                  <p className={`text-[10px] ${isDark ? 'text-emerald-400' : 'text-emerald-700 font-semibold'}`}>
+                  <p className={`text-[10px] ${isDark ? 'text-[#3eb489]/70' : 'text-[#2d966e]/70'}`}>
                     💬 캐릭터가 직접 알려주는 뉴닉 가이드
                   </p>
                 </div>
