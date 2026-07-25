@@ -13,6 +13,25 @@ load_dotenv()
 
 app = FastAPI()
 
+from app.recommendation_service import get_or_create_recommendation_reason, NEWNEEK_RECOMMENDATION_REASON_CACHE
+
+@app.get("/api/v1/recommendations/reasons")
+def get_recommendation_reasons_api(ticker: str, risk_band: str, stock_name: str = "추천종목", tag: str = "#우량주"):
+    """
+    [Cache-First Strategy]
+    DB/로컬 캐시를 우선 확인하여 기존 생성된 뉴닉 톤 해설을 LLM 호출 없이 0ms로 반환합니다.
+    캐시가 없을 때만 LLM을 1회 호출해 생성 후 DB/로컬 캐시에 영구 저장하여 재활용합니다.
+    """
+    return get_or_create_recommendation_reason(ticker, stock_name, risk_band, tag)
+
+@app.get("/api/v1/recommendations/all_cache")
+def get_all_cached_reasons_api():
+    """DB/로컬에 담긴 전체 추천 해설 캐시 맵을 반환합니다."""
+    col = get_collection("recommendation_reasons")
+    docs = list(col.find({}, {"_id": 0})) if hasattr(col, "find") else getattr(col, "data", [])
+    return {"status": "success", "count": len(docs), "data": docs}
+
+
 # ── ⏰ APScheduler 동적 배치 스케줄러 ───────────────────────────────
 from apscheduler.schedulers.background import BackgroundScheduler
 import subprocess

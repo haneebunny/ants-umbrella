@@ -4,8 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 /**
- * 💡 LLM 호출 없이 로컬/DB에 저장하여 100% 재활용 가능한 뉴닉(NEWNEEK) 톤앤매너 데이터 캐시 맵
- * (종목별 추천 이유, 성향별 브리핑, 멘탈 수칙이 톡톡 튀는 뉴닉 스타일 대화체로 정리됨)
+ * 💡 LLM 불필요 호출 방지 100% 로컬/DB 정적 캐시 데이터 맵 (뉴닉 대화체 톤)
  */
 const NEWNEEK_RECOMMENDATION_REASON_CACHE = {      
   // 보수형 (CONSERVATIVE)
@@ -242,14 +241,48 @@ export default function DiagnosisResultView({ profile, isDark }) {
   const [isRotating, setIsRotating] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
 
-  if (!profile) return null;
+  // 💡 백엔드 DB/로컬 캐시 동기화 상태
+  const [dbCachedReasons, setDbCachedReasons] = useState({});
 
-  // 💡 LLM 호출 대신 100% 로컬/캐시 데이터 맵 사용 (NEWNEEK 대화체 톤)
   const extras = NEWNEEK_RECOMMENDATION_REASON_CACHE[selectedBand] || NEWNEEK_RECOMMENDATION_REASON_CACHE.BALANCED;
   const isUserMatch = selectedBand === userOriginalBand;
 
   const recPools = extras.recommendationPools || [extras.recommendations];
   const currentRecs = recPools[setIndex % recPools.length];
+
+  // 💡 백엔드 DB/로컬 캐시 비동기 동기화 (Cache-First Strategy)
+  useEffect(() => {
+    async function fetchBackendCachedReasons() {
+      try {
+        const promises = currentRecs.map(async (item) => {
+          const url = `/api/v1/recommendations/reasons?ticker=${item.ticker}&risk_band=${selectedBand}&stock_name=${encodeURIComponent(item.name)}&tag=${encodeURIComponent(item.tag)}`;
+          const res = await fetch(url);
+          if (res.ok) {
+            const data = await res.json();
+            return { ticker: item.ticker, reason: data.reason, source: data.source };
+          }
+          return null;
+        });
+
+        const results = await Promise.all(promises);
+        const newMap = {};
+        results.forEach((r) => {
+          if (r && r.reason) {
+            newMap[r.ticker] = r.reason;
+          }
+        });
+        setDbCachedReasons(prev => ({ ...prev, ...newMap }));
+      } catch (err) {
+        // 백엔드 연결 불가 시 로컬 정적 캐시로 매끄럽게 지속 폴백
+      }
+    }
+
+    if (currentRecs && currentRecs.length > 0) {
+      fetchBackendCachedReasons();
+    }
+  }, [selectedBand, setIndex]);
+
+  if (!profile) return null;
 
   const handleRefreshRecs = () => {
     setIsRotating(true);
@@ -421,41 +454,44 @@ export default function DiagnosisResultView({ profile, isDark }) {
               </button>
             </div>
 
-            {/* 종목 카드 그리드 */}
+            {/* 종목 카드 그리드 (DB / 로컬 캐시 우선 표시!) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-              {currentRecs.map((item) => (
-                <div
-                  key={item.ticker}
-                  onClick={() => router.push(`/stock/${item.ticker}`)}
-                  className={`p-4 rounded-2xl border cursor-pointer transition-all hover:scale-[1.02] ${
-                    isDark
-                      ? 'bg-white/5 border-white/10 hover:border-emerald-500/50 hover:bg-white/10'
-                      : 'bg-slate-50 border-slate-100 hover:border-emerald-300 hover:bg-emerald-50/30 shadow-sm'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-sm font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                        {item.name}
-                      </span>
-                      <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${isDark ? 'bg-white/10 text-slate-400' : 'bg-slate-200 text-slate-600'}`}>
-                        {item.ticker}
+              {currentRecs.map((item) => {
+                const finalReason = dbCachedReasons[item.ticker] || item.reason;
+                return (
+                  <div
+                    key={item.ticker}
+                    onClick={() => router.push(`/stock/${item.ticker}`)}
+                    className={`p-4 rounded-2xl border cursor-pointer transition-all hover:scale-[1.02] ${
+                      isDark
+                        ? 'bg-white/5 border-white/10 hover:border-emerald-500/50 hover:bg-white/10'
+                        : 'bg-slate-50 border-slate-100 hover:border-emerald-300 hover:bg-emerald-50/30 shadow-sm'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-sm font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                          {item.name}
+                        </span>
+                        <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${isDark ? 'bg-white/10 text-slate-400' : 'bg-slate-200 text-slate-600'}`}>
+                          {item.ticker}
+                        </span>
+                      </div>
+                      <span className="text-xs font-black text-[#3eb489] px-2 py-0.5 rounded-full bg-[#3eb489]/10">
+                        황금비중 {item.weight}
                       </span>
                     </div>
-                    <span className="text-xs font-black text-[#3eb489] px-2 py-0.5 rounded-full bg-[#3eb489]/10">
-                      황금비중 {item.weight}
+
+                    <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 mb-2">
+                      {item.tag}
                     </span>
+
+                    <p className={`text-xs leading-relaxed line-clamp-2 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                      💬 <strong className="font-semibold">추천 이유:</strong> {finalReason}
+                    </p>
                   </div>
-
-                  <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 mb-2">
-                    {item.tag}
-                  </span>
-
-                  <p className={`text-xs leading-relaxed line-clamp-2 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                    💬 <strong className="font-semibold">추천 이유:</strong> {item.reason}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* 🎯 이 추천 종목들로 내 대시보드 기상도 바로 시작하기 버튼 */}
@@ -587,8 +623,8 @@ export default function DiagnosisResultView({ profile, isDark }) {
           {/* 3. 💬 업그레이드된 뉴닉 톤 캐릭터 멘탈 케어 팁 말풍선 카드 */}
           <div className={`p-6 rounded-3xl border transition-all relative overflow-hidden ${
             isDark
-              ? 'bg-gradient-to-br from-[#18201a] to-[#111613] border-emerald-500/20 shadow-xl'
-              : 'bg-gradient-to-br from-emerald-50/90 to-teal-50/70 border-emerald-200/80 shadow-md'
+              ? 'bg-[#181c19] border-white/5 shadow-xl'
+              : 'bg-white border-slate-100 shadow-md'
           }`}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">

@@ -218,3 +218,4 @@
 | 2026-07-25 | Antigravity | 단순 1줄 텍스트였던 멘탈 팁 카드를 캐릭터 대화 말풍선(Chat Bubble) 및 '🧠 마음가짐' + '⚡ 행동수칙' 2단계 세련 분리형 카드로 대폭 디자인 업그레이드 완료 |
 | 2026-07-25 | Antigravity | 위험 진단 페이지(`diagnosis/page.js`) 내 깃 머지 잔여 충돌 찌꺼기 및 리포트 view(`DiagnosisResultView.js`) JSX 문법 에러 100% 탐지·수리 및 `npm run lint` 0 errors 검증 완벽 완료 |
 | 2026-07-25 | Antigravity | 진단 결과 리포트 말투를 톡톡 튀는 뉴닉(NEWNEEK) 대화체 톤앤매너로 전면 교체하고, LLM API 불필요 호출 방지를 위한 종목별 추천 이유 및 멘탈 수칙 정적 로컬/DB 캐시 맵(`NEWNEEK_RECOMMENDATION_REASON_CACHE`) 구축 완료 |
+| 2026-07-25 | Antigravity | 백엔드 LLM(Anthropic API) 1회 생성 ➔ MongoDB/로컬 JSON(`recommendation_reasons`) 영구 적재 ➔ 0ms초 단위 재활용 'Cache-First' 파이프라인(`app/recommendation_service.py` & `/api/v1/recommendations/reasons`) 구축 완료 |
