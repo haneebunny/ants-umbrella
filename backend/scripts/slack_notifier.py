@@ -3,8 +3,20 @@ import os
 import sys
 import requests
 import pandas as pd
+import pytz
 from pathlib import Path
 from datetime import datetime
+
+# Google GenAI SDK
+try:
+    from google import genai
+    from pydantic import BaseModel
+    
+    class RiskValidationResult(BaseModel):
+        is_real_risk: bool
+        reason: str
+except ImportError:
+    pass
 
 # app 모듈 로드를 위한 경로 수정
 sys.path.append(str(Path(__file__).resolve().parent.parent))
@@ -55,6 +67,36 @@ def get_event_details(ticker, date_str):
             
     return name, "중대 리스크 요인 감지", "#"
 
+def validate_event_with_llm(name: str, title: str) -> bool:
+    """LLM을 호출하여 해당 이벤트가 해당 기업에 대한 실질적인 ESG 악재 공시/뉴스인지 검증합니다.
+    단순 클릭베이트성 낚시글, 기회성 긍정 뉴스, 혹은 무관한 스포츠/문화 기사는 필터링합니다.
+    """
+    gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    if not gemini_key:
+        print("[INFO] GEMINI_API_KEY가 설정되지 않아 LLM 필터 검증을 건너뛰고 기본 통과 처리합니다.")
+        return True
+
+    try:
+        client = genai.Client(api_key=gemini_key)
+        prompt = f"""다음 뉴스/공시 제목은 주식 종목 "{name}"에 대한 실질적이고 즉각적인 기업 리스크나 하락 요인(예: 횡령, 규제 벌금, 영업이익 급감, 소송, 부정적 계약 취소, 유상증자 등)을 나타내는 중대 악재(Material Negative Event)가 맞는지 판정해 줘.
+
+만약 단순 낚시성 뉴스(예: "반도체 6% 급락에도 초고수는 담았다..."), 긍정적 관점의 매수 추천 기사, 주가 하락과 관련 없는 마케팅/전시회 참가 소식 등이라면 반드시 False로 판정해 줘.
+
+제목: "{title}"
+"""
+        response = client.models.generate_content(
+            model="gemini-3.1-flash-lite",
+            contents=prompt,
+            config={"response_format": {"text": {"mime_type": "application/json", "schema": RiskValidationResult.model_json_schema()}}},
+        )
+        result = RiskValidationResult.model_validate_json(response.text)
+        print(f"[LLM Filter] Ticker: {name} | Title: {title} | Validation: {result.is_real_risk} | Reason: {result.reason}")
+        return result.is_real_risk
+    except Exception as e:
+        print(f"[WARN] LLM 검증 필터 도중 예외 발생 (기본값 True 처리): {e}")
+        return True
+
+
 def send_slack_alert():
     slack_webhook = os.environ.get("SLACK_WEBHOOK_URL", "").strip()
     if not slack_webhook:
@@ -63,7 +105,21 @@ def send_slack_alert():
 
     today_str = datetime.now().strftime("%Y-%m-%d")
     is_test_mode = "--test" in sys.argv or os.environ.get("TEST_MODE") == "true"
+    is_dispatch = os.environ.get("IS_DISPATCH") == "true"
     
+    # KST 기준 시간 체크
+    try:
+        kst = pytz.timezone("Asia/Seoul")
+        now_kst = datetime.now(kst)
+        # 테스트 모드가 아니고, 수동 실행도 아니며, 오후 5시대(17시)가 아니라면 알림 전송을 스킵하고 DB 적재만 유지합니다.
+        # (아침 6시 41분 및 점심 12시 배치는 데이터 수집, 가공 및 모델 추론 결과만 DB에 조용히 저장하고,
+        # 최종 알림은 오후 5시 46분에 하루치 이벤트를 종합해서 1회 발송합니다.)
+        if not is_test_mode and not is_dispatch and now_kst.hour != 17:
+            print(f"[INFO] Current KST hour is {now_kst.hour}. Slack alert is scheduled to send only at 17:46 KST (hour 17). Skipping notification.")
+            return
+    except Exception as tz_err:
+        print(f"[WARN] Failed to check timezone (proceeding with alert): {tz_err}")
+
     try:
         # 1. 최신 거시 정보 수집 (ml_ready_real.csv 활용)
         macro_info = {}
@@ -127,7 +183,7 @@ def send_slack_alert():
         docs = []
         if hasattr(esg_col, "find"):
             try:
-                docs = list(esg_col.find(query).sort("date", -1).limit(5))
+                docs = list(esg_col.find(query).sort("date", -1).limit(10)) # LLM 필터를 위해 여유 있게 가져옴
             except Exception as find_err:
                 print(f"[INFO] MongoDB query failed ({find_err}), trying JSON fallback.")
                 
@@ -138,7 +194,7 @@ def send_slack_alert():
                 if d.get("is_material") == 1 and d.get("news_direction") == "negative" and d.get("date") == today_str
             ]
             filtered.sort(key=lambda x: x.get("date", ""), reverse=True)
-            docs = filtered[:5]
+            docs = filtered[:10]
             
         # 테스트 모드일 때 폴백 테스트 데이터 주입
         if not docs and is_test_mode:
@@ -178,22 +234,29 @@ def send_slack_alert():
             ticker = doc.get("ticker", "005930")
             name, title, url = get_event_details(ticker, today_str)
             cat = get_alert_category(title, doc.get("news_category"))
+            
+            # 사용자 카테고리 설정 필터
             if categories.get(cat, True):
+                # 🌟 추가: LLM을 이용해 낚시성 뉴스나 기회성 매수(급락에도 담았다...) 뉴스 필터링
+                if not is_test_mode and not validate_event_with_llm(name, title):
+                    print(f"[LLM Filtered Out] {name}: {title}")
+                    continue
+                
                 doc["_event_title"] = title
                 doc["_event_name"] = name
                 doc["_event_url"] = url
                 doc["_event_category"] = cat
                 filtered_docs.append(doc)
         
-        docs = filtered_docs
+        docs = filtered_docs[:5] # 최종 상위 5개만 노출
 
-        # 5. 슬랙 Block Kit 페이로드 구성
+        # 5. 슬랙 Block Kit 페이로드 구성 (뉴닉 고슴이 컨셉 말투 적용)
         blocks = [
             {
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": "🚨 개미의 우산 - 마켓 및 ESG 리스크 일일 브리핑 🚨",
+                    "text": "🦔 고슴이의 일일 위험 브리핑 왔슴! 🚨",
                     "emoji": True
                 }
             },
@@ -201,7 +264,7 @@ def send_slack_alert():
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"오늘 아침 배치를 통해 분석된 시장 거시 지표, XGBoost 하락 위험 분석 결과 및 포트폴리오 ESG 개별 종목 리포트입니다. 🐜☔"
+                    "text": f"안녕! 나개미들을 위해 오늘 하루 동안 꼬박 분석한 시장 지표와 위험 종목 정보들을 들고 왔슴! 🐜☔"
                 }
             },
             {"type": "divider"}
@@ -213,7 +276,7 @@ def send_slack_alert():
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"📊 *시장 주요 거시 경제 지표 ({macro_info['date']})*\n• *한국은행 기준금리*: `{macro_info['rate']}%`\n• *원/달러 환율*: `{macro_info['fx']}원`"
+                    "text": f"📊 *시장 주요 거시 경제 지표 ({macro_info['date']})*\n• *한국은행 기준금리*: `{macro_info['rate']}%` 이군!\n• *원/달러 환율*: `{macro_info['fx']}원` 이야. 거시 경제 변화 흐름을 눈여겨보라구!"
                 }
             })
             blocks.append({"type": "divider"})
@@ -222,12 +285,13 @@ def send_slack_alert():
         if today_risks:
             risk_lines = []
             for tr in today_risks:
-                risk_lines.append(f"• *{tr['name']}* (`{tr['ticker']}`): 하락 위험 확률 *{tr['prob_down']}%* (신뢰도: `{tr['confidence']}`)")
+                confidence_ko = "높음" if tr['confidence'] == "strong" else ("보통" if tr['confidence'] == "medium" else "낮음")
+                risk_lines.append(f"• *{tr['name']}* (`{tr['ticker']}`): 향후 20일 내 하락 위험 확률 *{tr['prob_down']}%* (신뢰도: `{confidence_ko}`)")
             blocks.append({
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"📉 *XGBoost 모델 예측 - 20거래일 내 하락 위험 상위 종목*\n" + "\n".join(risk_lines)
+                    "text": f"📉 *인공지능 비서가 콕 집은 하락 위험 종목*\n앞으로 20거래일 동안 10% 이상 하락할 가능성이 큰 종목을 뽑아봤슴!\n" + "\n".join(risk_lines)
                 }
             })
             blocks.append({"type": "divider"})
@@ -237,7 +301,7 @@ def send_slack_alert():
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f"📰 *포트폴리오 주요 개별 종목 ESG 악재 및 공시 ({len(docs)}건 감지)*"
+                "text": f"📰 *포트폴리오 주요 개별 종목 악재 및 공시 ({len(docs)}건 감지)*"
             }
         })
         
@@ -253,7 +317,7 @@ def send_slack_alert():
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": f"*대상 종목*: *{name}* (`{ticker}`)\n*이슈 유형*: `[{doc.get('news_category', '리스크')}]`\n*상세 내용*: {details_str}"
+                        "text": f"*대상 종목*: *{name}* (`{ticker}`)\n*이슈 유형*: `[{doc.get('news_category', '리스크')}]`\n*상세 내용*: {details_str}\n해당 뉴스는 실질적인 기업 악재가 맞으니 꼭 꼼꼼히 확인해봐!"
                     }
                 })
         else:
@@ -261,7 +325,7 @@ def send_slack_alert():
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": "• 오늘 포착된 포트폴리오 개별 종목의 ESG 중대 악재 및 특이 공시는 없습니다."
+                    "text": "• 오늘은 다행히 포트폴리오 종목 중 눈에 띄는 개별 ESG 악재나 부정적 공시 뉴스는 없었슴! 안심해도 되겠어."
                 }
             })
         
@@ -275,7 +339,7 @@ def send_slack_alert():
                     "type": "button",
                     "text": {
                         "type": "plain_text",
-                        "text": "📊 내 포트폴리오 진단 보러가기",
+                        "text": "📊 내 포트폴리오 진단하러 가기",
                         "emoji": True
                     },
                     "url": "https://ants-umbrella.vercel.app/",
