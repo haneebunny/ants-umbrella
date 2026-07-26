@@ -52,6 +52,10 @@ class MLRow(BaseModel):
 class DailyRiskScore(BaseModel):
     ticker: str
     date: Date
+    # 주 타깃 예측값: P(향후 20거래일 내 -10% 급락).
+    prob_crash: Optional[float] = None
+    # prob_up = 1 - prob_crash. 다운스트림(main.py·프론트)이 prob_down = 1 - prob_up
+    # 으로 하락 위험을 파생시키므로, 이 정의에서 prob_down이 곧 급락 확률이 된다.
     prob_up: float
     direction: Literal["up", "down"]
     confidence_tier: Literal["weak", "medium", "strong"]
