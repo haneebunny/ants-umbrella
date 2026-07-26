@@ -39,7 +39,7 @@ export default function PortfolioProfileCard({
   };
 
   // 로컬스토리지에서 맞춤 포트폴리오 존재 여부 검사
-  const hasCustomPortfolio = typeof window !== 'undefined' && !!localStorage.getItem('ants_user_portfolio');
+  const hasCustomPortfolio = typeof window !== 'undefined' && !!localStorage.getItem('ants_portfolio');
 
   return (
     <div

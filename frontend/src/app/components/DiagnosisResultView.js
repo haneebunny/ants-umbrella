@@ -301,7 +301,7 @@ export default function DiagnosisResultView({ profile, isDark, onReDiagnose }) {
         tag: item.tag,
       }));
 
-      localStorage.setItem('ants_user_portfolio', JSON.stringify(newPortfolio));
+      localStorage.setItem('ants_portfolio', JSON.stringify(newPortfolio));
 
       const updatedProfile = {
         ...profile,

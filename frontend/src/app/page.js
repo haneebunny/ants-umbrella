@@ -82,7 +82,7 @@ export default function Home() {
   // 💡 선택된 포트폴리오 객체 동적 연산 (ID 99: 맞춤 포트폴리오)
   const mockPortfolio = React.useMemo(() => {
     if (selectedPortfolioId === 99 && typeof window !== 'undefined') {
-      const customStocks = localStorage.getItem('ants_user_portfolio');
+      const customStocks = localStorage.getItem('ants_portfolio');
       const savedProfile = localStorage.getItem('ants_result_profile');
       if (customStocks) {
         try {
