@@ -425,8 +425,8 @@ export default function Home() {
           </div>
         )}
 
-        {/* ── 메인 2단 그리드 (좌: 콘텐츠 / 우: 관심주식) ── */}
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-4 items-start">
+        {/* ── 메인 2단 그리드 (좌: 콘텐츠 / 우: 보유 자산) ── */}
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_390px] gap-4 items-start">
 
           {/* ── 좌측 메인 콘텐츠 영역 ── */}
           <div className="flex flex-col gap-4 min-w-0">
@@ -441,11 +441,11 @@ export default function Home() {
               onForceWeatherChange={setForceWeather}
             />
 
-            {/* 하단 3열 위젯 그리드: 실시간 시세를 맨 왼쪽으로 배치 (4:3:5 황금 비율 적용) */}
+            {/* 하단 3열 위젯 그리드: 실시간 시세를 맨 왼쪽으로 배치 */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 items-start">
 
-              {/* 1열: 주식 실시간 시세 (md에서 2칸 차지, lg에서 4열 배정) */}
-              <div className="md:col-span-2 lg:col-span-4 flex flex-col gap-4">
+              {/* 1열: 주식 실시간 시세 (md에서 2칸 차지, lg에서 5열 배정) */}
+              <div className="md:col-span-2 lg:col-span-5 flex flex-col gap-4">
                 <WatchlistCard isDark={isDark} portfolio={stockWeatherList} />
               </div>
 
@@ -462,8 +462,8 @@ export default function Home() {
                 />
               </div>
 
-              {/* 3열: 종목별 날씨 (12열 중 5열 배정, 가독성 넉넉하게 확장) */}
-              <div className="md:col-span-1 lg:col-span-5 flex flex-col gap-4">
+              {/* 3열: 종목별 날씨 (12열 중 4열 배정) */}
+              <div className="md:col-span-1 lg:col-span-4 flex flex-col gap-4">
                 <StockWeatherList
                   stocks={stockWeatherList}
                   isDark={isDark}

@@ -124,12 +124,16 @@ export default function WatchlistCard({ isDark, portfolio = [] }) {
               key={idx}
               className={`flex items-center justify-between px-3 py-1.5 rounded-xl border border-transparent`}
             >
-              <div className="flex items-center gap-2 min-w-0">
-                <div className={`h-3.5 w-14 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+              <div className="flex items-center gap-3 min-w-0">
+                <div className={`w-4 h-4 rounded-full ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+                <div className="flex flex-col gap-1 min-w-0">
+                  <div className={`h-3 w-16 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+                  <div className={`h-2 w-10 rounded ${isDark ? 'bg-white/5' : 'bg-[#0f1713]/5'}`} />
+                </div>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0">
+                <div className={`h-3 w-14 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
                 <div className={`h-3 w-12 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
-                <div className={`h-3 w-10 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
               </div>
             </div>
           ))}
@@ -157,6 +161,7 @@ export default function WatchlistCard({ isDark, portfolio = [] }) {
       {/* ── 관심 종목 10개 (실시간 시세 항목 리스트) ── */}
       <div className="flex flex-col space-y-2 pt-1">
         {watchlist.map(stock => {
+          const wCfg = WEATHER_MAP[stock.weather] || WEATHER_MAP.cloudy;
           const isUp = stock.direction === 'up';
 
           return (
@@ -169,25 +174,33 @@ export default function WatchlistCard({ isDark, portfolio = [] }) {
                   : 'hover:bg-slate-50 border border-transparent hover:border-slate-100'
               }`}
             >
-              {/* 좌측: 종목명만 깔끔하게 */}
-              <div className="flex items-center gap-2 min-w-0">
-                <span className={`text-xs font-bold truncate ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-                  {stock.name}
-                </span>
+              {/* 좌측: 날씨 아이콘 + 종목명 */}
+              <div className="flex items-center gap-3 min-w-0">
+                <Icon name={wCfg.icon} className={`w-4 h-4 flex-shrink-0 ${wCfg.color}`} />
+                
+                <div className="flex flex-col min-w-0">
+                  <span className={`text-xs font-bold truncate ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+                    {stock.name}
+                  </span>
+                  <span className={`text-[9px] font-mono ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
+                    {stock.ticker}
+                  </span>
+                </div>
               </div>
 
-              {/* 우측: 주가 + 모던 등락률 */}
-              <div className="flex items-center gap-3.5 flex-shrink-0">
+              {/* 우측: 주가 + 화살표 전일대비 등락률 */}
+              <div className="flex items-center gap-3 flex-shrink-0">
                 <span className={`text-xs font-mono font-bold ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>
                   {stock.price}
                 </span>
 
-                <span className={`text-xs font-black font-mono flex items-center justify-end w-14 ${
+                <span className={`text-xs font-black font-mono flex items-center gap-0.5 w-16 justify-end ${
                   isUp
                     ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]')
                     : 'text-rose-500'
                 }`}>
-                  {isUp ? '+' : '-'}{stock.change.toFixed(1)}%
+                  <span>{isUp ? '▲' : '▼'}</span>
+                  <span>{stock.change.toFixed(1)}%</span>
                 </span>
               </div>
             </div>
