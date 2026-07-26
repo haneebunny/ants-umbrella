@@ -7,7 +7,6 @@ import WeatherBanner from './components/home/WeatherBanner';
 import KosdaqMiniChart from './components/home/KosdaqMiniChart';
 import AssetSummaryCard from './components/home/AssetSummaryCard';
 import PortfolioProfileCard from './components/home/PortfolioProfileCard';
-import StockWeatherList from './components/home/StockWeatherList';
 import GuestCTABanner from './components/home/GuestCTABanner';
 import WatchlistCard from './components/home/WatchlistCard';
 import AntPet from './components/AntPet';
@@ -389,6 +388,7 @@ export default function Home() {
         purchaseValue,
         profitLoss,
         profitLossRate,
+        weather: stockInfo.weather || 'cloudy',
       });
     }
 
@@ -441,14 +441,16 @@ export default function Home() {
               onForceWeatherChange={setForceWeather}
             />
 
-            {/* 2층: 보유 자산 (도넛/레이더 차트 및 맑음/비 이모지 날씨 융합) */}
-            <AssetSummaryCard
-              summary={liveAssetSummary}
-              radarScores={radarScores}
-              isDark={isDark}
-              weatherStatus={overallWeather.status}
-              isLoading={apiLoading && !liveStockList}
-            />
+            {/* 2층: 보유 자산 및 날씨 통합 리스크 보드 (가로 전체 폭 확보) */}
+            <div className="w-full">
+              <AssetSummaryCard
+                summary={liveAssetSummary}
+                radarScores={radarScores}
+                isDark={isDark}
+                weatherStatus={overallWeather.status}
+                isLoading={apiLoading && !liveStockList}
+              />
+            </div>
           </div>
 
           {/* ── 우측 고정 사이드 영역 (실시간 시세 + 코스닥 + 투자성향) ── */}
