@@ -388,7 +388,6 @@ export default function Home() {
         purchaseValue,
         profitLoss,
         profitLossRate,
-        weather: stockInfo.weather || 'cloudy',
       });
     }
 
@@ -441,8 +440,8 @@ export default function Home() {
               onForceWeatherChange={setForceWeather}
             />
 
-            {/* 2층: 보유 자산 및 날씨 통합 리스크 보드 (가로 전체 폭 확보) */}
-            <div className="w-full">
+            {/* 2층: 보유자산 단독 와이드 배치 (종목별 날씨를 holdings 테이블로 통합) */}
+            <div className="flex flex-col gap-4">
               <AssetSummaryCard
                 summary={liveAssetSummary}
                 radarScores={radarScores}

@@ -2,6 +2,14 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Icon from './Icon';
+
+const WEATHER_MAP = {
+  sunny:   { icon: 'sun',       color: 'text-amber-500' },
+  cloudy:  { icon: 'cloud',     color: 'text-indigo-400' },
+  rainy:   { icon: 'cloudRain', color: 'text-cyan-400' },
+  thunder: { icon: 'zap',       color: 'text-rose-500' },
+};
 
 const NAME_TO_TICKER = {
   'SK하이닉스': '000660',
@@ -133,19 +141,11 @@ export default function AssetChart({ theme, weights, data, isDark: propIsDark })
         {resolvedWeights.map((asset) => {
           const isHovered = hoveredCategory === asset.category;
           
-          // data Prop(holdings)에서 해당 자산의 상세 수량/평단가/수익률/날씨를 추출
+          // data Prop(holdings)에서 해당 자산의 상세 수량/평단가/수익률을 추출
           const detail = (data || []).find(d => d.name === asset.category || d.category === asset.category) || {};
           const quantity = detail.quantity || 0;
           const purchasePrice = detail.purchasePrice || 0;
           const profitLossRate = detail.profitLossRate || 0;
-          
-          // 날씨 이모지 매핑 정의
-          const WEATHER_EMOJI = {
-            sunny: '☀️',
-            cloudy: '☁️',
-            rainy: '🌧️',
-            thunder: '⚡',
-          };
 
           return (
             <div 
@@ -164,7 +164,7 @@ export default function AssetChart({ theme, weights, data, isDark: propIsDark })
               }`}
             >
               <div className="flex-1 min-w-0 mr-2">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <span 
                     className="w-2.5 h-2.5 rounded-full block border flex-shrink-0"
                     style={{ 
@@ -172,13 +172,11 @@ export default function AssetChart({ theme, weights, data, isDark: propIsDark })
                       borderColor: isDark ? 'transparent' : 'rgba(62, 180, 137, 0.3)'
                     }}
                   />
-                  {/* 날씨 이모지 동적 렌더링 */}
-                  <span className="text-xs flex-shrink-0 leading-none" title={`AI 하락위험 날씨: ${detail.weather || 'cloudy'}`}>
-                    {WEATHER_EMOJI[detail.weather] || '☁️'}
-                  </span>
                   <span className={`text-[11px] font-bold font-sans truncate ${isDark ? 'text-slate-300' : 'text-[#0f1713]'}`}>
                     {asset.category}
                   </span>
+                  {/* 날씨 미니 아이콘 탑재 */}
+                  <Icon name={(WEATHER_MAP[detail.weather] || WEATHER_MAP.sunny).icon} className={`w-3.5 h-3.5 flex-shrink-0 ${(WEATHER_MAP[detail.weather] || WEATHER_MAP.sunny).color}`} />
                 </div>
                 {/* 보유량 및 평단가 정보 추가 */}
                 <div className={`text-[9px] pl-3.5 mt-0.5 font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
