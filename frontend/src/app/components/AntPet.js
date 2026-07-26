@@ -202,7 +202,7 @@ export default function AntPet({ weather, portfolio }) {
               width={96}
               height={96}
               className="object-contain pointer-events-none"
-              style={{ transform: 'scaleX(-1)' }}
+              style={{ transform: 'scaleX(-1)', width: 'auto', height: 'auto' }}
               priority
             />
             {/* 알림 경보 배지 */}
