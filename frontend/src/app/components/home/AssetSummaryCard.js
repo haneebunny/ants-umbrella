@@ -349,34 +349,34 @@ export default function AssetSummaryCard({ summary, radarScores, isDark, weather
             </span>
           </div>
 
-          <div className="flex items-center justify-between mt-1.5">
+          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-2 mt-1.5">
             {/* 보유 액수 | 수익(손실) 액수 | 수익률 */}
-            <div className="flex items-center gap-1.5 text-[11px] font-bold">
+            <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] font-bold">
               {/* 보유 액수 (검정색 / 다크모드는 회색 계열) */}
-              <span className={isDark ? 'text-slate-300' : 'text-black'}>
+              <span className={`whitespace-nowrap ${isDark ? 'text-slate-300' : 'text-black'}`}>
                 보유 ₩{new Intl.NumberFormat('ko-KR').format(totalPurchaseAsset)}
               </span>
-              <span className={isDark ? 'text-slate-800' : 'text-slate-200'}>|</span>
+              <span className={`whitespace-nowrap ${isDark ? 'text-slate-800' : 'text-slate-200'}`}>|</span>
               {/* 수익(손실) 액수 */}
-              <span className={
+              <span className={`whitespace-nowrap ${
                 totalProfitLoss >= 0
                   ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]')
                   : 'text-rose-500'
-              }>
+              }`}>
                 {totalProfitLoss >= 0 ? '+' : '-'}₩{new Intl.NumberFormat('ko-KR').format(Math.abs(totalProfitLoss))}
               </span>
-              <span className={isDark ? 'text-slate-800' : 'text-slate-200'}>|</span>
+              <span className={`whitespace-nowrap ${isDark ? 'text-slate-800' : 'text-slate-200'}`}>|</span>
               {/* 수익률 */}
-              <span className={
+              <span className={`whitespace-nowrap ${
                 totalProfitLossRate >= 0
                   ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]')
                   : 'text-rose-500'
-              }>
+              }`}>
                 {totalProfitLossRate >= 0 ? '+' : ''}{totalProfitLossRate.toFixed(2)}%
               </span>
             </div>
 
-            <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1 flex-shrink-0 ${
+            <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1 flex-shrink-0 whitespace-nowrap ${
               isDark ? 'bg-rose-950/40 border-rose-500/30 text-rose-300' : 'bg-rose-50 border-rose-200 text-rose-600'
             }`}>
               <span>위험자산</span>
