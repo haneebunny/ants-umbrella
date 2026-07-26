@@ -122,15 +122,17 @@ export default function WatchlistCard({ isDark, portfolio = [] }) {
           {Array.from({ length: 10 }).map((_, idx) => (
             <div
               key={idx}
-              className={`flex items-center justify-between px-3 py-1.5 rounded-xl border border-transparent`}
+              className={`flex items-center justify-between px-3 py-2.5 rounded-xl border border-transparent`}
             >
-              <div className="flex items-center gap-3 w-full">
+              <div className="flex items-center gap-2 w-full">
                 {/* 1. 등락률 스켈레톤 */}
-                <div className={`h-3.5 w-12 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+                <div className={`h-4.5 w-12 rounded-md ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
                 {/* 2. 종목명 스켈레톤 */}
-                <div className={`h-3.5 flex-1 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+                <div className={`h-4.5 w-20 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+                {/* 점선 가이드라인 */}
+                <div className={`flex-1 border-b border-dashed mx-2 ${isDark ? 'border-white/5' : 'border-slate-100'}`} />
                 {/* 3. 현재가 스켈레톤 */}
-                <div className={`h-3.5 w-14 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+                <div className={`h-4.5 w-16 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
               </div>
             </div>
           ))}
@@ -162,32 +164,35 @@ export default function WatchlistCard({ isDark, portfolio = [] }) {
           const isUp = stock.direction === 'up';
 
           return (
-            <div
+             <div
               key={stock.ticker}
               onClick={() => router.push(`/stock/${stock.ticker}`)}
-              className={`flex items-center justify-between px-3 py-1.5 rounded-xl cursor-pointer transition-all ${
+              className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all ${
                 isDark
                   ? 'hover:bg-white/5 border border-transparent hover:border-white/5'
                   : 'hover:bg-slate-50 border border-transparent hover:border-slate-100'
               }`}
             >
-              {/* 1. 등락률 (맨 왼쪽) */}
-              <span className={`text-xs font-black font-mono flex items-center gap-0.5 w-14 justify-start flex-shrink-0 ${
+              {/* 1. 등락률 (맨 왼쪽 둥근 뱃지) */}
+              <span className={`text-[10px] font-black font-mono px-2 py-0.5 rounded-md flex items-center justify-center gap-0.5 flex-shrink-0 ${
                 isUp
-                  ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]')
-                  : 'text-rose-500'
+                  ? (isDark ? 'bg-[#69dbad]/15 text-[#69dbad]' : 'bg-[#3eb489]/10 text-[#3eb489]')
+                  : (isDark ? 'bg-rose-500/15 text-rose-400' : 'bg-rose-500/10 text-rose-500')
               }`}>
                 <span>{isUp ? '▲' : '▼'}</span>
                 <span>{stock.change.toFixed(1)}%</span>
               </span>
 
               {/* 2. 종목명 (가운데) */}
-              <span className={`text-xs font-bold truncate flex-1 min-w-0 ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+              <span className={`text-sm font-medium truncate ml-2.5 ${isDark ? 'text-slate-200' : 'text-[#0f1713]'}`}>
                 {stock.name}
               </span>
 
+              {/* 점선 가이드라인 */}
+              <div className={`flex-1 border-b border-dashed mx-3 ${isDark ? 'border-white/10' : 'border-slate-200'}`} />
+
               {/* 3. 현재가 (맨 오른쪽) */}
-              <span className={`text-xs font-mono font-bold flex-shrink-0 ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>
+              <span className={`text-sm font-mono font-medium flex-shrink-0 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                 {stock.price}
               </span>
             </div>
