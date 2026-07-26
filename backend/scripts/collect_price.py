@@ -198,9 +198,10 @@ if __name__ == "__main__":
     print(f"대상 종목 {len(target_tickers)}개: {target_tickers}")
 
     all_rows = []
+    end_date_str = datetime.now().strftime("%Y%m%d")
     for ticker in target_tickers:
         print(f"[수집중] {ticker}")
-        feat = get_price_features(ticker, "20230101", "20260721")
+        feat = get_price_features(ticker, "20230101", end_date_str)
         all_rows.append(feat)
 
     price_df = pd.concat(all_rows, ignore_index=True)

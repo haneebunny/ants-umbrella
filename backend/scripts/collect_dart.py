@@ -75,13 +75,15 @@ if __name__ == "__main__":
     print(f"대상 종목 {len(target_tickers)}개: {target_tickers}")
 
     results = []
+    from datetime import datetime
+    end_date_str = datetime.now().strftime("%Y%m%d")
     for ticker in target_tickers:
         row = corp_map[corp_map["stock_code"] == ticker]
         if row.empty:
             print(f"  {ticker}: corp_code 못 찾음, 건너뜀")
             continue
         corp_code = row.iloc[0]["corp_code"]
-        signals = build_supplementary_signals(corp_code, ticker, "20230101", "20260721")
+        signals = build_supplementary_signals(corp_code, ticker, "20230101", end_date_str)
         print(f"  {ticker}: {len(signals)}건")
         results.append(signals)
 

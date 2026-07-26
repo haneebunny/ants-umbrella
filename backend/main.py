@@ -692,7 +692,7 @@ def _call_gemini(prompt: str) -> str:
     import requests as req_lib
     api_key = os.environ.get("GEMINI_API_KEY", "").strip()
     # 유저가 .env에 설정한 모델명 사용 (없을 경우 fallback 모델)
-    model_name = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash").strip()
+    model_name = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite").strip()
     
     if not api_key:
         return ""
