@@ -338,10 +338,16 @@ export default function Home() {
     for (const h of defaultHoldings) {
       const stockInfo = stockMap[h.ticker] || {};
       const quantity = stockInfo.quantity || h.quantity || 0;
-      const purchasePrice = stockInfo.purchasePrice || h.purchasePrice || 0;
       
+      // 💡 실시간 현재가 결정
       const currentPrice = stockInfo.currentPrice !== undefined ? stockInfo.currentPrice 
-                         : (stockInfo.change !== undefined ? (purchasePrice * (1 + stockInfo.change / 100)) : purchasePrice);
+                         : (stockInfo.change !== undefined && h.purchasePrice ? (h.purchasePrice * (1 + stockInfo.change / 100)) : (h.currentPrice || 50000));
+      
+      // 💡 맞춤 포트폴리오(ID 99)인 경우 평단가를 고정 5만원이 아닌 현재가의 95%로 동적 연계 모사!
+      let purchasePrice = h.purchasePrice || 0;
+      if (selectedPortfolioId === 99 && currentPrice > 0) {
+        purchasePrice = Math.round(currentPrice * 0.95);
+      }
       
       const evaluationValue = currentPrice * quantity;
       const purchaseValue = purchasePrice * quantity;
@@ -382,7 +388,7 @@ export default function Home() {
       totalQuantity,
       holdings: finalHoldings,
     };
-  }, [mockPortfolio.assetSummary, stockWeatherList]);
+  }, [mockPortfolio.assetSummary, stockWeatherList, selectedPortfolioId]);
 
   return (
     <div className="w-full relative">
