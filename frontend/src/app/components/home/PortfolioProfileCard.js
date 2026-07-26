@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import Icon from '../Icon';
 
 const BAND_CONFIG = {
@@ -25,8 +26,17 @@ export default function PortfolioProfileCard({
   profile, isDemoMode = false, isDark,
   presets = [], selectedId, onSelect,
 }) {
+  const router = useRouter();
   const band = profile?.target_risk_band || 'BALANCED';
   const cfg  = BAND_CONFIG[band] || BAND_CONFIG.BALANCED;
+
+  const handleCTA = () => {
+    if (isDemoMode) {
+      router.push('/onboarding');
+    } else {
+      router.push('/diagnosis/result');
+    }
+  };
 
   return (
     <div
@@ -112,17 +122,17 @@ export default function PortfolioProfileCard({
       </div>
 
       {/* ── CTA ── */}
-      <a
-        href="/onboarding"
-        className={`flex items-center justify-center gap-1.5 w-full py-2 rounded-xl text-[11px] font-bold transition-all mt-0.5 ${
+      <button
+        onClick={handleCTA}
+        className={`flex items-center justify-center gap-1.5 w-full py-2 rounded-xl text-[11px] font-bold transition-all mt-0.5 cursor-pointer ${
           isDark
             ? 'bg-[#3eb489]/20 text-[#69dbad] border border-[#3eb489]/30 hover:bg-[#3eb489]/30'
             : 'bg-[#3eb489] text-white hover:bg-[#2ea070] shadow-sm'
         }`}
       >
-        <Icon name="refreshCw" className="w-3 h-3" />
-        {isDemoMode ? '내 성향 직접 진단하기' : '성향 다시 진단하기'}
-      </a>
+        <Icon name={isDemoMode ? 'radar' : 'refreshCw'} className="w-3 h-3" />
+        {isDemoMode ? '내 성향 직접 진단하기' : '내 성향 종합 리포트 🦔'}
+      </button>
     </div>
   );
 }

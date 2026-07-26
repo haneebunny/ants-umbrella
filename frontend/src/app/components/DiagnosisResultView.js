@@ -201,7 +201,7 @@ const BANDS_CONFIG = [
   { key: 'AGGRESSIVE', label: '공격', emoji: '🔥' },
 ];
 
-export default function DiagnosisResultView({ profile, isDark }) {
+export default function DiagnosisResultView({ profile, isDark, onReDiagnose }) {
   const router = useRouter();
 
   // 사용자의 원본 진단 성향
@@ -424,6 +424,22 @@ export default function DiagnosisResultView({ profile, isDark }) {
             }`}>
               💡 <strong className="font-bold">한눈에 보는 쉬운 성향 브리핑:</strong> {extras.fullDescription}
             </div>
+
+            {/* 🔄 성향 다시 진단하기 보조 버튼 (2번 문제 방지 장치) */}
+            {onReDiagnose && (
+              <div className="mt-3 flex justify-end">
+                <button
+                  onClick={onReDiagnose}
+                  className={`px-3.5 py-1.5 rounded-xl border text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer shadow-sm ${
+                    isDark
+                      ? 'bg-zinc-800/80 border-zinc-700/50 text-zinc-300 hover:bg-zinc-700/80 hover:text-white'
+                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800'
+                  }`}
+                >
+                  <span>🔄 설문 다시 응답하기 (처음부터 재진단)</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* 2. 성향 맞춤 추천 포트폴리오 대표 종목 리스트 */}
