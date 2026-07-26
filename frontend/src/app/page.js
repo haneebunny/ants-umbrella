@@ -441,7 +441,7 @@ export default function Home() {
               onForceWeatherChange={setForceWeather}
             />
 
-            {/* 하단 3열 위젯 그리드: 실시간 시세를 맨 왼쪽으로 배치 (4 : 3 : 5 황금비율 적용) */}
+            {/* 하단 3열 위젯 그리드: 실시간 시세를 맨 왼쪽으로 배치 (4:3:5 황금 비율 적용) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 items-start">
 
               {/* 1열: 주식 실시간 시세 (md에서 2칸 차지, lg에서 4열 배정) */}
@@ -462,7 +462,7 @@ export default function Home() {
                 />
               </div>
 
-              {/* 3열: 종목별 날씨 (12열 중 5열 배정으로 넉넉하게 확장) */}
+              {/* 3열: 종목별 날씨 (12열 중 5열 배정, 가독성 넉넉하게 확장) */}
               <div className="md:col-span-1 lg:col-span-5 flex flex-col gap-4">
                 <StockWeatherList
                   stocks={stockWeatherList}

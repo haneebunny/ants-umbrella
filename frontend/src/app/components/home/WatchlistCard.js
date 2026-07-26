@@ -125,11 +125,11 @@ export default function WatchlistCard({ isDark, portfolio = [] }) {
               className={`flex items-center justify-between px-3 py-1.5 rounded-xl border border-transparent`}
             >
               <div className="flex items-center gap-2 min-w-0">
-                <div className={`h-3.5 w-16 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+                <div className={`h-3.5 w-14 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
               </div>
               <div className="flex items-center gap-3 flex-shrink-0">
-                <div className={`h-3.5 w-14 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
-                <div className={`h-3.5 w-12 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+                <div className={`h-3 w-12 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+                <div className={`h-3 w-10 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
               </div>
             </div>
           ))}
@@ -169,26 +169,25 @@ export default function WatchlistCard({ isDark, portfolio = [] }) {
                   : 'hover:bg-slate-50 border border-transparent hover:border-slate-100'
               }`}
             >
-              {/* 좌측: 종목명만 깔끔하게 노출 (날씨 아이콘, 티커 제거) */}
+              {/* 좌측: 종목명만 깔끔하게 */}
               <div className="flex items-center gap-2 min-w-0">
                 <span className={`text-xs font-bold truncate ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
                   {stock.name}
                 </span>
               </div>
 
-              {/* 우측: 주가(단위 원 제거) + 등락률 */}
-              <div className="flex items-center gap-3 flex-shrink-0">
+              {/* 우측: 주가 + 모던 등락률 */}
+              <div className="flex items-center gap-3.5 flex-shrink-0">
                 <span className={`text-xs font-mono font-bold ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>
                   {stock.price}
                 </span>
 
-                <span className={`text-xs font-black font-mono flex items-center gap-0.5 w-14 justify-end ${
+                <span className={`text-xs font-black font-mono flex items-center justify-end w-14 ${
                   isUp
                     ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]')
                     : 'text-rose-500'
                 }`}>
-                  <span>{isUp ? '▲' : '▼'}</span>
-                  <span>{stock.change.toFixed(1)}%</span>
+                  {isUp ? '+' : '-'}{stock.change.toFixed(1)}%
                 </span>
               </div>
             </div>
