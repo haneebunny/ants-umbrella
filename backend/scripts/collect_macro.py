@@ -40,8 +40,11 @@ if __name__ == "__main__":
     PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
     OUTPUT_PATH = PROJECT_ROOT / "data" / "macro_features.csv"
 
-    rate = get_base_rate("20230102", "20260721")
-    fx = get_fx_rate("20230102", "20260721")
+    from datetime import datetime
+    end_date_str = datetime.now().strftime("%Y%m%d")
+
+    rate = get_base_rate("20230102", end_date_str)
+    fx = get_fx_rate("20230102", end_date_str)
 
     macro = rate.merge(fx, on="date", how="outer").sort_values("date")
     
