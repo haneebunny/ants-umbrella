@@ -65,9 +65,59 @@ def send_slack_alert():
     is_test_mode = "--test" in sys.argv or os.environ.get("TEST_MODE") == "true"
     
     try:
+        # 1. 최신 거시 정보 수집 (ml_ready_real.csv 활용)
+        macro_info = {}
+        csv_path = Path(__file__).resolve().parent.parent.parent / "data" / "ml_ready_real.csv"
+        if csv_path.exists():
+            try:
+                df_ml = pd.read_csv(csv_path)
+                if not df_ml.empty:
+                    latest_date = df_ml["date"].max()
+                    latest_rows = df_ml[df_ml["date"] == latest_date]
+                    if not latest_rows.empty:
+                        first_row = latest_rows.iloc[0]
+                        macro_info = {
+                            "date": str(latest_date),
+                            "rate": first_row.get("macro_rate"),
+                            "fx": first_row.get("macro_fx")
+                        }
+            except Exception as e:
+                print(f"[WARN] Failed to read ml_ready_real.csv for macro info: {e}")
+
+        # 2. 오늘자 위험 예측 결과 수집 (하락확률 상위 3개)
+        today_risks = []
+        try:
+            risk_col = get_collection("daily_risk_score")
+            query_date = today_str
+            if macro_info.get("date"):
+                query_date = pd.to_datetime(macro_info["date"]).strftime("%Y-%m-%d")
+            
+            risk_docs = list(risk_col.find({"date": query_date}))
+            if not risk_docs:
+                latest_avail_doc = risk_col.find_one({}, sort=[("date", -1)])
+                if latest_avail_doc:
+                    query_date = latest_avail_doc.get("date")
+                    risk_docs = list(risk_col.find({"date": query_date}))
+
+            if risk_docs:
+                # 하락 위험 순으로 정렬 (prob_up 오름차순)
+                risk_docs.sort(key=lambda x: float(x.get("prob_up", 0.5)))
+                for rdoc in risk_docs[:3]:
+                    ticker = rdoc.get("ticker")
+                    name = TICKER_NAME_MAP.get(ticker, ticker)
+                    prob_down = (1.0 - float(rdoc.get("prob_up", 0.5))) * 100
+                    today_risks.append({
+                        "name": name,
+                        "ticker": ticker,
+                        "prob_down": round(prob_down, 1),
+                        "confidence": rdoc.get("confidence_tier", "weak")
+                    })
+        except Exception as risk_err:
+            print(f"[WARN] Failed to query daily_risk_score: {risk_err}")
+
         esg_col = get_collection("esg_events")
         
-        # 1. 오늘 날짜의 중대 리스크(is_material == 1, negative) 뉴스/공시 조회
+        # 3. 오늘 날짜의 중대 리스크(is_material == 1, negative) 뉴스/공시 조회
         query = {
             "is_material": 1,
             "news_direction": "negative",
@@ -90,28 +140,23 @@ def send_slack_alert():
             filtered.sort(key=lambda x: x.get("date", ""), reverse=True)
             docs = filtered[:5]
             
-        # 2. 테스트 모드이거나 수집된 오늘의 데이터가 없을 때 폴백 테스트 데이터 주입
-        if not docs:
-            if is_test_mode:
-                print("[INFO] No risk events found today. Test mode enabled: inserting mock data.")
-                docs = [
-                    {
-                        "ticker": "005930",
-                        "news_category": "노사관계 (Social)",
-                        "date": today_str
-                    },
-                    {
-                        "ticker": "000660",
-                        "news_category": "품질/안전 (Social)",
-                        "date": today_str
-                    }
-                ]
-            else:
-                # 오늘 분석된 중요 리스크가 없으면 조용히 스킵
-                print(f"[INFO] No critical risk events found for today ({today_str}). Silently skipping Slack alert.")
-                return
+        # 테스트 모드일 때 폴백 테스트 데이터 주입
+        if not docs and is_test_mode:
+            print("[INFO] Test mode enabled: inserting mock data.")
+            docs = [
+                {
+                    "ticker": "005930",
+                    "news_category": "노사관계 (Social)",
+                    "date": today_str
+                },
+                {
+                    "ticker": "000660",
+                    "news_category": "품질/안전 (Social)",
+                    "date": today_str
+                }
+            ]
 
-        # 3. 사용자 설정에 따른 카테고리 필터링 적용 ──────────────────────
+        # 4. 사용자 설정에 따른 카테고리 필터링 적용 ──────────────────────
         try:
             settings_col = get_collection("user_settings")
             cfg = settings_col.find_one({"ticker": "settings", "date": "alert_config"})
@@ -142,17 +187,13 @@ def send_slack_alert():
         
         docs = filtered_docs
 
-        if not docs:
-            print(f"[INFO] All critical risk events were filtered out by user category preferences. Skipping Slack alert.")
-            return
-
-        # 4. 슬랙 Block Kit 페이로드 구성
+        # 5. 슬랙 Block Kit 페이로드 구성
         blocks = [
             {
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": "🚨 개미의 우산 - 중대 리스크 요인 감지 🚨",
+                    "text": "🚨 개미의 우산 - 마켓 및 ESG 리스크 일일 브리핑 🚨",
                     "emoji": True
                 }
             },
@@ -160,31 +201,71 @@ def send_slack_alert():
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"오늘 아침 배치를 통해 분석된 뉴스/공시 중 포트폴리오에 영향을 주는 *중대 리스크 요인 {len(docs)}건*이 포착되었습니다. 🐜☔"
+                    "text": f"오늘 아침 배치를 통해 분석된 시장 거시 지표, XGBoost 하락 위험 분석 결과 및 포트폴리오 ESG 개별 종목 리포트입니다. 🐜☔"
                 }
             },
             {"type": "divider"}
         ]
-        
-        for doc in docs:
-            ticker = doc.get("ticker", "005930")
-            name = doc.get("_event_name", "알 수 없는 종목")
-            title = doc.get("_event_title", "중대 리스크 요인 감지")
-            url = doc.get("_event_url", "#")
-            
-            # 슬랙 mrkdwn 링크 포맷 적용
-            details_str = f"<{url}|{title}>" if url and url.startswith("http") else title
-            
+
+        # 5-1. 거시 지표 블록 추가
+        if macro_info:
             blocks.append({
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"*대상 종목*: *{name}* (`{ticker}`)\n*이슈 유형*: `[{doc.get('news_category', '리스크')}]`\n*상세 내용*: {details_str}\n*분석 시각*: {doc.get('date', today_str)}"
+                    "text": f"📊 *시장 주요 거시 경제 지표 ({macro_info['date']})*\n• *한국은행 기준금리*: `{macro_info['rate']}%`\n• *원/달러 환율*: `{macro_info['fx']}원`"
                 }
             })
             blocks.append({"type": "divider"})
 
+        # 5-2. 고위험 예측 종목 블록 추가
+        if today_risks:
+            risk_lines = []
+            for tr in today_risks:
+                risk_lines.append(f"• *{tr['name']}* (`{tr['ticker']}`): 하락 위험 확률 *{tr['prob_down']}%* (신뢰도: `{tr['confidence']}`)")
+            blocks.append({
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"📉 *XGBoost 모델 예측 - 20거래일 내 하락 위험 상위 종목*\n" + "\n".join(risk_lines)
+                }
+            })
+            blocks.append({"type": "divider"})
 
+        # 5-3. 개별 종목 ESG 악재 리스트 추가
+        blocks.append({
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"📰 *포트폴리오 주요 개별 종목 ESG 악재 및 공시 ({len(docs)}건 감지)*"
+            }
+        })
+        
+        if docs:
+            for doc in docs:
+                ticker = doc.get("ticker", "005930")
+                name = doc.get("_event_name", "알 수 없는 종목")
+                title = doc.get("_event_title", "중대 리스크 요인 감지")
+                url = doc.get("_event_url", "#")
+                details_str = f"<{url}|{title}>" if url and url.startswith("http") else title
+                
+                blocks.append({
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"*대상 종목*: *{name}* (`{ticker}`)\n*이슈 유형*: `[{doc.get('news_category', '리스크')}]`\n*상세 내용*: {details_str}"
+                    }
+                })
+        else:
+            blocks.append({
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "• 오늘 포착된 포트폴리오 개별 종목의 ESG 중대 악재 및 특이 공시는 없습니다."
+                }
+            })
+        
+        blocks.append({"type": "divider"})
 
         # 대시보드 바로가기 버튼 링크 추가
         blocks.append({
@@ -197,7 +278,7 @@ def send_slack_alert():
                         "text": "📊 내 포트폴리오 진단 보러가기",
                         "emoji": True
                     },
-                    "url": "http://localhost:3000",  # 배포 후 실제 운영 도메인 주소로 교체 가능
+                    "url": "https://ants-umbrella.vercel.app/",
                     "action_id": "button-action"
                 }
             ]
