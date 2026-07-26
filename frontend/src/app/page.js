@@ -89,12 +89,14 @@ export default function Home() {
           const stocks = JSON.parse(customStocks);
           const prof = savedProfile ? JSON.parse(savedProfile) : PORTFOLIO_PRESETS[0].profile;
           
-          // 맞춤 종목 리스트 포맷
+          // 맞춤 종목 리스트 포맷 (로컬스토리지 수량 및 평단가 반영)
           const stockWeatherList = stocks.map(s => ({
             ticker: s.ticker,
             name: s.name,
             weight: s.weight || 25,
             tag: s.tag || '#우량주',
+            quantity: Number(s.quantity) || 10,
+            purchasePrice: Number(s.purchasePrice) || 50000,
             weather: 'sunny', // API 호출 전 기본 날씨
             direction: 'up',
             change: 0.0,
@@ -122,9 +124,9 @@ export default function Home() {
                 ticker: s.ticker,
                 name: s.name,
                 weight: s.weight,
-                quantity: 10,
-                purchasePrice: 50000,
-                currentPrice: 50000,
+                quantity: s.quantity,
+                purchasePrice: s.purchasePrice,
+                currentPrice: s.purchasePrice,
               }))
             },
             overallWeather: { status: 'sunny', label: '맑음' },
@@ -338,16 +340,10 @@ export default function Home() {
     for (const h of defaultHoldings) {
       const stockInfo = stockMap[h.ticker] || {};
       const quantity = stockInfo.quantity || h.quantity || 0;
+      const purchasePrice = stockInfo.purchasePrice || h.purchasePrice || 0;
       
-      // 💡 실시간 현재가 결정
       const currentPrice = stockInfo.currentPrice !== undefined ? stockInfo.currentPrice 
-                         : (stockInfo.change !== undefined && h.purchasePrice ? (h.purchasePrice * (1 + stockInfo.change / 100)) : (h.currentPrice || 50000));
-      
-      // 💡 맞춤 포트폴리오(ID 99)인 경우 평단가를 고정 5만원이 아닌 현재가의 95%로 동적 연계 모사!
-      let purchasePrice = h.purchasePrice || 0;
-      if (selectedPortfolioId === 99 && currentPrice > 0) {
-        purchasePrice = Math.round(currentPrice * 0.95);
-      }
+                         : (stockInfo.change !== undefined ? (purchasePrice * (1 + stockInfo.change / 100)) : purchasePrice);
       
       const evaluationValue = currentPrice * quantity;
       const purchaseValue = purchasePrice * quantity;
@@ -388,7 +384,7 @@ export default function Home() {
       totalQuantity,
       holdings: finalHoldings,
     };
-  }, [mockPortfolio.assetSummary, stockWeatherList, selectedPortfolioId]);
+  }, [mockPortfolio.assetSummary, stockWeatherList]);
 
   return (
     <div className="w-full relative">
