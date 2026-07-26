@@ -6,7 +6,6 @@ import Icon from '../Icon';
 
 // 초기 관심 주식 추천 데이터 (10개 주요 종목)
 const DEFAULT_WATCHLIST = [
-  { ticker: '015760', name: '한국전력',        weather: 'cloudy',  change:  0.0, direction: 'up',   price: '21,000' },
   { ticker: '005930', name: '삼성전자',        weather: 'sunny',   change:  1.2, direction: 'up',   price: '78,400' },
   { ticker: '000660', name: 'SK하이닉스',      weather: 'sunny',   change:  1.8, direction: 'up',   price: '189,500' },
   { ticker: '035420', name: 'NAVER',           weather: 'cloudy',  change: -0.5, direction: 'down', price: '182,000' },
