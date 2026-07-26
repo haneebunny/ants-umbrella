@@ -2,14 +2,6 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Icon from './Icon';
-
-const WEATHER_MAP = {
-  sunny:   { icon: 'sun',       color: 'text-amber-500' },
-  cloudy:  { icon: 'cloud',     color: 'text-indigo-400' },
-  rainy:   { icon: 'cloudRain', color: 'text-cyan-400' },
-  thunder: { icon: 'zap',       color: 'text-rose-500' },
-};
 
 const NAME_TO_TICKER = {
   'SK하이닉스': '000660',
@@ -164,7 +156,7 @@ export default function AssetChart({ theme, weights, data, isDark: propIsDark })
               }`}
             >
               <div className="flex-1 min-w-0 mr-2">
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <span 
                     className="w-2.5 h-2.5 rounded-full block border flex-shrink-0"
                     style={{ 
@@ -175,8 +167,6 @@ export default function AssetChart({ theme, weights, data, isDark: propIsDark })
                   <span className={`text-[11px] font-bold font-sans truncate ${isDark ? 'text-slate-300' : 'text-[#0f1713]'}`}>
                     {asset.category}
                   </span>
-                  {/* 날씨 미니 아이콘 탑재 */}
-                  <Icon name={(WEATHER_MAP[detail.weather] || WEATHER_MAP.sunny).icon} className={`w-3.5 h-3.5 flex-shrink-0 ${(WEATHER_MAP[detail.weather] || WEATHER_MAP.sunny).color}`} />
                 </div>
                 {/* 보유량 및 평단가 정보 추가 */}
                 <div className={`text-[9px] pl-3.5 mt-0.5 font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>

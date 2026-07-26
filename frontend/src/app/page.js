@@ -7,6 +7,7 @@ import WeatherBanner from './components/home/WeatherBanner';
 import KosdaqMiniChart from './components/home/KosdaqMiniChart';
 import AssetSummaryCard from './components/home/AssetSummaryCard';
 import PortfolioProfileCard from './components/home/PortfolioProfileCard';
+import StockWeatherList from './components/home/StockWeatherList';
 import GuestCTABanner from './components/home/GuestCTABanner';
 import WatchlistCard from './components/home/WatchlistCard';
 import AntPet from './components/AntPet';
@@ -424,13 +425,13 @@ export default function Home() {
           </div>
         )}
 
-        {/* ── 메인 2단 그리드 (좌: 콘텐츠 / 우: 360px 고정 사이드바) ── */}
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-4 items-start">
+        {/* ── 메인 2단 그리드 (좌: 콘텐츠 / 우: 관심주식) ── */}
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-4 items-start">
 
           {/* ── 좌측 메인 콘텐츠 영역 ── */}
           <div className="flex flex-col gap-4 min-w-0">
 
-            {/* 날씨 배너 (전체 폭, 1층) */}
+            {/* 날씨 배너 (전체 폭) */}
             <WeatherBanner 
               weather={overallWeather} 
               isDark={isDark} 
@@ -440,51 +441,55 @@ export default function Home() {
               onForceWeatherChange={setForceWeather}
             />
 
-            {/* 2층: 보유자산 단독 와이드 배치 (종목별 날씨를 holdings 테이블로 통합) */}
-            <div className="flex flex-col gap-4">
-              <AssetSummaryCard
-                summary={liveAssetSummary}
-                radarScores={radarScores}
-                isDark={isDark}
-                weatherStatus={overallWeather.status}
-                isLoading={apiLoading && !liveStockList}
-              />
+            {/* 하단 3열 위젯 그리드: 12열 레이아웃으로 변경하여 좌측은 좁히고 종목별 날씨는 넓힘 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 items-start">
+
+              {/* 코스닥 + 투자성향 (12열 중 3열 배정, 컴팩트하게) */}
+              <div className="md:col-span-1 lg:col-span-3 flex flex-col gap-4">
+                <KosdaqMiniChart index={kospiIndex} isDark={isDark} />
+                <PortfolioProfileCard
+                  profile={profile}
+                  isDemoMode={isDemo}
+                  isDark={isDark}
+                  presets={PORTFOLIO_PRESETS}
+                  selectedId={selectedPortfolioId}
+                  onSelect={handleSelectPortfolio}
+                />
+              </div>
+
+              {/* 종목별 날씨 (12열 중 5열 배정, 종목명이 안 잘리도록 넉넉하게) */}
+              <div className="md:col-span-1 lg:col-span-4 flex flex-col gap-4">
+                <StockWeatherList
+                  stocks={stockWeatherList}
+                  isDark={isDark}
+                  isLoading={apiLoading && !liveStockList}
+                />
+              </div>
+
+              {/* 보유 자산 (md에서 2칸 차지, lg에서 4열 배정) */}
+              <div className="md:col-span-2 lg:col-span-5 flex flex-col gap-4">
+                <AssetSummaryCard
+                  summary={liveAssetSummary}
+                  radarScores={radarScores}
+                  isDark={isDark}
+                  weatherStatus={overallWeather.status}
+                  isLoading={apiLoading && !liveStockList}
+                />
+              </div>
+
             </div>
           </div>
 
-          {/* ── 우측 고정 사이드 영역 (실시간 시세 + 코스닥 + 투자성향) ── */}
+          {/* ── 우측 관심 주식 (xl 이상에서만 고정 사이드 패널) ── */}
           <div className="hidden xl:flex flex-col gap-4 min-w-0">
-            {/* 1층: 주식 실시간 시세 */}
             <WatchlistCard isDark={isDark} portfolio={stockWeatherList} />
-
-            {/* 2층: 코스닥 미니 지수 */}
-            <KosdaqMiniChart index={kospiIndex} isDark={isDark} />
-
-            {/* 3층: 내 투자성향 프로필 */}
-            <PortfolioProfileCard
-              profile={profile}
-              isDemoMode={isDemo}
-              isDark={isDark}
-              presets={PORTFOLIO_PRESETS}
-              selectedId={selectedPortfolioId}
-              onSelect={handleSelectPortfolio}
-            />
           </div>
 
         </div>
 
-        {/* 모바일/태블릿: 사이드바 구성요소들을 하단에 순차 배치 */}
-        <div className="xl:hidden mt-4 flex flex-col gap-4">
+        {/* 모바일/태블릿: 관심주식을 하단에 배치 */}
+        <div className="xl:hidden mt-4">
           <WatchlistCard isDark={isDark} portfolio={stockWeatherList} />
-          <KosdaqMiniChart index={kospiIndex} isDark={isDark} />
-          <PortfolioProfileCard
-            profile={profile}
-            isDemoMode={isDemo}
-            isDark={isDark}
-            presets={PORTFOLIO_PRESETS}
-            selectedId={selectedPortfolioId}
-            onSelect={handleSelectPortfolio}
-          />
         </div>
       </div>
 

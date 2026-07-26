@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import AssetChart from '../AssetChart';
 import Icon from '../Icon';
 
@@ -242,13 +241,6 @@ function RadarChart({ scores, weatherStatus, isDark }) {
 }
 
 
-const WEATHER_MAP = {
-  sunny:   { icon: 'sun',      color: 'text-amber-500 bg-amber-500/10' },
-  cloudy:  { icon: 'cloud',     color: 'text-indigo-400 bg-indigo-400/10' },
-  rainy:   { icon: 'cloudRain', color: 'text-cyan-400 bg-cyan-400/10' },
-  thunder: { icon: 'zap',       color: 'text-rose-500 bg-rose-500/10' },
-};
-
 /**
  * 보유 자산 요약 카드 (도넛 ↔ 레이더 탭 전환)
  * @param {Object}  props.summary        - assetSummary 객체
@@ -257,7 +249,6 @@ const WEATHER_MAP = {
  * @param {string}  props.weatherStatus  - 'sunny'|'cloudy'|'rainy'|'thunder'
  */
 export default function AssetSummaryCard({ summary, radarScores, isDark, weatherStatus = 'sunny', isLoading }) {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState('donut'); // 'donut' | 'radar'
 
   if (isLoading) {
@@ -426,76 +417,6 @@ export default function AssetSummaryCard({ summary, radarScores, isDark, weather
           isDark={isDark}
         />
       )}
-
-      {/* ── 보유 종목 실시간 리스크 보드 (날씨 아이콘 통합형) ── */}
-      <div className={`mt-5 pt-5 border-t ${isDark ? 'border-white/10' : 'border-slate-100'}`}>
-        <p className={`text-[11px] font-black tracking-tight mb-3 uppercase ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-          종목별 날씨 & 보유 현황
-        </p>
-        
-        <div className="flex flex-col space-y-2">
-          {holdings.map((stock, i) => {
-            const wCfg = WEATHER_MAP[stock.weather] || WEATHER_MAP.cloudy;
-            const isProfit = stock.profitLoss >= 0;
-            const formattedPrice = new Intl.NumberFormat('ko-KR').format(stock.currentPrice);
-            const formattedPL = new Intl.NumberFormat('ko-KR').format(Math.abs(stock.profitLoss));
-            const pillColor = chartWeights[i % chartWeights.length]?.color || '#818cf8';
-
-            return (
-              <div
-                key={stock.ticker}
-                onClick={() => router.push(`/stock/${stock.ticker}`)}
-                className={`flex items-center justify-between px-3 py-2 rounded-xl cursor-pointer transition-all border border-transparent ${
-                  isDark 
-                    ? 'hover:bg-white/5 hover:border-white/5' 
-                    : 'hover:bg-slate-50 hover:border-slate-100'
-                }`}
-              >
-                {/* 1열: 날씨 아이콘 + 종목명 */}
-                <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                  <span className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${wCfg.color}`}>
-                    <Icon name={wCfg.icon} className="w-3.5 h-3.5" />
-                  </span>
-                  
-                  <div className="flex flex-col min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className={`text-xs font-bold truncate ${isDark ? 'text-slate-200' : 'text-[#0f1713]'}`}>
-                        {stock.name}
-                      </span>
-                      <span 
-                        className="text-[9px] font-mono px-1 rounded-sm text-white flex-shrink-0"
-                        style={{ backgroundColor: pillColor }}
-                      >
-                        {stock.weight}%
-                      </span>
-                    </div>
-                    <span className={`text-[9px] font-mono mt-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                      {stock.quantity}주 · 평단 {new Intl.NumberFormat('ko-KR').format(stock.purchasePrice)}원
-                    </span>
-                  </div>
-                </div>
-
-                {/* 2열: 현재가 & 수익률 */}
-                <div className="flex flex-col items-end flex-shrink-0 ml-3">
-                  <span className={`text-xs font-mono font-bold ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>
-                    {formattedPrice}원
-                  </span>
-                  
-                  <span className={`text-[10px] font-mono font-bold mt-0.5 flex items-center gap-0.5 ${
-                    isProfit 
-                      ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]')
-                      : 'text-rose-500'
-                  }`}>
-                    <span>{isProfit ? '▲' : '▼'}</span>
-                    <span>{Math.abs(stock.profitLossRate).toFixed(1)}%</span>
-                  </span>
-                </div>
-
-              </div>
-            );
-          })}
-        </div>
-      </div>
       </div>
     </div>
   );

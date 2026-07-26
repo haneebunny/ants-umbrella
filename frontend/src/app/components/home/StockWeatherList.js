@@ -304,10 +304,17 @@ export default function StockWeatherList({ stocks = [], isDark, isLoading }) {
                 </div>
 
                 {/* 날씨 */}
-                <div className="flex items-center gap-1.5 mr-1 w-14 justify-end flex-shrink-0">
+                <div className="flex items-center gap-1.5 mr-4 w-16 justify-end">
                   <Icon name={wCfg.icon} className={`w-4 h-4 ${wCfg.color}`} />
                   <span className={`text-[11px] font-bold ${wCfg.color}`}>{wCfg.label}</span>
                 </div>
+
+                {/* 하락 위험 등급 (하락예측률 구간 기반) */}
+                <span className={`text-xs font-black w-16 text-right ${
+                  (RISK_LABEL[stock.weather] || RISK_LABEL.cloudy).color
+                }`}>
+                  {(RISK_LABEL[stock.weather] || RISK_LABEL.cloudy).text}
+                </span>
               </button>
             );
           })}
