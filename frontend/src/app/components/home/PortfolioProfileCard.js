@@ -38,6 +38,9 @@ export default function PortfolioProfileCard({
     }
   };
 
+  // 로컬스토리지에서 맞춤 포트폴리오 존재 여부 검사
+  const hasCustomPortfolio = typeof window !== 'undefined' && !!localStorage.getItem('ants_user_portfolio');
+
   return (
     <div
       className={`rounded-2xl border p-3 flex flex-col gap-2.5 ${
@@ -83,10 +86,39 @@ export default function PortfolioProfileCard({
       <p className={`text-[10px] font-bold tracking-wider uppercase ${
         isDark ? 'text-slate-500' : 'text-slate-400'
       }`}>
-        체험 포트폴리오
+        포트폴리오 선택
       </p>
 
       <div className="flex flex-col gap-1">
+        {/* 🎯 로컬스토리지 맞춤 포트폴리오가 존재할 때 최상단에 전용 탭 동적 노출 */}
+        {hasCustomPortfolio && (
+          <button
+            onClick={() => onSelect(99)}
+            className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-xl text-left transition-all ${
+              selectedId === 99
+                ? isDark
+                  ? 'bg-emerald-500/20 ring-1 ring-emerald-500/50 text-[#69dbad]'
+                  : 'bg-emerald-50 ring-1 ring-emerald-400/40 shadow-sm text-emerald-800'
+                : isDark
+                  ? 'hover:bg-white/5 opacity-70 hover:opacity-100'
+                  : 'hover:bg-white/60 opacity-70 hover:opacity-100'
+            }`}
+          >
+            <span className="text-base flex-shrink-0">🎯</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-black leading-tight truncate">
+                내 맞춤 포트폴리오
+              </p>
+              <p className={`text-[10px] leading-tight ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                방어망 작동 중
+              </p>
+            </div>
+            {selectedId === 99 && (
+              <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[#3eb489]" />
+            )}
+          </button>
+        )}
+
         {presets.map(p => (
           <button
             key={p.id}

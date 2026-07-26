@@ -58,9 +58,13 @@ export default function Home() {
   const { isDark, toggleTheme } = useTheme();
   const [isDemo, setIsDemo] = useState(true);
 
-  // 선택된 포트폴리오 ID (sessionStorage에서 복원하여 상세페이지 이동 후 복귀 시 유지)
+  // 선택된 포트폴리오 ID (sessionStorage 및 리포트 적용 파라미터 복원)
   const [selectedPortfolioId, setSelectedPortfolioId] = useState(() => {
     if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('applied') === 'true') {
+        return 99; // 맞춤 포트폴리오 즉시 활성화
+      }
       const saved = sessionStorage.getItem('ants_selected_portfolio');
       if (saved) return Number(saved);
     }
@@ -75,8 +79,64 @@ export default function Home() {
     }
   }, []);
 
-  // 선택된 포트폴리오 mockData (기본값)
-  const mockPortfolio = PORTFOLIO_PRESETS.find(p => p.id === selectedPortfolioId) || PORTFOLIO_PRESETS[0];
+  // 💡 선택된 포트폴리오 객체 동적 연산 (ID 99: 맞춤 포트폴리오)
+  const mockPortfolio = React.useMemo(() => {
+    if (selectedPortfolioId === 99 && typeof window !== 'undefined') {
+      const customStocks = localStorage.getItem('ants_user_portfolio');
+      const savedProfile = localStorage.getItem('ants_result_profile');
+      if (customStocks) {
+        try {
+          const stocks = JSON.parse(customStocks);
+          const prof = savedProfile ? JSON.parse(savedProfile) : PORTFOLIO_PRESETS[0].profile;
+          
+          // 맞춤 종목 리스트 포맷
+          const stockWeatherList = stocks.map(s => ({
+            ticker: s.ticker,
+            name: s.name,
+            weight: s.weight || 25,
+            tag: s.tag || '#우량주',
+            weather: 'sunny', // API 호출 전 기본 날씨
+            direction: 'up',
+            change: 0.0,
+            prob_up: 50.0,
+          }));
+
+          return {
+            id: 99,
+            emoji: '🎯',
+            label: '내 맞춤 포트폴리오',
+            totalLabel: `${stockWeatherList.map(s => s.name).slice(0, 3).join(', ')} 등`,
+            profile: prof,
+            radarScores: {
+              esgScore: 85,
+              riskScore: 35,
+              marketSensitivity: 45,
+            },
+            assetSummary: {
+              totalAsset: 120000000,
+              totalPurchaseAsset: 120000000,
+              totalProfitLoss: 0,
+              totalProfitLossRate: 0,
+              totalQuantity: 300,
+              holdings: stockWeatherList.map(s => ({
+                ticker: s.ticker,
+                name: s.name,
+                weight: s.weight,
+                quantity: 10,
+                purchasePrice: 50000,
+                currentPrice: 50000,
+              }))
+            },
+            overallWeather: { status: 'sunny', label: '맑음' },
+            stockWeatherList,
+          };
+        } catch (e) {
+          console.warn('Failed to parse custom portfolio:', e);
+        }
+      }
+    }
+    return PORTFOLIO_PRESETS.find(p => p.id === selectedPortfolioId) || PORTFOLIO_PRESETS[0];
+  }, [selectedPortfolioId]);
 
   // 초기 상태부터 전역 캐시된 데이터로 즉시 렌더링 (돌아왔을 때 딜레이/깜빡임 100% 차단)
   const [liveStockList, setLiveStockList] = useState(() => globalWeatherCache[selectedPortfolioId] || null);
