@@ -426,7 +426,7 @@ export default function Home() {
         )}
 
         {/* ── 메인 2단 그리드 (좌: 콘텐츠 / 우: 보유 자산) ── */}
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_390px] gap-4 items-start">
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_430px] gap-4 items-start">
 
           {/* ── 좌측 메인 콘텐츠 영역 ── */}
           <div className="flex flex-col gap-4 min-w-0">
