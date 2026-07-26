@@ -246,7 +246,25 @@ def get_kis_access_token_and_domain() -> tuple[str, str]:
     except Exception as e:
         print(f"[ERROR] KIS 토큰 발급/캐싱 도중 예외 발생: {e}")
         
-    return token, domain
+import time
+
+REALTIME_PRICE_CACHE = {}  # {ticker: {"timestamp": ..., "data": ...}}
+CACHE_TTL = 15  # 15초 동안 가격 유지
+
+def get_realtime_price_via_kis_cached(ticker: str) -> dict:
+    now = time.time()
+    if ticker in REALTIME_PRICE_CACHE:
+        cached = REALTIME_PRICE_CACHE[ticker]
+        if now - cached["timestamp"] < CACHE_TTL:
+            return cached["data"]
+            
+    data = get_realtime_price_via_kis(ticker)
+    if data:
+        REALTIME_PRICE_CACHE[ticker] = {
+            "timestamp": now,
+            "data": data
+        }
+    return data
 
 
 def get_realtime_price_via_kis(ticker: str) -> dict:
@@ -443,6 +461,25 @@ def get_dashboard_weather(tickers: str = ""):
     # 횡단면 정규화 기준: 최신일 시장 전체 평균 하락확률 (요청당 1회 계산)
     market_pd = _market_prob_down_baseline(collection)
 
+    # 1. 병렬로 실시간 시세 및 등락률 수집 (ThreadPoolExecutor)
+    from concurrent.futures import ThreadPoolExecutor
+    
+    def fetch_live_data(ticker):
+        live_price = None
+        change = None
+        try:
+            kis_data = get_realtime_price_via_kis_cached(ticker)
+            if kis_data:
+                live_price = kis_data.get("price")
+                change = kis_data.get("change_rate")
+        except Exception as e:
+            print(f"[WARN] Failed KIS fetch for {ticker}: {e}")
+        return ticker, live_price, change
+
+    with ThreadPoolExecutor(max_workers=min(len(ticker_list), 10)) as executor:
+        futures = [executor.submit(fetch_live_data, t) for t in ticker_list]
+        live_results = {ticker: (live_price, change) for ticker, live_price, change in [f.result() for f in futures]}
+
     results = []
     for ticker in ticker_list:
         try:
@@ -456,16 +493,8 @@ def get_dashboard_weather(tickers: str = ""):
             direction = doc.get("direction", "up")
             weather   = _prob_to_weather(prob_up, direction, market_pd)
 
-            # 실시간 가격(currentPrice) 및 변동률(change) 처리
-            live_price = None
-            change = None
-            try:
-                kis_data = get_realtime_price_via_kis(ticker)
-                if kis_data:
-                    live_price = kis_data.get("price")
-                    change = kis_data.get("change_rate")
-            except Exception as e:
-                print(f"[WARN] Failed KIS fetch for {ticker}: {e}")
+            # 수집된 실시간 가격 및 변동률 가져오기
+            live_price, change = live_results.get(ticker, (None, None))
 
             if change is None:
                 try:
