@@ -22,6 +22,18 @@ except ImportError:
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from app.db import get_collection
 
+# ── 알림 발송 임계값 ────────────────────────────────────────────────
+# main.py의 날씨 컷과 동일한 기준을 쓴다(_WEATHER_CUT_CLOUDY / _WEATHER_CUT_RAINY).
+# 여기 값을 바꿀 때는 main.py의 날씨 임계값도 함께 맞출 것.
+#
+# 이전에는 위험 여부와 무관하게 하위 3종목을 무조건 "고위험"으로 발송했다.
+# 실측(806거래일) 결과 위험 종목이 0개인 날이 15.9%, 3개 미만인 날이 39.5%였는데도
+# 매일 3건을 경보해 과잉 경보가 발생했고, 반대로 위험 종목이 6개 이상인 날에도
+# 3건만 보내 누락이 생겼다. 절대 임계값 방식으로 바꿔 양방향 오류를 제거한다.
+ALERT_PROB_THRESHOLD = 0.252   # '비' 이상 = 알림 대상
+ALERT_SEVERE_THRESHOLD = 0.420  # '번개' 이상 = 강조 표기
+ALERT_MAX_ITEMS = 5             # 한 번에 나열할 최대 종목 수
+
 # 16개 포트폴리오 기업명 매핑
 TICKER_NAME_MAP = {
     "005930": "삼성전자", "000660": "SK하이닉스", "035420": "NAVER", "035720": "카카오",
@@ -162,18 +174,36 @@ def send_slack_alert():
                     risk_docs = list(risk_col.find({"date": query_date}))
 
             if risk_docs:
-                # 하락 위험 순으로 정렬 (prob_up 오름차순)
-                risk_docs.sort(key=lambda x: float(x.get("prob_up", 0.5)))
-                for rdoc in risk_docs[:3]:
+                # 급락 확률이 임계값을 넘는 종목만 선별 (없으면 빈 목록 → "특이사항 없음")
+                scored = []
+                for rdoc in risk_docs:
+                    # prob_crash가 있으면 그대로, 없으면 prob_up에서 파생 (구버전 문서 호환)
+                    if rdoc.get("prob_crash") is not None:
+                        prob_crash = float(rdoc["prob_crash"])
+                    elif rdoc.get("prob_up") is not None:
+                        prob_crash = 1.0 - float(rdoc["prob_up"])
+                    else:
+                        continue
+                    scored.append((prob_crash, rdoc))
+
+                # 위험이 큰 순으로 정렬 후 임계값 통과분만 채택
+                scored.sort(key=lambda x: x[0], reverse=True)
+                for prob_crash, rdoc in scored:
+                    if prob_crash < ALERT_PROB_THRESHOLD:
+                        break
+                    if len(today_risks) >= ALERT_MAX_ITEMS:
+                        break
                     ticker = rdoc.get("ticker")
-                    name = TICKER_NAME_MAP.get(ticker, ticker)
-                    prob_down = (1.0 - float(rdoc.get("prob_up", 0.5))) * 100
                     today_risks.append({
-                        "name": name,
+                        "name": TICKER_NAME_MAP.get(ticker, ticker),
                         "ticker": ticker,
-                        "prob_down": round(prob_down, 1),
-                        "confidence": rdoc.get("confidence_tier", "weak")
+                        "prob_down": round(prob_crash * 100, 1),
+                        "confidence": rdoc.get("confidence_tier", "weak"),
+                        "severe": prob_crash >= ALERT_SEVERE_THRESHOLD,
                     })
+
+                print(f"[INFO] 위험 종목 {len(today_risks)}건 선별 "
+                      f"(임계값 {ALERT_PROB_THRESHOLD:.0%}, 전체 {len(scored)}종목)")
         except Exception as risk_err:
             print(f"[WARN] Failed to query daily_risk_score: {risk_err}")
 
@@ -316,16 +346,35 @@ def send_slack_alert():
             blocks.append({"type": "divider"})
 
         # 5-2. 고위험 예측 종목 블록 추가
+        #      임계값을 넘는 종목이 없으면 "특이사항 없음"으로 정직하게 알린다.
+        #      (예전처럼 하위 3종목을 억지로 채워 넣지 않는다)
         if today_risks:
             risk_lines = []
             for tr in today_risks:
                 confidence_ko = "높음" if tr['confidence'] == "strong" else ("보통" if tr['confidence'] == "medium" else "낮음")
-                risk_lines.append(f"• *{tr['name']}* (`{tr['ticker']}`): 향후 20일 내 하락 위험 확률 *{tr['prob_down']}%* (신뢰도: `{confidence_ko}`)")
+                mark = "⚡ " if tr.get("severe") else ""
+                risk_lines.append(
+                    f"• {mark}*{tr['name']}* (`{tr['ticker']}`): "
+                    f"향후 20거래일 내 10% 이상 급락 확률 *{tr['prob_down']}%* (신뢰도: `{confidence_ko}`)"
+                )
             blocks.append({
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"📉 *개미미 AI가 주목한 하락 위험 종목*\n앞으로 20거래일 동안 10% 이상 하락할 가능성이 큰 종목들이에요. 꼼꼼히 확인해 보세요!\n" + "\n".join(risk_lines)
+                    "text": "📉 *개미미 AI가 주목한 급락 위험 종목*\n"
+                            "아래 종목들은 급락 위험이 평소보다 높게 나왔어요. 꼼꼼히 확인해 보세요!\n"
+                            + "\n".join(risk_lines)
+                            + "\n\n_※ 과거 데이터 기반 추정치이며 투자 권유가 아니에요._"
+                }
+            })
+            blocks.append({"type": "divider"})
+        else:
+            blocks.append({
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "✅ *급락 위험 종목: 오늘은 없어요*\n"
+                            "보유 종목 중 급락 위험이 두드러지게 높은 종목은 확인되지 않았어요. 편안한 하루 보내세요! 🐜"
                 }
             })
             blocks.append({"type": "divider"})
