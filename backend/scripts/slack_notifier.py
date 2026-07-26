@@ -85,9 +85,12 @@ def validate_event_with_llm(name: str, title: str) -> bool:
 제목: "{title}"
 """
         response = client.models.generate_content(
-            model="gemini-3.1-flash-lite",
+            model=os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite").strip(),
             contents=prompt,
-            config={"response_format": {"text": {"mime_type": "application/json", "schema": RiskValidationResult.model_json_schema()}}},
+            config={
+                "response_mime_type": "application/json",
+                "response_schema": RiskValidationResult,
+            },
         )
         result = RiskValidationResult.model_validate_json(response.text)
         print(f"[LLM Filter] Ticker: {name} | Title: {title} | Validation: {result.is_real_risk} | Reason: {result.reason}")
@@ -121,24 +124,34 @@ def send_slack_alert():
         print(f"[WARN] Failed to check timezone (proceeding with alert): {tz_err}")
 
     try:
-        # 1. 최신 거시 정보 수집 (ml_ready_real.csv 활용)
+        # 1. 최신 거시 정보 수집 (매일 새로 수집되는 macro_features.csv 직접 활용)
         macro_info = {}
-        csv_path = Path(__file__).resolve().parent.parent.parent / "data" / "ml_ready_real.csv"
-        if csv_path.exists():
+        macro_csv_path = Path(__file__).resolve().parent.parent.parent / "data" / "macro_features.csv"
+        if macro_csv_path.exists():
             try:
-                df_ml = pd.read_csv(csv_path)
-                if not df_ml.empty:
-                    latest_date = df_ml["date"].max()
-                    latest_rows = df_ml[df_ml["date"] == latest_date]
-                    if not latest_rows.empty:
-                        first_row = latest_rows.iloc[0]
-                        macro_info = {
-                            "date": str(latest_date),
-                            "rate": first_row.get("macro_rate"),
-                            "fx": first_row.get("macro_fx")
-                        }
+                df_macro = pd.read_csv(macro_csv_path)
+                if not df_macro.empty:
+                    # macro_features.csv 날짜 컬럼은 YYYYMMDD 정수형일 수 있으므로 안전하게 변환
+                    df_macro["date"] = pd.to_datetime(
+                        df_macro["date"].astype(str), format="%Y%m%d", errors="coerce"
+                    ).fillna(pd.to_datetime(df_macro["date"], errors="coerce"))
+                    df_macro = df_macro.dropna(subset=["date"])
+                    latest_date = df_macro["date"].max()
+                    latest_row = df_macro[df_macro["date"] == latest_date].iloc[-1]
+                    # 환율 결측치(주말/공휴일)가 있으면 최근 유효값으로 대체
+                    if pd.isna(latest_row.get("macro_fx")):
+                        valid_fx = df_macro[df_macro["macro_fx"].notna()]
+                        fx_val = valid_fx.iloc[-1]["macro_fx"] if not valid_fx.empty else None
+                    else:
+                        fx_val = latest_row.get("macro_fx")
+                    macro_info = {
+                        "date": latest_date.strftime("%Y-%m-%d"),
+                        "rate": latest_row.get("macro_rate"),
+                        "fx": fx_val
+                    }
+                    print(f"[INFO] 거시 지표 로드 완료: {macro_info['date']} 기준 금리={macro_info['rate']}, 환율={macro_info['fx']}")
             except Exception as e:
-                print(f"[WARN] Failed to read ml_ready_real.csv for macro info: {e}")
+                print(f"[WARN] Failed to read macro_features.csv for macro info: {e}")
 
         # 2. 오늘자 위험 예측 결과 수집 (하락확률 상위 3개)
         today_risks = []
@@ -237,8 +250,8 @@ def send_slack_alert():
             
             # 사용자 카테고리 설정 필터
             if categories.get(cat, True):
-                # 🌟 추가: LLM을 이용해 낚시성 뉴스나 기회성 매수(급락에도 담았다...) 뉴스 필터링
-                if not is_test_mode and not validate_event_with_llm(name, title):
+                # 🌟 LLM을 이용해 낚시성 뉴스나 기회성 매수(급락에도 담았다...) 뉴스 필터링
+                if not validate_event_with_llm(name, title):
                     print(f"[LLM Filtered Out] {name}: {title}")
                     continue
                 
@@ -250,13 +263,13 @@ def send_slack_alert():
         
         docs = filtered_docs[:5] # 최종 상위 5개만 노출
 
-        # 5. 슬랙 Block Kit 페이로드 구성 (뉴닉 고슴이 컨셉 말투 적용)
+        # 5. 슬랙 Block Kit 페이로드 구성 (개미미 페르소나 적용)
         blocks = [
             {
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": "🦔 고슴이의 일일 위험 브리핑 왔슴! 🚨",
+                    "text": "🐜 개미미의 일일 리스크 브리핑이에요! 🚨",
                     "emoji": True
                 }
             },
@@ -264,7 +277,7 @@ def send_slack_alert():
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"안녕! 나개미들을 위해 오늘 하루 동안 꼬박 분석한 시장 지표와 위험 종목 정보들을 들고 왔슴! 🐜☔"
+                    "text": f"안녕하세요! 개미미가 오늘 하루 동안 꼬박 분석한 시장 지표와 위험 종목 정보들을 가져왔어요. 꼭 확인해 보세요! 🐜☔"
                 }
             },
             {"type": "divider"}
@@ -276,7 +289,7 @@ def send_slack_alert():
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"📊 *시장 주요 거시 경제 지표 ({macro_info['date']})*\n• *한국은행 기준금리*: `{macro_info['rate']}%` 이군!\n• *원/달러 환율*: `{macro_info['fx']}원` 이야. 거시 경제 변화 흐름을 눈여겨보라구!"
+                    "text": f"📊 *시장 주요 거시 경제 지표 ({macro_info['date']} 기준)*\n• *한국은행 기준금리*: `{macro_info['rate']}%`\n• *원/달러 환율*: `{macro_info['fx']}원`\n거시 경제 흐름이 바뀌고 있다면 꼭 한번 살펴봐 주세요!"
                 }
             })
             blocks.append({"type": "divider"})
@@ -291,7 +304,7 @@ def send_slack_alert():
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"📉 *인공지능 비서가 콕 집은 하락 위험 종목*\n앞으로 20거래일 동안 10% 이상 하락할 가능성이 큰 종목을 뽑아봤슴!\n" + "\n".join(risk_lines)
+                    "text": f"📉 *개미미 AI가 주목한 하락 위험 종목*\n앞으로 20거래일 동안 10% 이상 하락할 가능성이 큰 종목들이에요. 꼼꼼히 확인해 보세요!\n" + "\n".join(risk_lines)
                 }
             })
             blocks.append({"type": "divider"})
@@ -317,7 +330,7 @@ def send_slack_alert():
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": f"*대상 종목*: *{name}* (`{ticker}`)\n*이슈 유형*: `[{doc.get('news_category', '리스크')}]`\n*상세 내용*: {details_str}\n해당 뉴스는 실질적인 기업 악재가 맞으니 꼭 꼼꼼히 확인해봐!"
+                        "text": f"*대상 종목*: *{name}* (`{ticker}`)\n*이슈 유형*: `[{doc.get('news_category', '리스크')}]`\n*상세 내용*: {details_str}\n실질적인 기업 악재로 검증된 뉴스예요. 꼭 꼼꼼히 확인해 보세요!"
                     }
                 })
         else:
@@ -325,7 +338,7 @@ def send_slack_alert():
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": "• 오늘은 다행히 포트폴리오 종목 중 눈에 띄는 개별 ESG 악재나 부정적 공시 뉴스는 없었슴! 안심해도 되겠어."
+                    "text": "• 오늘은 포트폴리오 종목 중 눈에 띄는 개별 악재나 부정적 공시 뉴스가 없었어요. 다행이네요!"
                 }
             })
         

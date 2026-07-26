@@ -198,7 +198,7 @@ except Exception as e:
     print(f"[WARN] Gemini Client 초기화 실패 (API 키 누락 가능성): {e}")
     gemini_client = None
 
-GEMINI_MODEL = "gemini-3.1-flash-lite"
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite").strip()
 
 try:
     class CategoryResult(BaseModel):
@@ -226,7 +226,10 @@ def classify_category_with_llm(text: str) -> str:
     response = gemini_client.models.generate_content(
         model=GEMINI_MODEL,
         contents=prompt,
-        config={"response_format": {"text": {"mime_type": "application/json", "schema": CategoryResult.model_json_schema()}}},
+        config={
+            "response_mime_type": "application/json",
+            "response_schema": CategoryResult,
+        },
     )
     return CategoryResult.model_validate_json(response.text).category
 
@@ -240,7 +243,10 @@ def classify_direction_with_llm(text: str) -> tuple[str, float]:
     response = gemini_client.models.generate_content(
         model=GEMINI_MODEL,
         contents=prompt,
-        config={"response_format": {"text": {"mime_type": "application/json", "schema": DirectionResult.model_json_schema()}}},
+        config={
+            "response_mime_type": "application/json",
+            "response_schema": DirectionResult,
+        },
     )
     result = DirectionResult.model_validate_json(response.text)
     return result.direction, result.severity
