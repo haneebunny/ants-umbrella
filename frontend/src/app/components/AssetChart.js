@@ -133,11 +133,19 @@ export default function AssetChart({ theme, weights, data, isDark: propIsDark })
         {resolvedWeights.map((asset) => {
           const isHovered = hoveredCategory === asset.category;
           
-          // data Prop(holdings)에서 해당 자산의 상세 수량/평단가/수익률을 추출
+          // data Prop(holdings)에서 해당 자산의 상세 수량/평단가/수익률/날씨를 추출
           const detail = (data || []).find(d => d.name === asset.category || d.category === asset.category) || {};
           const quantity = detail.quantity || 0;
           const purchasePrice = detail.purchasePrice || 0;
           const profitLossRate = detail.profitLossRate || 0;
+          
+          // 날씨 이모지 매핑 정의
+          const WEATHER_EMOJI = {
+            sunny: '☀️',
+            cloudy: '☁️',
+            rainy: '🌧️',
+            thunder: '⚡',
+          };
 
           return (
             <div 
@@ -164,6 +172,10 @@ export default function AssetChart({ theme, weights, data, isDark: propIsDark })
                       borderColor: isDark ? 'transparent' : 'rgba(62, 180, 137, 0.3)'
                     }}
                   />
+                  {/* 날씨 이모지 동적 렌더링 */}
+                  <span className="text-xs flex-shrink-0 leading-none" title={`AI 하락위험 날씨: ${detail.weather || 'cloudy'}`}>
+                    {WEATHER_EMOJI[detail.weather] || '☁️'}
+                  </span>
                   <span className={`text-[11px] font-bold font-sans truncate ${isDark ? 'text-slate-300' : 'text-[#0f1713]'}`}>
                     {asset.category}
                   </span>

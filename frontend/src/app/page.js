@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useTheme } from './hooks/useTheme';
 import WeatherBanner from './components/home/WeatherBanner';
 import KosdaqMiniChart from './components/home/KosdaqMiniChart';
+import AssetSummaryCard from './components/home/AssetSummaryCard';
 import PortfolioProfileCard from './components/home/PortfolioProfileCard';
-import PortfolioRiskWeatherCard from './components/home/PortfolioRiskWeatherCard';
+import StockWeatherList from './components/home/StockWeatherList';
 import GuestCTABanner from './components/home/GuestCTABanner';
 import WatchlistCard from './components/home/WatchlistCard';
 import AntPet from './components/AntPet';
@@ -440,16 +441,14 @@ export default function Home() {
               onForceWeatherChange={setForceWeather}
             />
 
-            {/* 2층: 자산 및 리스크 날씨가 우아하게 결합된 통합 카드 (전체 가로폭 채움) */}
-            <div className="w-full">
-              <PortfolioRiskWeatherCard
-                summary={liveAssetSummary}
-                radarScores={radarScores}
-                stocks={stockWeatherList}
-                isDark={isDark}
-                isLoading={apiLoading && !liveStockList}
-              />
-            </div>
+            {/* 2층: 보유 자산 (도넛/레이더 차트 및 맑음/비 이모지 날씨 융합) */}
+            <AssetSummaryCard
+              summary={liveAssetSummary}
+              radarScores={radarScores}
+              isDark={isDark}
+              weatherStatus={overallWeather.status}
+              isLoading={apiLoading && !liveStockList}
+            />
           </div>
 
           {/* ── 우측 고정 사이드 영역 (실시간 시세 + 코스닥 + 투자성향) ── */}
