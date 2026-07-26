@@ -508,7 +508,6 @@ DEFAULT_MOCK_PRICES = {
     '009150': 140000,  # 삼성전기
     '011200': 220000,  # 한진
     '251270': 58000,   # 넷마블
-    '015760': 21000,   # 한국전력
 }
 
 DEFAULT_PROB_UP_MAP = {
@@ -541,7 +540,6 @@ DEFAULT_PROB_UP_MAP = {
     '009150': 0.725,  # 삼성전기 (하락확률 27.5%)
     '011200': 0.815,  # 한진 (하락확률 18.5%)
     '251270': 0.645,  # 넷마블 (하락확률 35.5%)
-    '015760': 0.850,  # 한국전력 (하락확률 15.0%)
 }
 
 def generate_ai_briefing(ticker_name: str, ticker: str, prob_up: float, direction: str, confidence_tier: str) -> str:

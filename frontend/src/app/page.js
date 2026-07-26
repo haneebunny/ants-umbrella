@@ -67,7 +67,13 @@ export default function Home() {
     return 1;
   });
 
-
+  // 선택된 포트폴리오 변경 시 sessionStorage 기록
+  const handleSelectPortfolio = useCallback((id) => {
+    setSelectedPortfolioId(id);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('ants_selected_portfolio', String(id));
+    }
+  }, []);
 
   // 선택된 포트폴리오 mockData (기본값)
   const mockPortfolio = PORTFOLIO_PRESETS.find(p => p.id === selectedPortfolioId) || PORTFOLIO_PRESETS[0];
@@ -88,32 +94,6 @@ export default function Home() {
     return !globalBriefingCache[key];
   });
   const [forceWeather, setForceWeather] = useState(null); // 'sunny' | 'cloudy' | 'rainy' | 'thunder' | null
-
-  // 선택된 포트폴리오 변경 시 sessionStorage 기록 및 상태 즉시 초기화/캐시 동기 로드
-  const handleSelectPortfolio = useCallback((id) => {
-    setSelectedPortfolioId(id);
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('ants_selected_portfolio', String(id));
-    }
-
-    // 1. 실시간 주식 리스트 상태 즉시 초기화/캐시 동기 로드
-    // 이전 포트폴리오의 데이터 잔재가 렌더링 패스 1에 스며들어 날씨가 번쩍이는 현상을 완벽히 해결
-    const nextCachedStocks = globalWeatherCache[id] || null;
-    setLiveStockList(nextCachedStocks);
-
-    // 2. AI 브리핑 상태 즉시 초기화/캐시 동기 로드
-    const mockPortfolioForNext = PORTFOLIO_PRESETS.find(p => p.id === id) || PORTFOLIO_PRESETS[0];
-    const key = getInitialBriefingKey(id, mockPortfolioForNext);
-    const cachedSummary = globalBriefingCache[key];
-
-    if (cachedSummary) {
-      setAiSummary(cachedSummary);
-      setBriefingLoading(false);
-    } else {
-      setAiSummary(null);
-      setBriefingLoading(true);
-    }
-  }, []);
 
   // 마운트 시 localStorage에서 완료된 진단 결과 복원 및 게스트 모달 처리
   useEffect(() => {
@@ -362,7 +342,7 @@ export default function Home() {
               weather={overallWeather} 
               isDark={isDark} 
               isStatusLoading={apiLoading && !liveStockList}
-              isBriefingLoading={briefingLoading || (apiLoading && !liveStockList) || !aiSummary || aiSummary.length === 0}
+              isBriefingLoading={briefingLoading || (apiLoading && !liveStockList) || !aiSummary}
               forceWeather={forceWeather}
               onForceWeatherChange={setForceWeather}
             />
