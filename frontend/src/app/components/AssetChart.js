@@ -33,6 +33,7 @@ const NAME_TO_TICKER = {
   '삼성전기': '009150',
   '한진': '011200',
   '넷마블': '251270',
+  '한국전력': '015760',
 };
 
 export default function AssetChart({ theme, weights, data, isDark: propIsDark }) {
@@ -138,6 +139,8 @@ export default function AssetChart({ theme, weights, data, isDark: propIsDark })
           const quantity = detail.quantity || 0;
           const purchasePrice = detail.purchasePrice || 0;
           const profitLossRate = detail.profitLossRate || 0;
+          const evaluationValue = detail.evaluationValue || 0;
+          const profitLoss = detail.profitLoss || 0;
 
           return (
             <div 
@@ -174,17 +177,34 @@ export default function AssetChart({ theme, weights, data, isDark: propIsDark })
                 </div>
               </div>
 
-              {/* 수익률 및 비중 정보 */}
-              <div className="text-right flex-shrink-0 pl-1">
-                <div className={`text-[10px] font-mono font-black ${
-                  profitLossRate >= 0
-                    ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]')
-                    : 'text-rose-500'
-                }`}>
-                  {profitLossRate >= 0 ? '+' : ''}{profitLossRate.toFixed(1)}%
+              {/* 우측 지표 영역 (보유액/손익액 + 수익률/비중) */}
+              <div className="flex items-center gap-2.5 flex-shrink-0 pl-2">
+                {/* 보유 액수 및 수익(손실) 액수 (수익률 왼쪽에 배치) */}
+                <div className="text-right hidden sm:block">
+                  <div className={`text-[10px] font-bold ${isDark ? 'text-slate-300' : 'text-black'}`}>
+                    ₩{new Intl.NumberFormat('ko-KR').format(evaluationValue)}
+                  </div>
+                  <div className={`text-[9px] font-bold ${
+                    profitLoss >= 0
+                      ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]')
+                      : 'text-rose-500'
+                  }`}>
+                    {profitLoss >= 0 ? '+' : ''}{new Intl.NumberFormat('ko-KR').format(profitLoss)}
+                  </div>
                 </div>
-                <div className={`text-[9px] font-mono font-bold ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                  비중 {asset.weight}%
+
+                {/* 수익률 및 비중 */}
+                <div className="text-right min-w-[52px]">
+                  <div className={`text-[10px] font-mono font-black ${
+                    profitLossRate >= 0
+                      ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]')
+                      : 'text-rose-500'
+                  }`}>
+                    {profitLossRate >= 0 ? '+' : ''}{profitLossRate.toFixed(1)}%
+                  </div>
+                  <div className={`text-[9px] font-mono font-bold ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                    비중 {asset.weight}%
+                  </div>
                 </div>
               </div>
             </div>

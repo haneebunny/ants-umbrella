@@ -236,7 +236,12 @@ export default function WeatherBanner({
   };
   
   // weather.summary가 있으면 그걸 사용하고, 없으면 status별 static 멘트 사용
-  const dynamicSummary = weather?.summary || WEATHER_COMMENTS[status] || WEATHER_COMMENTS.sunny;
+  // 로딩 중(isBriefingLoading)에는 템플릿 선노출을 방지하기 위해 빈 배열 처리
+  const dynamicSummary = isBriefingLoading
+    ? []
+    : (weather?.summary && weather.summary.length > 0 
+        ? weather.summary 
+        : (WEATHER_COMMENTS[status] || WEATHER_COMMENTS.sunny));
 
   const bgLinear = isDark
     ? `linear-gradient(135deg, ${cfg.darkBgFrom} 0%, ${cfg.darkBgMid || cfg.darkBgFrom} 50%, ${cfg.darkBgTo} 100%)`
