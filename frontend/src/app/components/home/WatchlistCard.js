@@ -184,7 +184,7 @@ export default function WatchlistCard({ isDark, portfolio = [] }) {
               </span>
 
               {/* 2. 종목명 (가운데) */}
-              <span className={`text-sm font-medium truncate ml-2.5 ${isDark ? 'text-slate-200' : 'text-[#0f1713]'}`}>
+              <span className={`text-sm font-medium truncate ml-2.5 ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
                 {stock.name}
               </span>
 
@@ -192,7 +192,7 @@ export default function WatchlistCard({ isDark, portfolio = [] }) {
               <div className={`flex-1 border-b border-dashed mx-3 ${isDark ? 'border-white/10' : 'border-slate-200'}`} />
 
               {/* 3. 현재가 (맨 오른쪽) */}
-              <span className={`text-sm font-mono font-medium flex-shrink-0 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+              <span className={`text-sm font-mono font-medium flex-shrink-0 ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>
                 {stock.price}
               </span>
             </div>
