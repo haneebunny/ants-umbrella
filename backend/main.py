@@ -393,7 +393,7 @@ def get_portfolios():
         raise HTTPException(status_code=500, detail=f"포트폴리오 데이터 파일 로드 실패: {str(e)}")
 
 # ── prob_up → weather 변환 헬퍼 ─────────────────────────────────────
-# v2 임계값 재보정 + v3 횡단면(cross-sectional) 정규화.
+# v2 임계값 재보정 + v3 횡단면(cross-sectional) 정규화 + v4 급락 모델 전환.
 #
 # v2: 모델(20일 방향예측)의 prob_up 중앙값이 0.5 부근이라, 기존 임계값
 #     (thunder>=0.65)은 "방향이 하락 쪽"인 흔한 케이스까지 번개로 잡았음.
@@ -403,43 +403,59 @@ def get_portfolios():
 #     (macro 피처 공통) 전 종목이 번개가 되는 쏠림이 발생. 시장 공통 하락분
 #     (market_pd - BASELINE)을 ALPHA만큼 각 종목에서 제거하여, 날씨가
 #     "시장 대비 종목 고유 위험"을 반영하도록 정규화한다.
-#       - 정상일(market_pd≈0.5): shift≈0 → v2 절대 임계값 그대로 적용
-#       - 하락일(market_pd 높음): 공통분을 빼 상대적으로 최악인 종목만 번개
-_WEATHER_ALPHA = 0.7      # 시장 공통분 제거 강도 (0=절대, 1=완전 상대화)
-_WEATHER_BASELINE = 0.50  # 중립 하락확률 기준선
+#
+# v4: 예측 타깃을 20일 방향 → "20거래일 내 -10% 급락"으로 교체(PRD v2.3).
+#     이제 prob_down == prob_crash 이며 분포 중심이 0.5가 아니라 급락 확률
+#     중앙값(약 0.39) 쪽으로 내려온다. 그래서 v2 컷(0.45/0.60/0.75)을 그대로
+#     쓰면 맑음이 59%까지 늘어 분포가 왜곡됨 → 기존 날씨 구성비
+#     (맑음 41 / 구름 39 / 비 15 / 번개 4.7%)를 재현하는 분위수 컷으로 재보정.
+#     보정 결과 실측 날씨별 급락 발생률은 단조 증가한다
+#     (맑음 0.033 → 구름 0.155 → 비 0.491 → 번개 0.807).
+#     ※ 서빙 모델은 확률 보정을 지키려고 scale_pos_weight를 쓰지 않으므로
+#       prob_crash 분포가 실제 기저율(0.185)에 맞춰 낮게 형성된다. 컷도 같은
+#       분포에서 산출했다. 학습 데이터가 크게 바뀌면 save_risk_scores.py가
+#       출력하는 prob_crash 중앙값으로 BASELINE을 갱신할 것.
+_WEATHER_ALPHA = 0.7        # 시장 공통분 제거 강도 (0=절대, 1=완전 상대화)
+_WEATHER_BASELINE = 0.138   # 중립 급락확률 기준선 = prob_crash 중앙값
+_WEATHER_CUT_SUNNY = 0.097
+_WEATHER_CUT_CLOUDY = 0.252
+_WEATHER_CUT_RAINY = 0.420
+# 데이터 누락 시 쓰는 중립 prob_up (= 1 - 기준선). 급락 모델 전환 후에는 0.5가
+# 아니라 이 값이 "위험도 보통"에 해당하므로 폴백 기본값으로 사용한다.
+_NEUTRAL_PROB_UP = 1.0 - _WEATHER_BASELINE
 
-def _prob_to_weather(prob_up: float, direction: str = "up", market_pd: float = 0.50) -> str:
+def _prob_to_weather(prob_up: float, direction: str = "up", market_pd: float = _WEATHER_BASELINE) -> str:
+    # prob_up = 1 - P(급락) 으로 저장되므로 prob_down 이 곧 급락 확률
     prob_down = 1.0 - prob_up
-    # 횡단면 정규화: 시장 공통 하락분을 부분 제거
+    # 횡단면 정규화: 시장 공통 위험분을 부분 제거
     shift = _WEATHER_ALPHA * (market_pd - _WEATHER_BASELINE)
     pd_adj = min(max(prob_down - shift, 0.0), 1.0)
-    up = (1.0 - pd_adj) >= 0.5   # 보정 후 방향
-    if up and pd_adj < 0.45:
+    if pd_adj < _WEATHER_CUT_SUNNY:
         return "sunny"
-    elif pd_adj < 0.60:
+    elif pd_adj < _WEATHER_CUT_CLOUDY:
         return "cloudy"
-    elif pd_adj < 0.75:
+    elif pd_adj < _WEATHER_CUT_RAINY:
         return "rainy"
     else:
         return "thunder"
 
 def _market_prob_down_baseline(collection) -> float:
     """
-    최신 날짜의 전 종목 평균 하락확률 = 시장 공통 위험 수준.
-    횡단면 정규화의 기준(market_pd)으로 사용. 표본이 부족하면 0.50(중립) 반환
-    → shift=0 이 되어 절대 임계값(v2)으로 자연 폴백.
+    최신 날짜의 전 종목 평균 급락확률 = 시장 공통 위험 수준.
+    횡단면 정규화의 기준(market_pd)으로 사용. 표본이 부족하면 기준선을 그대로
+    반환 → shift=0 이 되어 절대 임계값으로 자연 폴백.
     """
     try:
         latest = collection.find_one({}, sort=[("date", -1)])
         if not latest:
-            return 0.50
+            return _WEATHER_BASELINE
         docs = list(collection.find({"date": latest.get("date")}, {"prob_up": 1}))
         if len(docs) < 5:
-            return 0.50
-        pds = [1.0 - float(x.get("prob_up", 0.5)) for x in docs]
+            return _WEATHER_BASELINE
+        pds = [1.0 - float(x.get("prob_up", 1.0 - _WEATHER_BASELINE)) for x in docs]
         return sum(pds) / len(pds)
     except Exception:
-        return 0.50
+        return _WEATHER_BASELINE
 
 @app.get("/api/dashboard-weather")
 def get_dashboard_weather(tickers: str = ""):
@@ -489,7 +505,7 @@ def get_dashboard_weather(tickers: str = ""):
                 results.append({"ticker": ticker, "available": False})
                 continue
 
-            prob_up   = float(doc.get("prob_up", 0.5))
+            prob_up   = float(doc.get("prob_up", _NEUTRAL_PROB_UP))
             direction = doc.get("direction", "up")
             weather   = _prob_to_weather(prob_up, direction, market_pd)
 
@@ -853,7 +869,7 @@ def get_risk_evidences(ticker: str):
             ai_brief = generate_ai_briefing(
                 ticker_name=corp_name or ticker,
                 ticker=ticker,
-                prob_up=doc.get("prob_up", 0.5),
+                prob_up=doc.get("prob_up", _NEUTRAL_PROB_UP),
                 direction=doc.get("direction", "down"),
                 confidence_tier=doc.get("confidence_tier", "medium")
             )
@@ -976,7 +992,7 @@ def get_risk_evidences(ticker: str):
             ai_brief = generate_ai_briefing(
                 ticker_name=corp_name or ticker,
                 ticker=ticker,
-                prob_up=doc.get("prob_up", 0.5),
+                prob_up=doc.get("prob_up", _NEUTRAL_PROB_UP),
                 direction=doc.get("direction", "down"),
                 confidence_tier=doc.get("confidence_tier", "medium"),
                 esg_count=esg_news_count
@@ -985,7 +1001,7 @@ def get_risk_evidences(ticker: str):
             ai_brief = generate_ai_briefing(
                 ticker_name=corp_name or ticker,
                 ticker=ticker,
-                prob_up=0.5,
+                prob_up=_NEUTRAL_PROB_UP,
                 direction="up",
                 confidence_tier="medium",
                 esg_count=esg_news_count
@@ -1029,7 +1045,7 @@ def get_risk_evidences(ticker: str):
             score_col = get_collection("daily_risk_score")
             score_doc = score_col.find_one({"ticker": ticker}, sort=[("date", -1)])
             if score_doc:
-                prob_down = int((1 - score_doc.get("prob_up", 0.5)) * 100)
+                prob_down = int((1 - score_doc.get("prob_up", _NEUTRAL_PROB_UP)) * 100)
         except:
             pass
 
