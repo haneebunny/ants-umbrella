@@ -13,7 +13,7 @@ load_dotenv()
 
 app = FastAPI()
 
-from app.recommendation_service import get_or_create_recommendation_reason, NEWNEEK_RECOMMENDATION_REASON_CACHE
+from app.recommendation_service import get_or_create_recommendation_reason
 
 @app.get("/api/v1/recommendations/reasons")
 def get_recommendation_reasons_api(ticker: str, risk_band: str, stock_name: str = "추천종목", tag: str = "#우량주"):
