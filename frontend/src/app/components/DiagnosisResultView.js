@@ -30,10 +30,11 @@ const NEWNEEK_RECOMMENDATION_REASON_CACHE = {
         { ticker: '005380', name: '현대차', tag: '#대형우량', reason: '글로벌 완성차 실적도 좋고 자사주 소각 밸류업 모멘텀이 모락모락 피어올라 🚗', weight: '15%' },
       ],
       [
-        { ticker: '055550', name: '신한지주', tag: '#배당안정', reason: '지속가능한 ESG 금융 경영에 분기 배당으로 계좌를 오순도순 지켜줘 🏦', weight: '35%' },
-        { ticker: '017670', name: 'SK텔레콤', tag: '#통신방어주', reason: '탄탄한 통신 인프라 기반으로 매달 쏠쏠한 현금흐름 and 높은 배당을 챙겨줘 📱', weight: '30%' },
+        { ticker: '055550', name: '신한지주', tag: '#배당안정', reason: '지속가능한 ESG 금융 경영에 분기 배당으로 계좌를 오순도순 지켜줘 🏦', weight: '25%' },
+        { ticker: '017670', name: 'SK텔레콤', tag: '#통신방어주', reason: '탄탄한 통신 인프라 기반으로 매달 쏠쏠한 현금흐름 and 높은 배당을 챙겨줘 📱', weight: '25%' },
         { ticker: '028260', name: '삼성물산', tag: '#지배구조우수', reason: '그룹 지배구조의 핵심이자 친환경 신사업까지 챙기는 안전한 버팀목이야 🏗️', weight: '20%' },
         { ticker: '010950', name: 'S-Oil', tag: '#정유대표', reason: '에너지 수급 안정성이 뛰어나고 단기 시장 변동성에도 끄떡없는 정유 대장이야 ⛽', weight: '15%' },
+        { ticker: '032830', name: '삼성생명', tag: '#안정배당', reason: '탄탄한 자산 건전성으로 매 분기마다 따뜻한 배당금을 안겨주는 효자야 🛡️', weight: '15%' },
       ],
       [
         { ticker: '005490', name: 'POSCO홀딩스', tag: '#친환경원자재', reason: '글로벌 철강 수요 안정성에 친환경 소재까지 포트폴리오를 예쁘게 분산해줘 ⚙️', weight: '35%' },
@@ -110,10 +111,11 @@ const NEWNEEK_RECOMMENDATION_REASON_CACHE = {
         { ticker: '010950', name: 'S-Oil', tag: '#energy전환', reason: '샤힌 프로젝트 중심의 석유화학 대형 투자로 미래 성장성을 더했어 🛢️', weight: '24%' },
       ],
       [
-        { ticker: '000660', name: 'SK하이닉스', tag: '#AI반도체주도', reason: '차세대 HBM 시장 리더십으로 성장주와 우량주의 완벽 조화를 보여줘 🚀', weight: '26%' },
-        { ticker: '032830', name: '삼성생명', tag: '#전통금융방어', reason: '안정적인 배당 방어선으로 포트폴리오 안전장치 역할을 똑똑히 해내 🛡️', weight: '25%' },
-        { ticker: '005380', name: '현대차', tag: '#글로벌완성차', reason: '수출 수익성 개선에 장기 주주환원을 확대하는 성장형 대장주야 🏎️', weight: '25%' },
-        { ticker: '035420', name: 'NAVER', tag: '#IT플랫폼', reason: '디지털 커머스와 클라우드로 안정적인 현금창출력을 자랑하는 플랫폼이야 🌐', weight: '24%' },
+        { ticker: '000660', name: 'SK하이닉스', tag: '#AI반도체주도', reason: '차세대 HBM 시장 리더십으로 성장주와 우량주의 완벽 조화를 보여줘 🚀', weight: '20%' },
+        { ticker: '032830', name: '삼성생명', tag: '#전통금융방어', reason: '안정적인 배당 방어선으로 포트폴리오 안전장치 역할을 똑똑히 해내 🛡️', weight: '20%' },
+        { ticker: '005380', name: '현대차', tag: '#글로벌완성차', reason: '수출 수익성 개선에 장기 주주환원을 확대하는 성장형 대장주야 🏎️', weight: '20%' },
+        { ticker: '035420', name: 'NAVER', tag: '#IT플랫폼', reason: '디지털 커머스와 클라우드로 안정적인 현금창출력을 자랑하는 플랫폼이야 🌐', weight: '20%' },
+        { ticker: '000270', name: '기아', tag: '#친환경차대표', reason: '글로벌 하이브리드 및 전기차 경쟁력을 갖춰 중립형의 든든한 날개가 돼 🚘', weight: '20%' },
       ]
     ]
   },
@@ -178,10 +180,12 @@ const NEWNEEK_RECOMMENDATION_REASON_CACHE = {
         { ticker: '035420', name: 'NAVER', tag: '#생성형AI', reason: '클라우드와 생성형 AI 상용화로 주가 민감도가 아주 극대화되었어 🤖', weight: '15%' },
       ],
       [
-        { ticker: '068270', name: '셀트리온', tag: '#바이오알파', reason: '신약 매출 비중 확대에 따른 고변동 성장주 타겟으로 손색없어 💉', weight: '40%' },
-        { ticker: '051910', name: 'LG화학', tag: '#양극재알파', reason: '글로벌 양극재 공급망 모멘텀 수혜로 주가 레버리지가 높아 🧪', weight: '30%' },
+        { ticker: '068270', name: '셀트리온', tag: '#바이오알파', reason: '신약 매출 비중 확대에 따른 고변동 성장주 타겟으로 손색없어 💉', weight: '25%' },
+        { ticker: '051910', name: 'LG화학', tag: '#양극재알파', reason: '글로벌 양극재 공급망 모멘텀 수혜로 주가 레버리지가 높아 🧪', weight: '20%' },
         { ticker: '000660', name: 'SK하이닉스', tag: '#AI반도체', reason: '차세대 HBM 독점 지위로 영업이익률 극대화 알파를 누려 🛰️', weight: '15%' },
         { ticker: '373220', name: 'LG에너지솔루션', tag: '#차세대배터리', reason: '4680 원통형 배터리 양산 모멘텀으로 화끈하게 쏜다구! 🔋', weight: '15%' },
+        { ticker: '035420', name: 'NAVER', tag: '#생성형AI', reason: '하이퍼클로바X B2B 수익화 모델 가시성으로 높은 변동성을 자랑해 🤖', weight: '15%' },
+        { ticker: '005490', name: 'POSCO홀딩스', tag: '#리튬소재주', reason: '친환경 이차전지 핵심 원자재 리튬 업황의 레버리지 혜택을 듬뿍 받아 🧂', weight: '10%' },
       ],
       [
         { ticker: '035420', name: 'NAVER', tag: '#AI알파모멘텀', reason: '생성형 AI 하이퍼클로바X 상용화로 쏠쏠한 알파 수익 창출 가능 🌐', weight: '40%' },
