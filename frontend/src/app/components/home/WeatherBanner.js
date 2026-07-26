@@ -142,26 +142,26 @@ function ThunderDecor({ isDark }) {
   const boltC = isDark ? '#ff6b6b35' : '#ef444430';
   const glowC = isDark ? '#ff000020' : '#fee2e250';
   return (
-    <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg" style={{ overflow: 'hidden' }}>
+    <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg" style={{ overflow: 'hidden' }} viewBox="0 0 100 100" preserveAspectRatio="none">
       {/* 배경 glow */}
-      <ellipse cx="85%" cy="20%" rx="100" ry="60" fill={glowC} />
+      <ellipse cx="85" cy="20" rx="15" ry="35" fill={glowC} />
       {/* 번개 볼트 1 */}
       <polyline
-        points="82%,5% 78%,38% 84%,38% 79%,72%"
-        fill="none" stroke={boltC} strokeWidth="3" strokeLinejoin="round" strokeLinecap="round"
+        points="82,5 78,38 84,38 79,72"
+        fill="none" stroke={boltC} strokeWidth="1" strokeLinejoin="round" strokeLinecap="round"
         style={{ animation: 'flash 3s ease-in-out infinite' }}
       />
       {/* 번개 볼트 2 (작은) */}
       <polyline
-        points="90%,15% 87%,35% 91%,35% 88%,55%"
-        fill="none" stroke={boltC} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"
+        points="90,15 87,35 91,35 88,55"
+        fill="none" stroke={boltC} strokeWidth="0.8" strokeLinejoin="round" strokeLinecap="round"
         style={{ animation: 'flash 3s ease-in-out 0.5s infinite' }}
       />
       {/* 어두운 구름 */}
-      <ellipse cx="80%" cy="12%" rx="80" ry="30" fill={isDark ? '#4b000020' : '#9f121220'} />
-      <ellipse cx="70%" cy="8%"  rx="55" ry="24" fill={isDark ? '#4b000018' : '#9f121218'} />
+      <ellipse cx="80" cy="12" rx="10" ry="20" fill={isDark ? '#4b000020' : '#9f121220'} />
+      <ellipse cx="70" cy="8"  rx="7" ry="16" fill={isDark ? '#4b000018' : '#9f121218'} />
       {/* 하단 분위기 */}
-      <ellipse cx="10%" cy="90%" rx="60" ry="30" fill={glowC} />
+      <ellipse cx="10" cy="90" rx="8" ry="20" fill={glowC} />
     </svg>
   );
 }

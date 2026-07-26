@@ -81,8 +81,8 @@ export default function Home() {
   // 초기 상태부터 전역 캐시된 데이터로 즉시 렌더링 (돌아왔을 때 딜레이/깜빡임 100% 차단)
   const [liveStockList, setLiveStockList] = useState(() => globalWeatherCache[selectedPortfolioId] || null);
   const [showSurveyPrompt, setShowSurveyPrompt] = useState(false);
-  const [kospiIndex, setKospiIndex] = useState(kosdaqIndex);
-  const [apiLoading, setApiLoading] = useState(false);
+  const [kospiIndex, setKospiIndex] = useState(null);
+  const [apiLoading, setApiLoading] = useState(() => !globalWeatherCache[selectedPortfolioId]);
   // AI 판단 근거 — 같은 포트폴리오/날씨/하락종목 구성이면 전역 캐시에서 즉시 복원되어
   // 재방문 시 스켈레톤이 다시 뜨지 않음 (구성이 바뀌었을 때만 새로 요청)
   const [aiSummary, setAiSummary] = useState(() => {
@@ -203,22 +203,28 @@ export default function Home() {
     summary: aiSummary || []
   };
 
+  const riskyTickers = React.useMemo(() => {
+    return stockWeatherList
+      .filter(s => s.direction === 'down')
+      .map(s => ({ name: s.name, direction: s.direction }));
+  }, [stockWeatherList]);
+
+  const weatherStatusForRequest = activeWeatherStatus === 'thunder' ? 'thunder'
+                                 : activeWeatherStatus === 'rainy'   ? 'rainy'
+                                 : activeWeatherStatus === 'cloudy'  ? 'cloudy'
+                                 : 'sunny';
+
+  const briefingKey = React.useMemo(() => {
+    return buildBriefingKey(selectedPortfolioId, weatherStatusForRequest, riskyTickers);
+  }, [selectedPortfolioId, weatherStatusForRequest, riskyTickers]);
+
   // 날씨 상태 또는 구성 종목의 리스크 정보 변동 시에만 백엔드에 브리핑 요청.
   // 동일 구성(포트폴리오+날씨+하락종목)에 대해 이미 확정된 문구가 캐시에 있으면
   // 재요청·스켈레톤 노출 없이 즉시 재사용 → 다른 페이지 갔다 돌아와도 깜빡임 없음.
   useEffect(() => {
     if (!overallWeather?.status) return;
-    const riskyTickers = stockWeatherList
-      .filter(s => s.direction === 'down')
-      .map(s => ({ name: s.name, direction: s.direction }));
 
-    const weatherStatusForRequest = overallWeather.status === 'thunder' ? 'thunder'
-                                   : overallWeather.status === 'rainy'   ? 'rainy'
-                                   : overallWeather.status === 'cloudy'  ? 'cloudy'
-                                   : 'sunny';
-    const key = buildBriefingKey(selectedPortfolioId, weatherStatusForRequest, riskyTickers);
-
-    const cachedSummary = globalBriefingCache[key];
+    const cachedSummary = globalBriefingCache[briefingKey];
     if (cachedSummary) {
       setAiSummary(cachedSummary);
       setBriefingLoading(false);
@@ -241,7 +247,7 @@ export default function Home() {
       .then(r => r.json())
       .then(data => {
         if (data?.summary?.length) {
-          globalBriefingCache[key] = data.summary; // 확정된 문구를 전역 캐시에 저장해 재방문 시 재사용
+          globalBriefingCache[briefingKey] = data.summary; // 확정된 문구를 전역 캐시에 저장해 재방문 시 재사용
           setAiSummary(data.summary);
         } else {
           setAiSummary(null);
@@ -249,7 +255,8 @@ export default function Home() {
       })
       .catch(() => setAiSummary(null))
       .finally(() => setBriefingLoading(false));
-  }, [overallWeather?.status, overallWeather?.label, selectedPortfolioId, stockWeatherList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [briefingKey, overallWeather?.label, selectedPortfolioId]);
 
 
   const { profile, radarScores } = mockPortfolio;
@@ -368,7 +375,7 @@ export default function Home() {
                 <StockWeatherList
                   stocks={stockWeatherList}
                   isDark={isDark}
-                  isLoading={apiLoading}
+                  isLoading={apiLoading && !liveStockList}
                 />
               </div>
 
@@ -379,6 +386,7 @@ export default function Home() {
                   radarScores={radarScores}
                   isDark={isDark}
                   weatherStatus={overallWeather.status}
+                  isLoading={apiLoading && !liveStockList}
                 />
               </div>
 

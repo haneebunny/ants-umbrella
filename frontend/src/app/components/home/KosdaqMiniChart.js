@@ -9,7 +9,32 @@ import Icon from '../Icon';
  * @param {boolean} props.isDark
  */
 export default function KosdaqMiniChart({ index, isDark }) {
-  const { currentPrice = 0, change = 0, changeRate = 0, sparkline = [] } = index || {};
+  if (!index) {
+    return (
+      <div
+        className={`rounded-2xl border p-3 flex flex-col gap-2.5 animate-pulse ${
+          isDark
+            ? 'bg-[#1e2220] border-white/5 card-glow-dark'
+            : 'bg-white border-slate-100 shadow-sm card-glow-light'
+        }`}
+      >
+        <div className="flex items-center justify-between">
+          <div className="space-y-1.5 w-1/2">
+            <div className={`h-2.5 w-10 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+            <div className={`h-5 w-20 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+          </div>
+          <div className="space-y-1.5 w-1/3 flex flex-col items-end">
+            <div className={`h-3 w-14 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+            <div className={`h-2.5 w-10 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+          </div>
+        </div>
+        <div className={`h-9 w-full rounded ${isDark ? 'bg-white/5' : 'bg-[#0f1713]/5'}`} style={{ opacity: 0.5 }} />
+        <div className={`h-2.5 w-24 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+      </div>
+    );
+  }
+
+  const { currentPrice = 0, change = 0, changeRate = 0, sparkline = [] } = index;
 
   // 상승/하락은 isUp 플래그가 아니라 실제 등락률 부호로 판단 (부호·색 불일치 방지)
   const up = changeRate > 0;

@@ -248,8 +248,41 @@ function RadarChart({ scores, weatherStatus, isDark }) {
  * @param {boolean} props.isDark
  * @param {string}  props.weatherStatus  - 'sunny'|'cloudy'|'rainy'|'thunder'
  */
-export default function AssetSummaryCard({ summary, radarScores, isDark, weatherStatus = 'sunny' }) {
+export default function AssetSummaryCard({ summary, radarScores, isDark, weatherStatus = 'sunny', isLoading }) {
   const [activeTab, setActiveTab] = useState('donut'); // 'donut' | 'radar'
+
+  if (isLoading) {
+    return (
+      <div className={`rounded-2xl border transition-all duration-300 overflow-hidden animate-pulse ${
+        isDark ? 'bg-[#141715] border-white/5 card-glow-dark' : 'bg-white border-slate-100 shadow-sm card-glow-light'
+      }`}>
+        <div className={`flex items-center justify-between px-5 py-3.5 border-b ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-50'}`}>
+          <p className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+            주식 보유량
+          </p>
+        </div>
+        <div className="p-5 space-y-4">
+          <div className="space-y-2">
+            <div className={`h-3 w-16 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+            <div className={`h-8 w-48 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+            <div className="flex gap-2">
+              <div className={`h-3 w-24 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+              <div className={`h-3 w-20 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+            </div>
+          </div>
+          <div className="flex justify-center py-6">
+            <div className={`w-32 h-32 rounded-full border-8 ${isDark ? 'border-white/5' : 'border-slate-100'}`} style={{ borderTopColor: 'transparent' }} />
+          </div>
+          <div className="space-y-2">
+            <div className={`h-2.5 w-full rounded ${isDark ? 'bg-white/5' : 'bg-[#0f1713]/5'}`} />
+            <div className={`h-2.5 w-5/6 rounded ${isDark ? 'bg-white/5' : 'bg-[#0f1713]/5'}`} />
+            <div className={`h-2.5 w-4/5 rounded ${isDark ? 'bg-white/5' : 'bg-[#0f1713]/5'}`} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const { totalAsset = 0, riskAssetRatio = 0, holdings = [], totalProfitLossRate = 0, totalQuantity = 0, totalPurchaseAsset = 0, totalProfitLoss = 0 } = summary || {};
 
   const palette = WEATHER_PALETTES[weatherStatus] || WEATHER_PALETTES.sunny;
