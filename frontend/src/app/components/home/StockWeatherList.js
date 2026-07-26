@@ -172,10 +172,7 @@ function FloatingPanel({ stock, live, anchorRect, isDark, onClose, onNavigate })
   );
 }
 
-/**
- * 종목별 날씨 목록 — 클릭 시 플로팅 오버레이 패널
- */
-export default function StockWeatherList({ stocks = [], isDark }) {
+export default function StockWeatherList({ stocks = [], isDark, isLoading }) {
   const router = useRouter();
   const [selected, setSelected]       = useState(null); // { stock, rect }
   const [livePrices, setLivePrices]   = useState({});    // ticker → 실시간 시세
@@ -208,6 +205,43 @@ export default function StockWeatherList({ stocks = [], isDark }) {
     const id = setInterval(fetchPrices, 30000);
     return () => { active = false; clearInterval(id); };
   }, [tickerKey]);
+
+  if (isLoading) {
+    return (
+      <div className={`rounded-2xl border overflow-hidden animate-pulse ${
+        isDark ? 'bg-[#1e2220] border-white/5 card-glow-dark' : 'bg-white border-slate-100 shadow-sm card-glow-light'
+      }`}>
+        {/* 헤더 */}
+        <div className={`flex items-center justify-between px-5 py-3.5 border-b ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-50'}`}>
+          <div className="flex items-center gap-2">
+            <p className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+              종목별 날씨
+            </p>
+            <p className={`text-[10px] font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              종목 클릭 시 AI 상세 분석
+            </p>
+          </div>
+        </div>
+        <div className="p-3 space-y-3">
+          {Array.from({ length: 4 }).map((_, idx) => (
+            <div key={idx} className="flex items-center justify-between p-3.5 rounded-xl border border-transparent">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className={`w-8 h-8 rounded-full ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+                <div className="flex flex-col gap-1 min-w-0">
+                  <div className={`h-3 w-16 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+                  <div className={`h-2 w-10 rounded ${isDark ? 'bg-white/5' : 'bg-[#0f1713]/5'}`} />
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className={`h-3.5 w-14 rounded-full ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+                <div className={`h-3.5 w-12 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const handleClick = (stock) => {
     if (selected?.stock.ticker === stock.ticker) {

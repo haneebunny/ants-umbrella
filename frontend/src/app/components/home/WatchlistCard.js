@@ -49,20 +49,23 @@ export default function WatchlistCard({ isDark, portfolio = [] }) {
   }, [portfolio]);
 
   const [watchlist, setWatchlist] = useState(mergedDefaultList);
+  const [loading, setLoading] = useState(true);
 
-  // 포트폴리오 변경 시 리스트 갱신
+  // 포트폴리오 변경 시 리스트 갱신 및 로딩 상태 설정
   useEffect(() => {
     setWatchlist(mergedDefaultList);
+    setLoading(true);
   }, [mergedDefaultList]);
 
   // 실시간 KIS 가격 호출 연동
   useEffect(() => {
+    let active = true;
     const fetchWatchlistPrices = async () => {
       const tickers = mergedDefaultList.map(w => w.ticker).join(',');
       if (!tickers) return;
       try {
         const res = await fetch(`${API_BASE}/api/watchlist-prices?tickers=${tickers}`);
-        if (res.ok) {
+        if (res.ok && active) {
           const data = await res.json();
           const dataMap = {};
           data.forEach(item => {
@@ -85,13 +88,59 @@ export default function WatchlistCard({ isDark, portfolio = [] }) {
         }
       } catch (err) {
         console.warn('Failed to fetch watchlist live prices:', err);
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
       }
     };
 
     fetchWatchlistPrices();
     const interval = setInterval(fetchWatchlistPrices, 30000); // 30초 주기 실시간 연동
-    return () => clearInterval(interval);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
   }, [mergedDefaultList]);
+
+  if (loading) {
+    return (
+      <div className={`flex flex-col rounded-2xl border p-5 transition-all duration-300 animate-pulse ${
+        isDark
+          ? 'bg-[#1e2220] border-white/5 card-glow-dark'
+          : 'bg-white border-slate-100 shadow-sm card-glow-light'
+      }`}>
+        <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/5 flex-shrink-0">
+          <div className="flex items-center gap-1.5">
+            <Icon name="activity" className="w-4 h-4 text-emerald-500" />
+            <h3 className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+              주식 실시간 시세
+            </h3>
+          </div>
+        </div>
+        <div className="flex flex-col space-y-2 pt-1">
+          {Array.from({ length: 10 }).map((_, idx) => (
+            <div
+              key={idx}
+              className={`flex items-center justify-between px-3.5 py-3 rounded-xl border border-transparent`}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className={`w-4 h-4 rounded-full ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+                <div className="flex flex-col gap-1 min-w-0">
+                  <div className={`h-3 w-16 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+                  <div className={`h-2 w-10 rounded ${isDark ? 'bg-white/5' : 'bg-[#0f1713]/5'}`} />
+                </div>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <div className={`h-3 w-14 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+                <div className={`h-3 w-12 rounded ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`flex flex-col rounded-2xl border p-5 transition-all duration-300 ${
