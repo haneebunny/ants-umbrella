@@ -122,7 +122,7 @@ export default function WatchlistCard({ isDark, portfolio = [] }) {
           {Array.from({ length: 10 }).map((_, idx) => (
             <div
               key={idx}
-              className={`flex items-center justify-between px-3.5 py-3 rounded-xl border border-transparent`}
+              className={`flex items-center justify-between px-3 py-1.5 rounded-xl border border-transparent`}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className={`w-4 h-4 rounded-full ${isDark ? 'bg-white/10' : 'bg-[#0f1713]/10'}`} />
@@ -168,7 +168,7 @@ export default function WatchlistCard({ isDark, portfolio = [] }) {
             <div
               key={stock.ticker}
               onClick={() => router.push(`/stock/${stock.ticker}`)}
-              className={`flex items-center justify-between px-3.5 py-3 rounded-xl cursor-pointer transition-all ${
+              className={`flex items-center justify-between px-3 py-1.5 rounded-xl cursor-pointer transition-all ${
                 isDark
                   ? 'hover:bg-white/5 border border-transparent hover:border-white/5'
                   : 'hover:bg-slate-50 border border-transparent hover:border-slate-100'

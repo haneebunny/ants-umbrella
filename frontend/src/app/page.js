@@ -441,10 +441,15 @@ export default function Home() {
               onForceWeatherChange={setForceWeather}
             />
 
-            {/* 하단 3열 위젯 그리드: 12열 레이아웃으로 변경하여 좌측은 좁히고 종목별 날씨는 넓힘 */}
+            {/* 하단 3열 위젯 그리드: 실시간 시세를 맨 왼쪽으로 배치 */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 items-start">
 
-              {/* 코스닥 + 투자성향 (12열 중 3열 배정, 컴팩트하게) */}
+              {/* 1열: 주식 실시간 시세 (md에서 2칸 차지, lg에서 5열 배정) */}
+              <div className="md:col-span-2 lg:col-span-5 flex flex-col gap-4">
+                <WatchlistCard isDark={isDark} portfolio={stockWeatherList} />
+              </div>
+
+              {/* 2열: 코스닥 + 투자성향 (12열 중 3열 배정, 컴팩트하게) */}
               <div className="md:col-span-1 lg:col-span-3 flex flex-col gap-4">
                 <KosdaqMiniChart index={kospiIndex} isDark={isDark} />
                 <PortfolioProfileCard
@@ -457,18 +462,13 @@ export default function Home() {
                 />
               </div>
 
-              {/* 종목별 날씨 (12열 중 5열 배정, 종목명이 안 잘리도록 넉넉하게) */}
+              {/* 3열: 종목별 날씨 (12열 중 4열 배정) */}
               <div className="md:col-span-1 lg:col-span-4 flex flex-col gap-4">
                 <StockWeatherList
                   stocks={stockWeatherList}
                   isDark={isDark}
                   isLoading={apiLoading && !liveStockList}
                 />
-              </div>
-
-              {/* 주식 실시간 시세 (md에서 2칸 차지, lg에서 5열 배정) */}
-              <div className="md:col-span-2 lg:col-span-5 flex flex-col gap-4">
-                <WatchlistCard isDark={isDark} portfolio={stockWeatherList} />
               </div>
 
             </div>
