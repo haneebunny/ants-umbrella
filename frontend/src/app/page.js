@@ -425,8 +425,8 @@ export default function Home() {
           </div>
         )}
 
-        {/* ── 메인 2단 그리드 (좌: 콘텐츠 / 우: 보유 자산) ── */}
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_430px] gap-4 items-start">
+        {/* ── 메인 2단 그리드 (좌: 콘텐츠 / 우: 보유자산 100px 확장) ── */}
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_440px] gap-4 items-start">
 
           {/* ── 좌측 메인 콘텐츠 영역 ── */}
           <div className="flex flex-col gap-4 min-w-0">
@@ -444,13 +444,13 @@ export default function Home() {
             {/* 하단 3열 위젯 그리드: 실시간 시세를 맨 왼쪽으로 배치 */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 items-start">
 
-              {/* 1열: 주식 실시간 시세 (md에서 2칸 차지, lg에서 5열 배정) */}
-              <div className="md:col-span-2 lg:col-span-5 flex flex-col gap-4">
+              {/* 1열: 주식 실시간 시세 (md에서 2칸 차지, lg에서 3열 배정 - 가로 폭 다이어트) */}
+              <div className="md:col-span-2 lg:col-span-3 flex flex-col gap-4">
                 <WatchlistCard isDark={isDark} portfolio={stockWeatherList} />
               </div>
 
-              {/* 2열: 코스닥 + 투자성향 (12열 중 3열 배정, 컴팩트하게) */}
-              <div className="md:col-span-1 lg:col-span-3 flex flex-col gap-4">
+              {/* 2열: 코스닥 + 투자성향 (12열 중 5열 배정 - 시원하게 확장) */}
+              <div className="md:col-span-1 lg:col-span-5 flex flex-col gap-4">
                 <KosdaqMiniChart index={kospiIndex} isDark={isDark} />
                 <PortfolioProfileCard
                   profile={profile}
