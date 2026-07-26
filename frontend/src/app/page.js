@@ -466,30 +466,36 @@ export default function Home() {
                 />
               </div>
 
-              {/* 보유 자산 (md에서 2칸 차지, lg에서 4열 배정) */}
+              {/* 주식 실시간 시세 (md에서 2칸 차지, lg에서 5열 배정) */}
               <div className="md:col-span-2 lg:col-span-5 flex flex-col gap-4">
-                <AssetSummaryCard
-                  summary={liveAssetSummary}
-                  radarScores={radarScores}
-                  isDark={isDark}
-                  weatherStatus={overallWeather.status}
-                  isLoading={apiLoading && !liveStockList}
-                />
+                <WatchlistCard isDark={isDark} portfolio={stockWeatherList} />
               </div>
 
             </div>
           </div>
 
-          {/* ── 우측 관심 주식 (xl 이상에서만 고정 사이드 패널) ── */}
+          {/* ── 우측 보유 자산 (xl 이상에서만 고정 사이드 패널) ── */}
           <div className="hidden xl:flex flex-col gap-4 min-w-0">
-            <WatchlistCard isDark={isDark} portfolio={stockWeatherList} />
+            <AssetSummaryCard
+              summary={liveAssetSummary}
+              radarScores={radarScores}
+              isDark={isDark}
+              weatherStatus={overallWeather.status}
+              isLoading={apiLoading && !liveStockList}
+            />
           </div>
 
         </div>
 
-        {/* 모바일/태블릿: 관심주식을 하단에 배치 */}
+        {/* 모바일/태블릿: 보유 자산을 하단에 배치 */}
         <div className="xl:hidden mt-4">
-          <WatchlistCard isDark={isDark} portfolio={stockWeatherList} />
+          <AssetSummaryCard
+            summary={liveAssetSummary}
+            radarScores={radarScores}
+            isDark={isDark}
+            weatherStatus={overallWeather.status}
+            isLoading={apiLoading && !liveStockList}
+          />
         </div>
       </div>
 
