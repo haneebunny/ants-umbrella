@@ -6,6 +6,7 @@ on:
     - cron: '41 22 * * *'
     # 매일 KST 오후 5시 46분 (UTC 08:46) — 저녁 수집 후 변동 시 2차 알림 발송
     - cron: '46 8 * * *'
+    
   workflow_dispatch: # GitHub 웹 UI에서 수동 실행 지원
     inputs:
       test_mode:
