@@ -590,17 +590,6 @@ DEFAULT_PROB_UP_MAP = {
     '251270': 0.645,  # 넷마블 (하락확률 35.5%)
 }
 
-def generate_ai_briefing(ticker_name: str, ticker: str, prob_up: float, direction: str, confidence_tier: str) -> str:
-    prob_down_pct = round((1 - prob_up) * 100, 1)
-    
-    # [AI 진단] 태그 제거 및 쉽고 친절한 한줄 요약 리포트
-    if direction == "down" or prob_down_pct >= 20.0:
-        return (f"{ticker_name} 종목은 한 달 내 주가가 떨어질 위험이 {prob_down_pct}%로 주의가 필요해요. "
-                f"최근 악재 뉴스나 시장 불안 요소가 관측되고 있으니, 신규 매수나 비중 확대 시 신중하게 관망하시는 것을 추천해요.")
-    else:
-        return (f"{ticker_name} 종목은 한 달 내 주가가 떨어질 위험이 {prob_down_pct}%로 매우 안전한 상태예요. "
-                f"회사 재무와 업황 호재가 탄탄하게 버텨주고 있어서 편안하게 주가를 모니터링하셔도 좋습니다.")
-
 @app.get("/api/watchlist-prices")
 def get_watchlist_prices(tickers: str = ""):
     """한국투자증권 API 연동 실시간 주가 리스트 조회 API"""
