@@ -109,19 +109,12 @@ def send_slack_alert():
     today_str = datetime.now().strftime("%Y-%m-%d")
     is_test_mode = "--test" in sys.argv or os.environ.get("TEST_MODE") == "true"
     is_dispatch = os.environ.get("IS_DISPATCH") == "true"
-    
-    # KST 기준 시간 체크
-    try:
-        kst = pytz.timezone("Asia/Seoul")
-        now_kst = datetime.now(kst)
-        # 테스트 모드가 아니고, 수동 실행도 아니며, 오후 5시대(17시)가 아니라면 알림 전송을 스킵하고 DB 적재만 유지합니다.
-        # (아침 6시 41분 및 점심 12시 배치는 데이터 수집, 가공 및 모델 추론 결과만 DB에 조용히 저장하고,
-        # 최종 알림은 오후 5시 46분에 하루치 이벤트를 종합해서 1회 발송합니다.)
-        if not is_test_mode and not is_dispatch and now_kst.hour != 17:
-            print(f"[INFO] Current KST hour is {now_kst.hour}. Slack alert is scheduled to send only at 17:46 KST (hour 17). Skipping notification.")
-            return
-    except Exception as tz_err:
-        print(f"[WARN] Failed to check timezone (proceeding with alert): {tz_err}")
+    # ALERT_MODE: morning = 오전 7:41 배치(항상 발송), evening = 오후 5:46 배치(변동 있을 때만 발송)
+    alert_mode = os.environ.get("ALERT_MODE", "morning").strip().lower()
+    if not alert_mode:
+        alert_mode = "morning"
+
+    print(f"[INFO] ALERT_MODE={alert_mode}, test={is_test_mode}, dispatch={is_dispatch}")
 
     try:
         # 1. 최신 거시 정보 수집 (매일 새로 수집되는 macro_features.csv 직접 활용)
@@ -224,6 +217,34 @@ def send_slack_alert():
                     "date": today_str
                 }
             ]
+
+        # 4-0. ALERT_MODE에 따라 발송 여부 결정 ──────────────────────────────
+        try:
+            settings_col = get_collection("user_settings")
+            baseline_key = {"ticker": "_alert_baseline", "date": today_str}
+
+            if alert_mode == "evening" and not is_test_mode and not is_dispatch:
+                # 오전 베이스라인과 비교 → 새로운 이벤트가 없으면 발송 스킵
+                baseline_doc = settings_col.find_one(baseline_key)
+                morning_count = baseline_doc.get("event_count", 0) if baseline_doc else 0
+                current_count = len(docs)
+                print(f"[INFO] Evening mode — morning baseline: {morning_count}건, current: {current_count}건")
+                if current_count <= morning_count:
+                    print("[INFO] 오전 대비 새로운 이벤트가 없습니다. 저녁 알림을 생략합니다.")
+                    return
+                print(f"[INFO] {current_count - morning_count}건의 새 이벤트 감지 → 저녁 알림 발송합니다.")
+
+            elif alert_mode == "morning" and not is_test_mode:
+                # 오전 발송 후 베이스라인 저장 (저녁 비교용)
+                settings_col.update_one(
+                    baseline_key,
+                    {"$set": {"event_count": len(docs), "updated_at": datetime.now().isoformat()}},
+                    upsert=True
+                )
+                print(f"[INFO] Morning mode — 오전 베이스라인 저장 완료: {len(docs)}건")
+
+        except Exception as baseline_err:
+            print(f"[WARN] 베이스라인 처리 중 오류 (발송 진행): {baseline_err}")
 
         # 4. 사용자 설정에 따른 카테고리 필터링 적용 ──────────────────────
         try:
