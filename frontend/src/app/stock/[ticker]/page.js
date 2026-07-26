@@ -748,7 +748,7 @@ export default function StockDetailPage() {
               </button>
             </div>
             
-            <div className="space-y-3 text-xs leading-relaxed text-slate-300">
+            <div className={`space-y-3 text-xs leading-relaxed ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
               <p>
                 <strong>1. ESG 이슈 분류 (Zero-Shot)</strong><br />
                 수집된 뉴스·공시 텍스트를 HuggingFace 최신 NLP 분류기로 분석하여 E/S/G 리스크 항목과 긍정/부정 방향을 즉시 판정합니다.
@@ -759,7 +759,7 @@ export default function StockDetailPage() {
               </p>
               <p>
                 <strong>3. XGBoost 머신러닝 모형 추론</strong><br />
-                지수/원달러 거시 피처와 통합 집계된 리스크 점수를 기학습된 XGBoost 모델에 투입하여 **20거래일 내 주가 -10% 하락 확률**을 정밀 추정합니다.
+                지수/원달러 거시 피처와 통합 집계된 리스크 점수를 기학습된 XGBoost 모델에 투입하여 20거래일 내 주가 -10% 하락 확률을 정밀 추정합니다.
               </p>
             </div>
 

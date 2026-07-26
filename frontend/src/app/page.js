@@ -21,6 +21,18 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 /** 컴포넌트 언마운트(페이지 이동) 시에도 유지되는 전역 날씨 캐시 */
 const globalWeatherCache = {};
 
+/**
+ * AI 판단 근거(브리핑) 전역 캐시 — 포트폴리오/날씨/하락종목 구성이 그대로면
+ * 다른 페이지로 이동했다가 돌아와도 재요청·스켈레톤 노출 없이 확정된 문구를 즉시 재사용.
+ * (탭을 유지하는 동안만 유효, 새로고침 시 초기화됨 — 백엔드 캐시와는 별개의 프론트 레이어)
+ */
+const globalBriefingCache = {};
+
+function buildBriefingKey(portfolioId, status, riskyTickers) {
+  const riskyStr = riskyTickers.map(t => `${t.name}:${t.direction}`).sort().join(',');
+  return `${portfolioId}|${status}|${riskyStr}`;
+}
+
 /** prob_down 기반 전체 날씨 집계: 보유 종목 weather 배열 → 대표 weather */
 function aggregateWeather(stocks) {
   const priority = { thunder: 4, rainy: 3, cloudy: 2, sunny: 1 };
@@ -30,6 +42,15 @@ function aggregateWeather(stocks) {
   }
   const label = { sunny: '맑음', cloudy: '구름', rainy: '비', thunder: '번개' };
   return { status: worst, label: label[worst] || '맑음' };
+}
+
+/** 마운트 시점에 동기적으로 브리핑 캐시 키를 계산 (liveStockList 초기값과 동일한 방식) */
+function getInitialBriefingKey(portfolioId, mockPortfolio) {
+  const cachedStocks = globalWeatherCache[portfolioId];
+  const stocks = cachedStocks || mockPortfolio.stockWeatherList;
+  const status = cachedStocks ? aggregateWeather(cachedStocks).status : mockPortfolio.overallWeather.status;
+  const riskyTickers = stocks.filter(s => s.direction === 'down').map(s => ({ name: s.name, direction: s.direction }));
+  return buildBriefingKey(portfolioId, status, riskyTickers);
 }
 
 export default function Home() {
@@ -62,8 +83,16 @@ export default function Home() {
   const [showSurveyPrompt, setShowSurveyPrompt] = useState(false);
   const [kospiIndex, setKospiIndex] = useState(kosdaqIndex);
   const [apiLoading, setApiLoading] = useState(false);
-  const [aiSummary, setAiSummary] = useState(null); // 캐싱된 Gemini 판단근거
-  const [briefingLoading, setBriefingLoading] = useState(false); // AI 판단근거 로딩 상태
+  // AI 판단 근거 — 같은 포트폴리오/날씨/하락종목 구성이면 전역 캐시에서 즉시 복원되어
+  // 재방문 시 스켈레톤이 다시 뜨지 않음 (구성이 바뀌었을 때만 새로 요청)
+  const [aiSummary, setAiSummary] = useState(() => {
+    const key = getInitialBriefingKey(selectedPortfolioId, mockPortfolio);
+    return globalBriefingCache[key] || null;
+  });
+  const [briefingLoading, setBriefingLoading] = useState(() => {
+    const key = getInitialBriefingKey(selectedPortfolioId, mockPortfolio);
+    return !globalBriefingCache[key];
+  });
   const [forceWeather, setForceWeather] = useState(null); // 'sunny' | 'cloudy' | 'rainy' | 'thunder' | null
 
   // 마운트 시 localStorage에서 완료된 진단 결과 복원 및 게스트 모달 처리
@@ -106,6 +135,8 @@ export default function Home() {
           weather:   live.weather   || stock.weather,
           direction: live.direction || stock.direction,
           change:    live.change    !== null ? live.change : stock.change,
+          prob_up:   live.prob_up   !== undefined ? live.prob_up : stock.prob_up,
+          currentPrice: live.currentPrice !== undefined ? live.currentPrice : stock.currentPrice,
         };
       });
 
@@ -141,12 +172,13 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    setAiSummary(null); // 포트폴리오 변경 즉시 AI 브리핑 초기화해서 스켈레톤 유도
     setForceWeather(null); // 포트폴리오 변경 시 수동 날씨 조작 설정도 초기화
     if (globalWeatherCache[selectedPortfolioId]) {
       setLiveStockList(globalWeatherCache[selectedPortfolioId]);
     }
     fetchWeather(selectedPortfolioId, mockPortfolio);
+    // AI 판단 근거는 여기서 초기화하지 않음 — 아래 브리핑 effect가 캐시 키(포트폴리오/날씨/
+    // 하락종목 구성) 기준으로 판단해서, 구성이 그대로면 스켈레톤 없이 캐시된 문구를 유지함
   }, [selectedPortfolioId, fetchWeather, mockPortfolio]);
 
   // 실제로 렌더링할 종목 목록 (API 성공 → live, 실패/로딩 → mock)
@@ -171,32 +203,45 @@ export default function Home() {
     summary: aiSummary || []
   };
 
-  // 날씨 상태 또는 구성 종목의 리스크 정보 변동 시에만 백엔드에 캐시된 브리핑 요청
+  // 날씨 상태 또는 구성 종목의 리스크 정보 변동 시에만 백엔드에 브리핑 요청.
+  // 동일 구성(포트폴리오+날씨+하락종목)에 대해 이미 확정된 문구가 캐시에 있으면
+  // 재요청·스켈레톤 노출 없이 즉시 재사용 → 다른 페이지 갔다 돌아와도 깜빡임 없음.
   useEffect(() => {
     if (!overallWeather?.status) return;
     const riskyTickers = stockWeatherList
       .filter(s => s.direction === 'down')
       .map(s => ({ name: s.name, direction: s.direction }));
 
+    const weatherStatusForRequest = overallWeather.status === 'thunder' ? 'thunder'
+                                   : overallWeather.status === 'rainy'   ? 'rainy'
+                                   : overallWeather.status === 'cloudy'  ? 'cloudy'
+                                   : 'sunny';
+    const key = buildBriefingKey(selectedPortfolioId, weatherStatusForRequest, riskyTickers);
+
+    const cachedSummary = globalBriefingCache[key];
+    if (cachedSummary) {
+      setAiSummary(cachedSummary);
+      setBriefingLoading(false);
+      return;
+    }
+
     setBriefingLoading(true);
-    setAiSummary(null); // 이전 브리핑 캐시 비워 즉각 스켈레톤 상태 노출
-    
+    setAiSummary(null); // 새로운 구성이라 캐시가 없을 때만 스켈레톤 노출
+
     fetch(`${API_BASE}/api/weather-briefing`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         portfolio_id: selectedPortfolioId,
-        weather_status: overallWeather.status === 'thunder' ? 'thunder'
-                      : overallWeather.status === 'rainy'   ? 'rainy'
-                      : overallWeather.status === 'cloudy'  ? 'cloudy'
-                      : 'sunny',
+        weather_status: weatherStatusForRequest,
         weather_label: overallWeather.label,
         risky_tickers: riskyTickers,
       }),
     })
       .then(r => r.json())
-      .then(data => { 
+      .then(data => {
         if (data?.summary?.length) {
+          globalBriefingCache[key] = data.summary; // 확정된 문구를 전역 캐시에 저장해 재방문 시 재사용
           setAiSummary(data.summary);
         } else {
           setAiSummary(null);
@@ -207,7 +252,70 @@ export default function Home() {
   }, [overallWeather?.status, overallWeather?.label, selectedPortfolioId, stockWeatherList]);
 
 
-  const { assetSummary, profile, radarScores } = mockPortfolio;
+  const { profile, radarScores } = mockPortfolio;
+
+  // holdings에 실시간 가격을 매핑한 liveAssetSummary 생성
+  const liveAssetSummary = React.useMemo(() => {
+    const defaultHoldings = mockPortfolio.assetSummary.holdings;
+    
+    const stockMap = {};
+    stockWeatherList.forEach(s => {
+      stockMap[s.ticker] = s;
+    });
+
+    let totalEvaluationAsset = 0; // 총 평가 자산
+    let totalPurchaseAsset = 0; // 총 매수 자산
+    let totalQuantity = 0; // 총 주식 보유량
+
+    const updatedHoldings = [];
+    for (const h of defaultHoldings) {
+      const stockInfo = stockMap[h.ticker] || {};
+      const quantity = stockInfo.quantity || h.quantity || 0;
+      const purchasePrice = stockInfo.purchasePrice || h.purchasePrice || 0;
+      
+      const currentPrice = stockInfo.currentPrice !== undefined ? stockInfo.currentPrice 
+                         : (stockInfo.change !== undefined ? (purchasePrice * (1 + stockInfo.change / 100)) : purchasePrice);
+      
+      const evaluationValue = currentPrice * quantity;
+      const purchaseValue = purchasePrice * quantity;
+
+      totalEvaluationAsset += evaluationValue;
+      totalPurchaseAsset += purchaseValue;
+      totalQuantity += quantity;
+
+      const profitLoss = evaluationValue - purchaseValue;
+      const profitLossRate = purchaseValue > 0 ? (profitLoss / purchaseValue) * 100 : 0;
+
+      updatedHoldings.push({
+        ...h,
+        quantity,
+        purchasePrice,
+        currentPrice,
+        evaluationValue,
+        purchaseValue,
+        profitLoss,
+        profitLossRate,
+      });
+    }
+
+    const totalProfitLoss = totalEvaluationAsset - totalPurchaseAsset;
+    const totalProfitLossRate = totalPurchaseAsset > 0 ? (totalProfitLoss / totalPurchaseAsset) * 100 : 0;
+
+    const finalHoldings = updatedHoldings.map(h => {
+      const weight = totalEvaluationAsset > 0 ? Math.round((h.evaluationValue / totalEvaluationAsset) * 100) : h.weight;
+      return { ...h, weight };
+    });
+
+    return {
+      ...mockPortfolio.assetSummary,
+      totalAsset: totalEvaluationAsset,
+      totalPurchaseAsset,
+      totalProfitLoss,
+      totalProfitLossRate,
+      totalQuantity,
+      holdings: finalHoldings,
+    };
+  }, [mockPortfolio.assetSummary, stockWeatherList]);
 
   return (
     <div className="w-full relative">
@@ -267,7 +375,7 @@ export default function Home() {
               {/* 보유 자산 (md에서 2칸 차지, lg에서 4열 배정) */}
               <div className="md:col-span-2 lg:col-span-5 flex flex-col gap-4">
                 <AssetSummaryCard
-                  summary={assetSummary}
+                  summary={liveAssetSummary}
                   radarScores={radarScores}
                   isDark={isDark}
                   weatherStatus={overallWeather.status}

@@ -201,9 +201,7 @@ export default function AntPet({ weather, portfolio }) {
               alt="Ant Pet"
               width={96}
               height={96}
-              className={`object-contain pointer-events-none transition-all ${
-                (weather === 'sunny' || !weather) ? 'scale-[1.25] origin-center' : 'scale-100'
-              }`}
+              className="object-contain pointer-events-none"
               style={{ transform: 'scaleX(-1)' }}
               priority
             />

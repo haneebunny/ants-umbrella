@@ -132,6 +132,13 @@ export default function AssetChart({ theme, weights, data, isDark: propIsDark })
       <div className="flex-1 space-y-2.5 w-full min-w-0 overflow-hidden">
         {resolvedWeights.map((asset) => {
           const isHovered = hoveredCategory === asset.category;
+          
+          // data Prop(holdings)에서 해당 자산의 상세 수량/평단가/수익률을 추출
+          const detail = (data || []).find(d => d.name === asset.category || d.category === asset.category) || {};
+          const quantity = detail.quantity || 0;
+          const purchasePrice = detail.purchasePrice || 0;
+          const profitLossRate = detail.profitLossRate || 0;
+
           return (
             <div 
               key={asset.category}
@@ -148,21 +155,38 @@ export default function AssetChart({ theme, weights, data, isDark: propIsDark })
                     : 'bg-white border border-[#3eb489]/10 soft-shadow-light'
               }`}
             >
-              <div className="flex items-center gap-2 min-w-0">
-                <span 
-                  className="w-3 h-3 rounded-full block border flex-shrink-0"
-                  style={{ 
-                    backgroundColor: asset.color,
-                    borderColor: isDark ? 'transparent' : 'rgba(62, 180, 137, 0.3)'
-                  }}
-                />
-                <span className={`text-[11px] font-bold font-sans truncate ${isDark ? 'text-slate-300' : 'text-[#0f1713]'}`}>
-                  {asset.category}
-                </span>
+              <div className="flex-1 min-w-0 mr-2">
+                <div className="flex items-center gap-2">
+                  <span 
+                    className="w-2.5 h-2.5 rounded-full block border flex-shrink-0"
+                    style={{ 
+                      backgroundColor: asset.color,
+                      borderColor: isDark ? 'transparent' : 'rgba(62, 180, 137, 0.3)'
+                    }}
+                  />
+                  <span className={`text-[11px] font-bold font-sans truncate ${isDark ? 'text-slate-300' : 'text-[#0f1713]'}`}>
+                    {asset.category}
+                  </span>
+                </div>
+                {/* 보유량 및 평단가 정보 추가 */}
+                <div className={`text-[9px] pl-3.5 mt-0.5 font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                  보유: {quantity}주 | 평단: {new Intl.NumberFormat('ko-KR').format(purchasePrice)}원
+                </div>
               </div>
-              <span className={`font-mono text-[11px] font-black flex-shrink-0 pl-1 ${isDark ? 'text-[#69dbad]' : 'text-[#3eb489]'}`}>
-                {asset.weight}%
-              </span>
+
+              {/* 수익률 및 비중 정보 */}
+              <div className="text-right flex-shrink-0 pl-1">
+                <div className={`text-[10px] font-mono font-black ${
+                  profitLossRate >= 0
+                    ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]')
+                    : 'text-rose-500'
+                }`}>
+                  {profitLossRate >= 0 ? '+' : ''}{profitLossRate.toFixed(1)}%
+                </div>
+                <div className={`text-[9px] font-mono font-bold ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                  비중 {asset.weight}%
+                </div>
+              </div>
             </div>
           );
         })}

@@ -26,7 +26,7 @@ export default function AlertsPage() {
   const { isDark } = useTheme();
   // ── ⚙️ 알림 설정 관련 상태 ──────────────────────────────────────────
   const [showSettings, setShowSettings] = useState(false);
-  const [alertTimes, setAlertTimes] = useState(['07:00', '10:27']);
+  const [alertTimes, setAlertTimes] = useState(['07:00']);
   const [categories, setCategories] = useState({
     price_risk: true,
     esg_news: true,
@@ -34,7 +34,7 @@ export default function AlertsPage() {
   });
   
   // 변경 사항 저장을 위한 임시 상태 (딸깍할 때마다 요청가지 않게 제어)
-  const [tempAlertTimes, setTempAlertTimes] = useState(['07:00', '10:27']);
+  const [tempAlertTimes, setTempAlertTimes] = useState(['07:00']);
   const [tempCategories, setTempCategories] = useState({
     price_risk: true,
     esg_news: true,
@@ -275,7 +275,7 @@ export default function AlertsPage() {
                   지정한 시간마다 최신 마켓 및 ESG 데이터를 분석해 슬랙 알림을 보냅니다.
                 </p>
                 <div className="flex flex-wrap gap-2 pt-1">
-                  {['07:00', '09:00', '10:00', '10:20', '10:27', '12:00', '15:00', '18:00', '21:00'].map(time => {
+                  {['07:00', '09:00', '10:00', '10:20', '12:00', '15:00', '18:00', '21:00'].map(time => {
                     const isSelected = tempAlertTimes.includes(time);
                     const isDisabled = !isSelected && tempAlertTimes.length >= 3;
                     return (
@@ -365,10 +365,26 @@ export default function AlertsPage() {
 
         {/* ── 알림 리스트 ── */}
         <div className={`rounded-2xl border overflow-hidden transition-all ${isDark ? 'bg-[#1e2220] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
-          {filteredAlerts.length === 0 ? (
+          {loading ? (
+            /* 로딩 스켈레톤 */
+            <div className="divide-y divide-white/5">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center gap-4 px-5 py-4 animate-pulse">
+                  <div className={`w-8 h-8 rounded-xl flex-shrink-0 ${isDark ? 'bg-white/10' : 'bg-slate-100'}`} />
+                  <div className="flex-1 space-y-2">
+                    <div className={`h-2.5 rounded-full w-1/4 ${isDark ? 'bg-white/10' : 'bg-slate-100'}`} />
+                    <div className={`h-3 rounded-full w-3/4 ${isDark ? 'bg-white/10' : 'bg-slate-100'}`} />
+                    <div className={`h-2 rounded-full w-1/3 ${isDark ? 'bg-white/5' : 'bg-slate-50'}`} />
+                  </div>
+                  <div className={`w-14 h-4 rounded-full flex-shrink-0 ${isDark ? 'bg-white/5' : 'bg-slate-100'}`} />
+                </div>
+              ))}
+            </div>
+          ) : filteredAlerts.length === 0 ? (
             <div className="p-8 text-center text-xs text-slate-400">
               해당하는 알림 내역이 없습니다. ☀️
             </div>
+
           ) : (
             filteredAlerts.map((alert, idx) => {
               const cfg = LEVEL_CFG[alert.level] || LEVEL_CFG.info;

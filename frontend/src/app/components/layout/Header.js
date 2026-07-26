@@ -6,7 +6,7 @@ import Icon from '../Icon';
 
 const NAV_ITEMS = [
   { href: '/', icon: 'home', label: '홈 대시보드' },
-  { href: '/diagnosis', icon: 'radar', label: '위험 진단' },
+  { href: '/diagnosis', icon: 'activity', label: '위험 진단' },
   { href: '/diagnosis/result', icon: 'shield', label: '성향 종합 리포트' },
   { href: '/alerts', icon: 'bell', label: '위험 알림' },
   

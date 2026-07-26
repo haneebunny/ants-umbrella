@@ -456,15 +456,29 @@ def get_dashboard_weather(tickers: str = ""):
             direction = doc.get("direction", "up")
             weather   = _prob_to_weather(prob_up, direction, market_pd)
 
-            # 1일 등락(log_return_1d)은 daily_risk_score에 없으므로 price_macro에서 보충
+            # 실시간 가격(currentPrice) 및 변동률(change) 처리
+            live_price = None
             change = None
             try:
-                price_col = get_collection("price_macro")
-                price_doc = price_col.find_one({"ticker": ticker}, sort=[("date", -1)])
-                if price_doc:
-                    change = round(float(price_doc.get("log_return_1d", 0)) * 100, 2)
-            except Exception:
-                pass
+                kis_data = get_realtime_price_via_kis(ticker)
+                if kis_data:
+                    live_price = kis_data.get("price")
+                    change = kis_data.get("change_rate")
+            except Exception as e:
+                print(f"[WARN] Failed KIS fetch for {ticker}: {e}")
+
+            if change is None:
+                try:
+                    price_col = get_collection("price_macro")
+                    price_doc = price_col.find_one({"ticker": ticker}, sort=[("date", -1)])
+                    if price_doc:
+                        change = round(float(price_doc.get("log_return_1d", 0)) * 100, 2)
+                        live_price = price_doc.get("close")
+                except Exception:
+                    pass
+
+            if live_price is None:
+                live_price = DEFAULT_MOCK_PRICES.get(ticker, 70000)
 
             results.append({
                 "ticker":           ticker,
@@ -474,6 +488,7 @@ def get_dashboard_weather(tickers: str = ""):
                 "prob_up":          round(prob_up, 4),
                 "confidence_tier":  doc.get("confidence_tier", "weak"),
                 "change":           change,
+                "currentPrice":     live_price,
                 "date":             str(doc.get("date", "")),
                 "esgScore":         None,   # esg_events에서 추후 집계 가능
             })
@@ -482,6 +497,37 @@ def get_dashboard_weather(tickers: str = ""):
             results.append({"ticker": ticker, "available": False})
 
     return results
+
+DEFAULT_MOCK_PRICES = {
+    '000660': 180000,  # SK하이닉스
+    '005930': 72000,   # 삼성전자
+    '005380': 250000,  # 현대차
+    '035420': 170000,  # NAVER
+    '055550': 50000,   # 신한지주
+    '017670': 52000,   # SK텔레콤
+    '005490': 360000,  # POSCO홀딩스
+    '010950': 68000,   # S-Oil
+    '028260': 140000,  # 삼성물산
+    '000270': 110000,  # 기아
+    '068270': 190000,  # 셀트리온
+    '035720': 42000,   # 카카오
+    '051910': 380000,  # LG화학
+    '003550': 78000,   # LG
+    '036570': 180000,  # 엔씨소프트
+    '373220': 390000,  # LG에너지솔루션
+    '006400': 370000,  # 삼성SDI
+    '086520': 90000,   # 에코프로
+    '247540': 180000,  # 에코프로비엠
+    '196170': 270000,  # 알테오젠
+    '032830': 80000,   # 삼성생명
+    '033780': 92000,   # KT&G
+    '105560': 78000,   # KB금융
+    '047050': 55000,   # 포스코인터
+    '036460': 42000,   # 한국가스공사
+    '009150': 140000,  # 삼성전기
+    '011200': 220000,  # 한진
+    '251270': 58000,   # 넷마블
+}
 
 DEFAULT_PROB_UP_MAP = {
     '000660': 0.938,  # SK하이닉스 (하락확률 6.2%)
@@ -629,8 +675,12 @@ def _call_gemini(prompt: str) -> str:
             candidates = res.json().get("candidates", [])
             if candidates:
                 return candidates[0]["content"]["parts"][0]["text"].strip()
+            print(f"[WARN] Gemini API 응답에 candidates 없음 (model={model_name}): {res.text[:300]}")
+        else:
+            # 404(모델 종료/오탈자), 429(쿼터 초과) 등 실패 상태코드를 로그로 남겨 원인 추적 가능하게 함
+            print(f"[WARN] Gemini API 호출 실패 (model={model_name}, status={res.status_code}): {res.text[:300]}")
     except Exception as e:
-        print(f"[WARN] Gemini API 호출 실패: {e}")
+        print(f"[WARN] Gemini API 호출 예외 (model={model_name}): {e}")
     return ""
 
 
@@ -651,10 +701,14 @@ def generate_ai_briefing(ticker_name: str, ticker: str, prob_up: float, directio
     fingerprint = hashlib.md5(fp_raw.encode()).hexdigest()[:12]
 
     # ── 2. 캐시 조회 (변동 없으면 즉시 반환) ──────────────────────────
+    # is_fallback=True로 저장된 캐시(과거 Gemini 호출 실패로 템플릿을 썼던 경우)는
+    # 히트로 치지 않고 매번 재시도한다. 그렇지 않으면 모델을 고쳐도 예전 실패 캐시가
+    # 영구히 재사용되어 "항상 같은 하드코딩 문구"처럼 보이는 문제가 생긴다.
     try:
         cache_col = get_collection("ai_briefings")
         cached = cache_col.find_one({"ticker": ticker}, sort=[("date", -1)])
-        if cached and cached.get("fingerprint") == fingerprint and cached.get("briefing"):
+        if (cached and cached.get("fingerprint") == fingerprint
+                and cached.get("briefing") and not cached.get("is_fallback")):
             print(f"[CACHE HIT] ai_briefings: {ticker} (fp={fingerprint})")
             return cached["briefing"]
     except Exception as e:
@@ -691,9 +745,11 @@ def generate_ai_briefing(ticker_name: str, ticker: str, prob_up: float, directio
 - 2~3문장, 마지막 이모지로 마무리
 - **굵게** 강조 필요한 단어에 마크다운 볼드 사용"""
 
-    briefing = _call_gemini(prompt) or fallback
+    gemini_text = _call_gemini(prompt)
+    briefing = gemini_text or fallback
+    used_fallback = not bool(gemini_text)
 
-    # ── 5. 결과 캐싱 (fingerprint 저장) ───────────────────────────────
+    # ── 5. 결과 캐싱 (fingerprint 저장, 폴백 여부도 함께 기록) ───────────
     try:
         cache_col.update_one(
             {"ticker": ticker},
@@ -701,6 +757,7 @@ def generate_ai_briefing(ticker_name: str, ticker: str, prob_up: float, directio
                 "ticker": ticker,
                 "fingerprint": fingerprint,
                 "briefing": briefing,
+                "is_fallback": used_fallback,
                 "date": datetime.now().strftime("%Y-%m-%d"),
                 "updated_at": datetime.now().isoformat(),
             }},
@@ -1123,38 +1180,53 @@ def get_alerts():
         except:
             pass
             
+    # ESG 뉴스 카테고리별 알림 제목 템플릿 (실제 기사 제목 미노출)
+    CATEGORY_TITLE_MAP = {
+        "환경": "ESG 환경(E) 미디어 이슈 포착",
+        "사회": "ESG 사회(S) 미디어 이슈 포착",
+        "지배구조": "ESG 지배구조(G) 미디어 이슈 포착",
+        "노동": "ESG 노동·상생 이슈 포착",
+        "탄소": "ESG 탄소배출 관련 이슈 포착",
+    }
+
     alerts = []
     try:
         esg_col = get_collection("esg_events")
-        docs = list(esg_col.find({}, sort=[("date", -1)]).limit(15))
-        
+        # DB 레벨에서 긍정 뉴스 선필터 + 필요 필드만 projection으로 조회 (속도 개선)
+        query = {"news_direction": {"$ne": "positive"}}
+        projection = {"ticker": 1, "date": 1, "news_direction": 1, "is_material": 1, "news_category": 1, "_id": 0}
+        docs = list(esg_col.find(query, projection, sort=[("date", -1)]).limit(15))
+
         for i, d in enumerate(docs):
             ticker = d.get("ticker", "005930")
             corp_name = corp_dict.get(ticker, ticker)
-            
+
             is_mat = d.get("is_material", 0)
             direction = d.get("news_direction", "negative")
-            
-            level = "caution"
-            if is_mat == 1 and direction == "negative":
-                level = "danger"
-            elif direction == "positive":
-                level = "info"
-                
+
+            level = "danger" if (is_mat == 1 and direction == "negative") else "caution"
+
             dt_str = d.get("date", "2026.07.24")
-            news_title = d.get("news_title", "ESG 미디어 이슈 포착")
-            
+            news_category = d.get("news_category", "")
+
+            # 실제 기사 제목 대신 카테고리 기반 범용 제목 사용
+            generic_title = "ESG 미디어 이슈 포착"
+            for keyword, label in CATEGORY_TITLE_MAP.items():
+                if keyword in str(news_category):
+                    generic_title = label
+                    break
+
             # 카테고리 판별 및 백엔드 필터링
-            cat = get_alert_category(news_title, d.get("news_category"))
+            cat = get_alert_category(generic_title, news_category)
             if not categories.get(cat, True):
                 continue
-                
+
             alerts.append({
                 "id": len(alerts) + 1,
                 "level": level,
                 "ticker_code": ticker,
                 "ticker": corp_name,
-                "title": news_title,
+                "title": generic_title,
                 "time": dt_str,
                 "read": False,
                 "category": cat
@@ -1201,10 +1273,13 @@ def get_weather_briefing(body: dict):
     cache_key = f"weather_{portfolio_id}"
 
     # ── 2. 캐시 조회 ────────────────────────────────────────────────
+    # is_fallback=True 캐시(과거 Gemini 실패로 템플릿을 썼던 경우)는 히트로 치지 않고
+    # 재시도한다 — 그래야 모델 설정을 고친 뒤 곧바로 실제 LLM 문구로 갱신된다.
     try:
         cache_col = get_collection("ai_briefings")
         cached = cache_col.find_one({"ticker": cache_key})
-        if cached and cached.get("fingerprint") == fingerprint and cached.get("briefing"):
+        if (cached and cached.get("fingerprint") == fingerprint
+                and cached.get("briefing") and not cached.get("is_fallback")):
             print(f"[CACHE HIT] weather_briefing: portfolio={portfolio_id} (fp={fingerprint})")
             return {"summary": cached["briefing"].split("\n"), "cached": True}
     except Exception as e:
@@ -1252,16 +1327,19 @@ def get_weather_briefing(body: dict):
 - 총 3줄만 출력, 다른 부가 설명 없이"""
 
     gemini_result = _call_gemini(prompt)
+    used_fallback = False
     if gemini_result:
         summary_lines = [l.strip() for l in gemini_result.split("\n") if l.strip()][:3]
         if len(summary_lines) < 2:
             summary_lines = fallback_lines
+            used_fallback = True
     else:
         summary_lines = fallback_lines
+        used_fallback = True
 
     briefing_text = "\n".join(summary_lines)
 
-    # ── 5. 캐싱 ─────────────────────────────────────────────────────
+    # ── 5. 캐싱 (폴백 여부도 함께 기록) ────────────────────────────────
     try:
         cache_col.update_one(
             {"ticker": cache_key},
@@ -1269,12 +1347,13 @@ def get_weather_briefing(body: dict):
                 "ticker": cache_key,
                 "fingerprint": fingerprint,
                 "briefing": briefing_text,
+                "is_fallback": used_fallback,
                 "date": datetime.now().strftime("%Y-%m-%d"),
                 "updated_at": datetime.now().isoformat(),
             }},
             upsert=True
         )
-        print(f"[CACHE SET] weather_briefing: portfolio={portfolio_id} (fp={fingerprint})")
+        print(f"[CACHE SET] weather_briefing: portfolio={portfolio_id} (fp={fingerprint}, fallback={used_fallback})")
     except Exception as e:
         print(f"[WARN] weather_briefing 캐시 저장 실패: {e}")
 

@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Icon from '../Icon';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 const WEATHER_ICON = {
   sunny:   { icon: 'sun',       label: '맑음', color: 'text-amber-400',  pillBg: 'bg-amber-50 border-amber-200',     darkPillBg: 'bg-amber-900/30 border-amber-700/40'   },
   cloudy:  { icon: 'cloud',     label: '구름', color: 'text-slate-400',  pillBg: 'bg-slate-50 border-slate-200',     darkPillBg: 'bg-slate-800/40 border-slate-600/30'   },
@@ -16,6 +18,14 @@ const INDICATOR_COLOR = {
   cloudy:  'bg-slate-400',
   rainy:   'bg-sky-400',
   thunder: 'bg-rose-400',
+};
+
+// 날씨(=하락예측률 구간) → 하락 위험 등급
+const RISK_LABEL = {
+  sunny:   { text: '양호',     color: 'text-emerald-500' },
+  cloudy:  { text: '보통',     color: 'text-slate-400'   },
+  rainy:   { text: '위험',     color: 'text-orange-500'  },
+  thunder: { text: '매우위험', color: 'text-rose-500'    },
 };
 
 const WEATHER_BG = {
@@ -41,11 +51,17 @@ function EsgBar({ score, isDark }) {
 }
 
 /** 플로팅 오버레이 패널 */
-function FloatingPanel({ stock, anchorRect, isDark, onClose, onNavigate }) {
+function FloatingPanel({ stock, live, anchorRect, isDark, onClose, onNavigate }) {
   const wCfg   = WEATHER_ICON[stock.weather] || WEATHER_ICON.cloudy;
   const wBg    = WEATHER_BG[stock.weather]   || WEATHER_BG.cloudy;
   const panelW = 280;
   const panelH = 300;
+
+  // 등락률: '주식 실시간 시세'(watchlist-prices)와 동일한 실시간 값 사용.
+  // 실시간 조회 실패/미체결(price<=0) 시 예측 기반 change로 폴백.
+  const hasLive = live && typeof live.change_rate === 'number' && live.price > 0;
+  const rate    = hasLive ? live.change_rate : (stock.change ?? 0);
+  const isUp    = rate >= 0;
 
   // anchorRect 기준 위치 계산 (오른쪽 or 왼쪽)
   const spaceRight = window.innerWidth - anchorRect.right;
@@ -112,11 +128,9 @@ function FloatingPanel({ stock, anchorRect, isDark, onClose, onNavigate }) {
             </div>
           </div>
 
-          {/* 등락률 */}
-          <p className={`text-xl font-black font-mono mt-2 ${
-            stock.direction === 'up' ? 'text-white' : 'text-white/80'
-          }`}>
-            {stock.direction === 'up' ? '▲' : '▼'} {Math.abs(stock.change).toFixed(1)}%
+          {/* 등락률 — 실시간 시세 연동 */}
+          <p className={`text-xl font-black font-mono mt-2 ${isUp ? 'text-white' : 'text-white/80'}`}>
+            {isUp ? '▲' : '▼'} {Math.abs(rate).toFixed(1)}%
           </p>
         </div>
 
@@ -164,6 +178,7 @@ function FloatingPanel({ stock, anchorRect, isDark, onClose, onNavigate }) {
 export default function StockWeatherList({ stocks = [], isDark }) {
   const router = useRouter();
   const [selected, setSelected]       = useState(null); // { stock, rect }
+  const [livePrices, setLivePrices]   = useState({});    // ticker → 실시간 시세
   const buttonRefs = useRef({});
 
   // 외부 클릭·ESC 닫기
@@ -172,6 +187,27 @@ export default function StockWeatherList({ stocks = [], isDark }) {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, []);
+
+  // '주식 실시간 시세'와 동일한 KIS 실시간 시세 조회 (30초 폴링)
+  const tickerKey = stocks.map(s => s.ticker).join(',');
+  useEffect(() => {
+    if (!tickerKey) return;
+    let active = true;
+    const fetchPrices = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/watchlist-prices?tickers=${tickerKey}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!active) return;
+        const map = {};
+        data.forEach(it => { map[it.ticker] = it; }); // 응답 ticker는 6자리
+        setLivePrices(map);
+      } catch { /* 조회 실패 시 예측값으로 폴백 */ }
+    };
+    fetchPrices();
+    const id = setInterval(fetchPrices, 30000);
+    return () => { active = false; clearInterval(id); };
+  }, [tickerKey]);
 
   const handleClick = (stock) => {
     if (selected?.stock.ticker === stock.ticker) {
@@ -197,9 +233,6 @@ export default function StockWeatherList({ stocks = [], isDark }) {
               종목 클릭 시 AI 상세 분석
             </p>
           </div>
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isDark ? 'bg-white/10 text-[#69dbad]' : 'bg-slate-100 text-slate-600'}`}>
-            실시간
-          </span>
         </div>
 
         {/* 목록 */}
@@ -242,13 +275,11 @@ export default function StockWeatherList({ stocks = [], isDark }) {
                   <span className={`text-[11px] font-bold ${wCfg.color}`}>{wCfg.label}</span>
                 </div>
 
-                {/* 등락률 */}
-                <span className={`text-xs font-black font-mono w-14 text-right ${
-                  stock.direction === 'up'
-                    ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]')
-                    : 'text-rose-400'
+                {/* 하락 위험 등급 (하락예측률 구간 기반) */}
+                <span className={`text-xs font-black w-16 text-right ${
+                  (RISK_LABEL[stock.weather] || RISK_LABEL.cloudy).color
                 }`}>
-                  {stock.direction === 'up' ? '+' : '-'}{Math.abs(stock.change).toFixed(1)}%
+                  {(RISK_LABEL[stock.weather] || RISK_LABEL.cloudy).text}
                 </span>
               </button>
             );
@@ -260,6 +291,7 @@ export default function StockWeatherList({ stocks = [], isDark }) {
       {selected && (
         <FloatingPanel
           stock={selected.stock}
+          live={livePrices[selected.stock.ticker] || livePrices[String(selected.stock.ticker).padStart(6, '0')]}
           anchorRect={selected.rect}
           isDark={isDark}
           onClose={() => setSelected(null)}
