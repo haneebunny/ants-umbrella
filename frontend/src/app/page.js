@@ -18,6 +18,23 @@ import { PORTFOLIO_PRESETS, kosdaqIndex } from './data/mockData';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+/** 20거래일 전(약 한 달 전) 실제 우량주 가격 캐시 사전 (3안 백테스팅 매핑용) */
+const HISTORICAL_PRICE_20D = {
+  '005930': 71500,  // 삼성전자
+  '000660': 168000, // SK하이닉스
+  '005490': 395000, // POSCO홀딩스
+  '068270': 175000, // 셀트리온
+  '055550': 45000,  // 신한지주
+  '000270': 116000, // 기아
+  '051910': 440000, // LG화학
+  '028260': 147000, // 삼성물산
+  '017670': 51000,  // SK텔레콤
+  '010950': 78000,  // S-Oil
+  '033780': 90500,  // KT&G
+  '035420': 195000, // NAVER
+  '373220': 405000, // LG에너지솔루션
+};
+
 /** 컴포넌트 언마운트(페이지 이동) 시에도 유지되는 전역 날씨 캐시 */
 const globalWeatherCache = {};
 
@@ -89,19 +106,27 @@ export default function Home() {
           const stocks = JSON.parse(customStocks);
           const prof = savedProfile ? JSON.parse(savedProfile) : PORTFOLIO_PRESETS[0].profile;
           
-          // 맞춤 종목 리스트 포맷 (로컬스토리지 수량 및 평단가 반영)
-          const stockWeatherList = stocks.map(s => ({
-            ticker: s.ticker,
-            name: s.name,
-            weight: s.weight || 25,
-            tag: s.tag || '#우량주',
-            quantity: Number(s.quantity) || 10,
-            purchasePrice: Number(s.purchasePrice) || 50000,
-            weather: 'sunny', // API 호출 전 기본 날씨
-            direction: 'up',
-            change: 0.0,
-            prob_up: 50.0,
-          }));
+          // 맞춤 종목 리스트 포맷 (로컬스토리지 수량 및 평단가 반영 + 20거래일 전 종가 백테스팅 연동)
+          const stockWeatherList = stocks.map(s => {
+            const rawPrice = Number(s.purchasePrice);
+            // 사용자가 수동 입력을 거치지 않은 경우(5만원 고정 상태) 20거래일 전 실제 종가 꽂아넣기
+            const purchasePrice = (rawPrice === 50000 || !rawPrice)
+              ? (HISTORICAL_PRICE_20D[s.ticker] || 50000)
+              : rawPrice;
+
+            return {
+              ticker: s.ticker,
+              name: s.name,
+              weight: s.weight || 25,
+              tag: s.tag || '#우량주',
+              quantity: Number(s.quantity) || 10,
+              purchasePrice: purchasePrice,
+              weather: 'sunny',
+              direction: 'up',
+              change: 0.0,
+              prob_up: 50.0,
+            };
+          });
 
           return {
             id: 99,
