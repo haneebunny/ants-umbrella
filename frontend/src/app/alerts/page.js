@@ -235,68 +235,32 @@ export default function AlertsPage() {
               알림 환경 설정 (저장 전 임시 변경)
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* 좌측: 알림 수신 카테고리 */}
-              <div className="space-y-3">
-                <p className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>알림 수신 카테고리</p>
-                
-                {[
-                  { key: 'price_risk', label: '📈 주가 급락 위험 리스크', desc: '모델 예측 하락확률 임계치 도달 알림' },
-                  { key: 'esg_news', label: '📰 ESG 악재 및 평판 뉴스', desc: 'Materiality 매핑 ESG 부정 노이즈 알림' },
-                  { key: 'disclosure', label: '🔔 중요 기업 공시 시그널', desc: '증자, 전환사채, 상장폐지 우려 공시 알림' },
-                ].map(item => (
-                  <div key={item.key} className="flex items-center justify-between py-1">
-                    <div>
-                      <p className="text-xs font-bold">{item.label}</p>
-                      <p className={`text-[10px] mt-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{item.desc}</p>
-                    </div>
-                    {/* iOS 스타일 토글 스위치 */}
-                    <button
-                      onClick={() => handleCategoryToggle(item.key)}
-                      className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors flex-shrink-0 ${
-                        tempCategories[item.key] ? 'bg-[#3eb489]' : (isDark ? 'bg-white/10' : 'bg-slate-200')
-                      }`}
-                    >
-                      <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                        tempCategories[item.key] ? 'translate-x-5.5' : 'translate-x-1'
-                      }`} />
-                    </button>
+            <div className="max-w-md space-y-3">
+              <p className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>알림 수신 카테고리</p>
+              
+              {[
+                { key: 'price_risk', label: '📈 주가 급락 위험 리스크', desc: '모델 예측 하락확률 임계치 도달 알림' },
+                { key: 'esg_news', label: '📰 ESG 악재 및 평판 뉴스', desc: 'Materiality 매핑 ESG 부정 노이즈 알림' },
+                { key: 'disclosure', label: '🔔 중요 기업 공시 시그널', desc: '증자, 전환사채, 상장폐지 우려 공시 알림' },
+              ].map(item => (
+                <div key={item.key} className="flex items-center justify-between py-1">
+                  <div>
+                    <p className="text-xs font-bold">{item.label}</p>
+                    <p className={`text-[10px] mt-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{item.desc}</p>
                   </div>
-                ))}
-              </div>
-
-              {/* 우측: 알림 수신 시간 스케줄 */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>알림 수신 시간 (최대 3개)</p>
-                  <span className="text-[10px] font-bold text-[#3eb489]">선택됨 {tempAlertTimes.length}/3</span>
+                  {/* iOS 스타일 토글 스위치 */}
+                  <button
+                    onClick={() => handleCategoryToggle(item.key)}
+                    className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors flex-shrink-0 ${
+                      tempCategories[item.key] ? 'bg-[#3eb489]' : (isDark ? 'bg-white/10' : 'bg-slate-200')
+                    }`}
+                  >
+                    <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                      tempCategories[item.key] ? 'translate-x-5.5' : 'translate-x-1'
+                    }`} />
+                  </button>
                 </div>
-                <p className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                  지정한 시간마다 최신 마켓 및 ESG 데이터를 분석해 슬랙 알림을 보냅니다.
-                </p>
-                <div className="flex flex-wrap gap-2 pt-1">
-                  {['07:00', '09:00', '10:00', '10:20', '12:00', '15:00', '18:00', '21:00'].map(time => {
-                    const isSelected = tempAlertTimes.includes(time);
-                    const isDisabled = !isSelected && tempAlertTimes.length >= 3;
-                    return (
-                      <button
-                        key={time}
-                        disabled={isDisabled}
-                        onClick={() => handleTimeClick(time)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all ${
-                          isSelected
-                            ? 'bg-[#3eb489] text-white shadow-sm'
-                            : isDisabled
-                              ? (isDark ? 'bg-white/5 text-slate-600 cursor-not-allowed' : 'bg-slate-100 text-slate-300 cursor-not-allowed')
-                              : (isDark ? 'bg-white/5 text-slate-300 hover:bg-white/10' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50')
-                        }`}
-                      >
-                        {time}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              ))}
             </div>
 
             {/* 하단 제어 버튼 영역 */}
