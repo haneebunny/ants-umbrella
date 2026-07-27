@@ -457,6 +457,33 @@ _WEATHER_CUT_RAINY = 0.363
 # 아니라 이 값이 "위험도 보통"에 해당하므로 폴백 기본값으로 사용한다.
 _NEUTRAL_PROB_UP = 1.0 - _WEATHER_BASELINE
 
+def _weather_from_doc(doc: dict, market_pd: float) -> tuple[str, float | None, str | None]:
+    """저장된 위험 점수 문서에서 날씨 등급을 산출한다.
+
+    확률이 없으면 "구름"으로 얼버무리지 않고 'unknown'을 반환한다.
+    데이터가 없는 것과 실제로 위험도가 보통인 것은 사용자에게 다른 정보이므로,
+    화면에서도 구분되어야 한다. (unavailable_reason 으로 원인을 함께 전달)
+    """
+    raw = doc.get("prob_crash")
+    if raw is None:
+        raw_up = doc.get("prob_up")
+        raw = (1.0 - float(raw_up)) if raw_up is not None else None
+
+    if raw is None:
+        return "unknown", None, "예측 점수 없음"
+
+    try:
+        prob_crash = float(raw)
+    except (TypeError, ValueError):
+        return "unknown", None, "예측 점수 형식 오류"
+
+    if not (0.0 <= prob_crash <= 1.0):
+        return "unknown", None, "예측 점수 범위 오류"
+
+    prob_up = 1.0 - prob_crash
+    return _prob_to_weather(prob_up, doc.get("direction", "up"), market_pd), prob_up, None
+
+
 def _prob_to_weather(prob_up: float, direction: str = "up", market_pd: float = _WEATHER_BASELINE) -> str:
     # prob_up = 1 - P(급락) 으로 저장되므로 prob_down 이 곧 급락 확률
     prob_down = 1.0 - prob_up
@@ -538,9 +565,10 @@ def get_dashboard_weather(tickers: str = ""):
                 results.append({"ticker": ticker, "available": False})
                 continue
 
-            prob_up   = float(doc.get("prob_up", _NEUTRAL_PROB_UP))
             direction = doc.get("direction", "up")
-            weather   = _prob_to_weather(prob_up, direction, market_pd)
+            weather, prob_up_opt, unavailable_reason = _weather_from_doc(doc, market_pd)
+            # unknown이면 확률을 노출하지 않는다 (없는 값을 지어내지 않기 위해)
+            prob_up = prob_up_opt if prob_up_opt is not None else _NEUTRAL_PROB_UP
 
             # 수집된 실시간 가격 및 변동률 가져오기
             live_price, change = live_results.get(ticker, (None, None))
@@ -563,7 +591,10 @@ def get_dashboard_weather(tickers: str = ""):
                 "available":        True,
                 "weather":          weather,
                 "direction":        direction,
-                "prob_up":          round(prob_up, 4),
+                # 예측 점수가 없으면 확률을 내려보내지 않는다 (프론트가 중립값을 진짜 값처럼
+                # 표시하는 것을 막기 위함). weather == "unknown" 과 짝을 이룬다.
+                "prob_up":          round(prob_up, 4) if unavailable_reason is None else None,
+                "unavailable_reason": unavailable_reason,
                 "confidence_tier":  doc.get("confidence_tier", "weak"),
                 "change":           change,
                 "currentPrice":     live_price,
