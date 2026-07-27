@@ -5,9 +5,10 @@ import pathlib
 
 # 프로젝트 루트 디렉터리 경로 설정
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent.parent
+raw_csv_path = BASE_DIR / "data" / "price_features_raw.csv"
 price_csv_path = BASE_DIR / "data" / "price_features_labeled.csv"
 
-price_df = pd.read_csv(price_csv_path, dtype={"ticker": str})
+price_df = pd.read_csv(raw_csv_path, dtype={"ticker": str})
 price_df["ticker"] = price_df["ticker"].str.zfill(6)
 
 # 이미 잘못 매핑된 sector 컬럼이 존재할 경우 삭제하여 중복 방지
@@ -32,7 +33,8 @@ DEFAULT_SECTORS = {
     '010950': '화학',      # S-Oil
     '033780': '기타제조업', # KT&G
     '032830': '보험',      # 삼성생명
-    '105560': '금융업'     # KB금융
+    '105560': '금융업',     # KB금융
+    '015760': '전기가스업'  # 한국전력
 }
 
 import requests, json

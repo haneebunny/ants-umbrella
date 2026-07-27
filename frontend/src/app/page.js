@@ -170,6 +170,7 @@ export default function Home() {
   const [showSurveyPrompt, setShowSurveyPrompt] = useState(false);
   const [kospiIndex, setKospiIndex] = useState(null);
   const [apiLoading, setApiLoading] = useState(() => !globalWeatherCache[selectedPortfolioId]);
+  const [apiFailed, setApiFailed] = useState(false);
   // AI 판단 근거 — 같은 포트폴리오/날씨/하락종목 구성이면 전역 캐시에서 즉시 복원되어
   // 재방문 시 스켈레톤이 다시 뜨지 않음 (구성이 바뀌었을 때만 새로 요청)
   const [aiSummary, setAiSummary] = useState(() => {
@@ -200,6 +201,7 @@ export default function Home() {
     const tickers = portfolio.stockWeatherList.map(s => s.ticker).join(',');
     if (!tickers) return;
 
+    setApiFailed(false);
     if (!globalWeatherCache[portfolioId]) {
       setApiLoading(true);
     }
@@ -231,7 +233,8 @@ export default function Home() {
       globalWeatherCache[portfolioId] = merged;
       setLiveStockList(merged);
     } catch (err) {
-      console.warn('[Dashboard] API 조회 실패, mockData 사용:', err.message);
+      console.warn('[Dashboard] API 조회 실패, 스켈레톤 상태 유지:', err.message);
+      setApiFailed(true);
       if (!globalWeatherCache[portfolioId]) {
         setLiveStockList(null);
       }
@@ -462,7 +465,7 @@ export default function Home() {
                 <StockWeatherList
                   stocks={stockWeatherList}
                   isDark={isDark}
-                  isLoading={apiLoading && !liveStockList}
+                  isLoading={apiLoading || apiFailed || !liveStockList}
                 />
               </div>
 
@@ -473,7 +476,7 @@ export default function Home() {
                   radarScores={radarScores}
                   isDark={isDark}
                   weatherStatus={overallWeather.status}
-                  isLoading={apiLoading && !liveStockList}
+                  isLoading={apiLoading || apiFailed || !liveStockList}
                 />
               </div>
 

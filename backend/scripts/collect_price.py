@@ -102,7 +102,8 @@ def get_sector_map() -> pd.DataFrame:
         '010950': '화학',      # S-Oil
         '033780': '기타제조업', # KT&G
         '032830': '보험',      # 삼성생명
-        '105560': '금융업'     # KB금융
+        '105560': '금융업',     # KB금융
+        '015760': '전기가스업'  # 한국전력
     }
     
     headers = {
@@ -190,7 +191,7 @@ def get_price_features(ticker: str, start: str, end: str, index_ticker: str = "1
     ]
 
     df["ticker"] = str(ticker).zfill(6)
-    return df[["ticker", "date", "log_return_1d", "volatility_20d", "volume_zscore", "beta_60d"]]
+    return df[["ticker", "date", "close", "log_return_1d", "volatility_20d", "volume_zscore", "beta_60d"]]
 
 if __name__ == "__main__":
     sector_map = get_sector_map()

@@ -190,6 +190,74 @@ if __name__ == "__main__":
     
     result.to_csv(out_path, index=False)
     print(f"[SUCCESS] {len(result)}행의 통합 피처 데이터셋이 성공적으로 생성되었습니다 -> {out_path}\n")
+
+    # ── [추가] MongoDB Atlas 'price_macro' 컬렉션 적재 ──
+    try:
+        from app.db import get_collection
+        from pymongo import UpdateOne
+        
+        print("=== MongoDB 'price_macro' 적재 시작 ===")
+        price_col = get_collection("price_macro")
+        
+        # 1. KOSPI 거시 지표 데이터 적재
+        macro_df = pd.read_csv(macro_csv)
+        macro_ops = []
+        for _, row in macro_df.iterrows():
+            d_str = str(row["date"])
+            if len(d_str) == 8 and "-" not in d_str:
+                d_str = f"{d_str[:4]}-{d_str[4:6]}-{d_str[6:]}"
+            
+            rate_val = row.get("macro_rate")
+            fx_val = row.get("macro_fx")
+            if pd.isna(rate_val) or pd.isna(fx_val):
+                continue
+                
+            macro_ops.append(UpdateOne(
+                {"ticker": "KOSPI", "date": d_str},
+                {"$set": {
+                    "ticker": "KOSPI",
+                    "date": d_str,
+                    "usd_krw": float(fx_val),
+                    "bond_3y": float(rate_val)
+                }},
+                upsert=True
+            ))
+        
+        # 2. 개별 종목 종가 데이터 적재
+        stock_ops = []
+        for _, row in result.iterrows():
+            t_code = str(row["ticker"]).zfill(6)
+            d_str = pd.to_datetime(row["date"]).strftime("%Y-%m-%d")
+            
+            close_val = row.get("close")
+            ret_val = row.get("log_return_1d")
+            if pd.isna(close_val):
+                continue
+                
+            stock_ops.append(UpdateOne(
+                {"ticker": t_code, "date": d_str},
+                {"$set": {
+                    "ticker": t_code,
+                    "date": d_str,
+                    "close": float(close_val),
+                    "log_return_1d": float(ret_val) if not pd.isna(ret_val) else 0.0
+                }},
+                upsert=True
+            ))
+            
+        print(f" -> KOSPI 거시 데이터 {len(macro_ops)}건 bulk_write...")
+        if macro_ops:
+            for idx in range(0, len(macro_ops), 1000):
+                price_col.bulk_write(macro_ops[idx:idx+1000])
+                
+        print(f" -> 개별 종목 주가 데이터 {len(stock_ops)}건 bulk_write...")
+        if stock_ops:
+            for idx in range(0, len(stock_ops), 1000):
+                price_col.bulk_write(stock_ops[idx:idx+1000])
+                
+        print("[SUCCESS] MongoDB 'price_macro' 적재 완료!")
+    except Exception as mongo_err:
+        print(f"[WARN] MongoDB 'price_macro' 적재 실패 (로컬 모드 시 우회됨): {mongo_err}")
     
 
     

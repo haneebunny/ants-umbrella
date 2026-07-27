@@ -43,9 +43,20 @@ const TICKER_NAME_MAP = {
 // 마크다운 볼드 파서
 const renderMarkdownBold = (text) => {
   if (!text) return '';
-  const parts = text.split(/\*\*([^*]+)\*\*/g);
-  return parts.map((part, index) => {
-    return index % 2 === 1 ? <strong key={index} className="font-extrabold">{part}</strong> : part;
+  const lines = text.split(/\r?\n/);
+  return lines.map((line, lineIdx) => {
+    if (line.trim() === '') {
+      return <div key={`empty-${lineIdx}`} className="h-2" />;
+    }
+    const parts = line.split(/\*\*([^*]+)\*\*/g);
+    const parsedLine = parts.map((part, index) => {
+      return index % 2 === 1 ? <strong key={index} className="font-extrabold">{part}</strong> : part;
+    });
+    return (
+      <p key={lineIdx} className="mb-2.5 last:mb-0 leading-relaxed text-xs sm:text-sm">
+        {parsedLine}
+      </p>
+    );
   });
 };
 
@@ -289,8 +300,8 @@ export default function StockDetailPage() {
           macroAnalysis: evRes?.macro_analysis,
           sparkline: evRes?.sparkline,
           marketCap: scoreRes?.market_cap,
-          high52w: scoreRes?.high_52w,
-          low52w: scoreRes?.low_52w,
+          high52w: (kisData && kisData.w52_hgpr > 0) ? `${kisData.w52_hgpr.toLocaleString()}원` : scoreRes?.high_52w,
+          low52w: (kisData && kisData.w52_lwpr > 0) ? `${kisData.w52_lwpr.toLocaleString()}원` : scoreRes?.low_52w,
         });
       } catch (e) {
         console.warn('[StockDetail] Live backend API fetch fallback:', e);
@@ -347,6 +358,22 @@ export default function StockDetailPage() {
   const impactLossValue = isHeld
     ? Math.round(stockHoldingValue * (simDropPct / 100))
     : Math.round(simVirtualAmount * (simDropPct / 100));
+
+  if (!liveData) {
+    return (
+      <div className={`w-full min-h-screen pt-12 pb-10 px-4 max-w-[1200px] mx-auto animate-pulse flex flex-col gap-6 ${isDark ? 'bg-[#0f1110]' : 'bg-slate-50'}`}>
+        <div className={`h-36 rounded-2xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-100 shadow-sm'}`} />
+        <div className={`h-40 rounded-2xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-100 shadow-sm'}`} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className={`h-24 rounded-2xl ${isDark ? 'bg-white/5' : 'bg-white border border-slate-100 shadow-sm'}`} />
+          <div className={`h-24 rounded-2xl ${isDark ? 'bg-white/5' : 'bg-white border border-slate-100 shadow-sm'}`} />
+          <div className={`h-24 rounded-2xl ${isDark ? 'bg-white/5' : 'bg-white border border-slate-100 shadow-sm'}`} />
+          <div className={`h-24 rounded-2xl ${isDark ? 'bg-white/5' : 'bg-white border border-slate-100 shadow-sm'}`} />
+        </div>
+        <div className={`h-72 rounded-2xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-100 shadow-sm'}`} />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full relative">
@@ -406,14 +433,14 @@ export default function StockDetailPage() {
           isDark ? 'bg-[#1a231e] border-[#3eb489]/30 shadow-lg' : 'bg-emerald-50/70 border-emerald-200 shadow-sm'
         }`}>
           <div className="flex items-start gap-4">
-            <div className="w-11 h-11 rounded-2xl bg-[#3eb489] text-white flex items-center justify-center flex-shrink-0 shadow-md text-xl">
-              🐜
+            <div className="w-11 h-11 rounded-2xl bg-[#3eb489] text-white flex items-center justify-center flex-shrink-0 shadow-md">
+              <Icon name="info" className="w-6 h-6" />
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between gap-2 mb-2">
                 <div className="flex items-center gap-2">
                   <h3 className={`text-sm font-black ${isDark ? 'text-[#69dbad]' : 'text-[#2d966e]'}`}>
-                    나개미의 AI 리스크 분석 브리핑
+                    미미의 AI 리스크 분석 브리핑
                   </h3>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                     isDark ? 'bg-white/10 text-emerald-300' : 'bg-emerald-100 text-emerald-800'
@@ -526,18 +553,27 @@ export default function StockDetailPage() {
                   <polyline points={pointsStr} fill="none" stroke={lineColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                   
                   {points.map((pt, idx) => (
-                    <circle
-                      key={idx}
-                      cx={pt.x}
-                      cy={pt.y}
-                      r={hoveredIdx === idx ? 5 : 3}
-                      fill={lineColor}
-                      stroke={isDark ? '#141715' : '#ffffff'}
-                      strokeWidth="1.5"
-                      className="transition-all cursor-pointer"
-                      onMouseEnter={() => setHoveredIdx(idx)}
-                      onMouseLeave={() => setHoveredIdx(null)}
-                    />
+                    <g key={idx}>
+                      <circle
+                        cx={pt.x}
+                        cy={pt.y}
+                        r={hoveredIdx === idx ? 5 : 3}
+                        fill={lineColor}
+                        stroke={isDark ? '#141715' : '#ffffff'}
+                        strokeWidth="1.5"
+                        className="transition-all cursor-pointer"
+                        onMouseEnter={() => setHoveredIdx(idx)}
+                        onMouseLeave={() => setHoveredIdx(null)}
+                      />
+                      <text
+                        x={pt.x}
+                        y={pt.y + 13}
+                        textAnchor="middle"
+                        className={`text-[8px] sm:text-[9px] font-mono font-bold ${isDark ? 'fill-slate-400' : 'fill-slate-600'}`}
+                      >
+                        {pt.val.toLocaleString()}원
+                      </text>
+                    </g>
                   ))}
                 </svg>
 
@@ -714,18 +750,6 @@ export default function StockDetailPage() {
               </div>
             </div>
 
-            {/* 개미 펫의 실시간 응원 한마디 */}
-            <div className={`p-5 rounded-2xl border ${isDark ? 'bg-[#18201a] border-[#3eb489]/20' : 'bg-emerald-50/50 border-emerald-100'}`}>
-              <div className="flex items-center gap-3">
-                <span className="text-3xl">🐜</span>
-                <div>
-                  <h4 className={`text-xs font-black ${isDark ? 'text-[#69dbad]' : 'text-[#2d966e]'}`}>개미 지키미 팁</h4>
-                  <p className={`text-xs mt-1 leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                    주가가 일시 흔들려도 업황 기초 체력이 든든하다면 성급하게 매도하지 말고 분할 관망하는 지혜가 필요해요!
-                  </p>
-                </div>
-              </div>
-            </div>
 
           </div>
 

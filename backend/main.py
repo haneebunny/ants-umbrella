@@ -268,6 +268,9 @@ def get_realtime_price_via_kis_cached(ticker: str) -> dict:
 
 
 def get_realtime_price_via_kis(ticker: str) -> dict:
+    return _get_realtime_price_via_kis_internal(ticker, retry_on_expire=True)
+
+def _get_realtime_price_via_kis_internal(ticker: str, retry_on_expire: bool = True) -> dict:
     access_token, domain = get_kis_access_token_and_domain()
     if not access_token:
         return None
@@ -286,6 +289,29 @@ def get_realtime_price_via_kis(ticker: str) -> dict:
             "FID_INPUT_ISCD": str(ticker).zfill(6)
         }
         price_res = requests.get(price_url, headers=price_headers, params=params, timeout=5)
+        
+        # 토큰 만료 에러 감지 (EGW00123)
+        if price_res.status_code != 200:
+            try:
+                err_data = price_res.json()
+                msg_cd = err_data.get("msg_cd")
+                msg1 = err_data.get("msg1", "")
+                
+                if (msg_cd == "EGW00123" or "만료된 token" in msg1) and retry_on_expire:
+                    print(f"[WARN] 만료된 토큰 감지 ({msg_cd}: {msg1}). 캐시 삭제 후 재갱신 시도...")
+                    from pathlib import Path
+                    project_root = Path(__file__).resolve().parent.parent
+                    cache_path = project_root / "data" / "kis_token_cache.json"
+                    if cache_path.exists():
+                        try:
+                            cache_path.unlink()
+                            print("[SUCCESS] 만료 토큰 캐시 파일 제거 완료.")
+                        except Exception as e:
+                            print(f"[ERROR] 캐시 파일 삭제 실패: {e}")
+                    return _get_realtime_price_via_kis_internal(ticker, retry_on_expire=False)
+            except Exception as parse_err:
+                print(f"[WARN] KIS API 오류 파싱 실패: {parse_err}")
+
         if price_res.status_code == 200:
             out = price_res.json().get("output", {})
             prpr = int(out.get("stck_prpr", 0))
@@ -299,7 +325,9 @@ def get_realtime_price_via_kis(ticker: str) -> dict:
                 "price": prpr,
                 "change": vrss,
                 "change_rate": ctrt,
-                "direction": "down" if sign in ["4", "5"] else "up"
+                "direction": "down" if sign in ["4", "5"] else "up",
+                "w52_hgpr": int(out.get("w52_hgpr", 0)),
+                "w52_lwpr": int(out.get("w52_lwpr", 0))
             }
     except Exception as e:
         print(f"[ERROR] KIS API 현재가 조회 중 오류 발생 ({ticker}): {e}")
@@ -572,6 +600,7 @@ DEFAULT_MOCK_PRICES = {
     '009150': 140000,  # 삼성전기
     '011200': 220000,  # 한진
     '251270': 58000,   # 넷마블
+    '015760': 21000,   # 한국전력
 }
 
 DEFAULT_PROB_UP_MAP = {
@@ -652,7 +681,9 @@ def get_watchlist_prices(tickers: str = ""):
                             "price": prpr,
                             "change": vrss,
                             "change_rate": ctrt,
-                            "direction": "down" if sign in ["4", "5"] else "up"
+                            "direction": "down" if sign in ["4", "5"] else "up",
+                            "w52_hgpr": int(out.get("w52_hgpr", 0)),
+                            "w52_lwpr": int(out.get("w52_lwpr", 0))
                         }
             except Exception as e:
                 print(f"[WARN] KIS 실시간가 개별 조회 실패 ({ticker_formatted}): {e}")
@@ -773,15 +804,38 @@ def generate_ai_briefing(ticker_name: str, ticker: str, prob_up: float, directio
 - ESG/부정 뉴스 건수: {esg_count}건
 
 [작성 규칙]
-- "🐜 안녕 나개미!" 또는 "🐜 나개미야,"로 시작
+- "안녕! 든든한 투자 메이트, 미미야! 🐰" 로 시작
 - 수치(확률, 확신도)를 자연스럽게 문장에 녹여서
 - 초보 투자자가 바로 이해할 수 있는 쉬운 용어
-- 2~3문장, 마지막 이모지로 마무리
 - **굵게** 강조 필요한 단어에 마크다운 볼드 사용"""
 
     gemini_text = _call_gemini(prompt)
-    briefing = gemini_text or fallback
-    used_fallback = not bool(gemini_text)
+    
+    if gemini_text:
+        validation_prompt = f"""당신은 전문 금융 분석가이자 주식 초보자의 친근한 투자 메이트 '미미'입니다.
+다음의 1차 리스크 분석 초고와 수집된 기업/시장 관련 원본 데이터를 종합 검토하고, 정보 누락이나 논리적 모순이 없는지 최종 팩트체크하여 투자자에게 도움이 되는 '자세하고 가독성이 뛰어난 분석 리포트 브리핑'으로 확장해 주세요.
+
+[1차 초안 브리핑]
+{gemini_text}
+
+[입력 원본 데이터]
+- 종목: {ticker_name} ({ticker})
+- 20일 하락 확률: {prob_down_pct}% (상승 확률: {prob_up_pct}%)
+- 관련 ESG/부정 보도량: {esg_count}건
+
+[작성 및 가독성 규칙 (매우 중요)]
+- 캐릭터 정체성인 '미미(🐰)' 및 핵심 정보(하락 확률 등)를 확실히 반영해 친근하고 부드러운 말투(~어요, ~랍니다)로 설명하세요. '개미미'나 '나개미'는 절대 사용하지 마세요.
+- 전체 글이 절대로 하나의 긴 덩어리 문단으로 합쳐지지 않게 하세요. 내용의 흐름(개요 / 원인 분석 / 대응 팁)에 따라 문단 사이에 반드시 '\\n\\n' (줄바꿈 2개)을 기입하여, 최소 3개 이상의 짧고 명확한 문단으로 단락을 나누어 작성하세요.
+- 어려운 한자어나 금융 전문어(예: 보합, 오버행, 밸류에이션 등)는 초보자가 이해하기 쉽도록 한글로 풀어서 설명하세요.
+- 반드시 브리핑 내용의 마지막 문장으로 "🔍 미미의 최종 리스크 검증 완료" 라는 검증 라벨을 단독 줄로 추가해 주세요.
+- 강조하고 싶은 핵심 단어는 **굵게** 마크다운 볼드로 표기하세요.
+"""
+        verified_text = _call_gemini(validation_prompt)
+        briefing = verified_text or gemini_text
+        used_fallback = False
+    else:
+        briefing = fallback + "\n\n🔍 미미의 최종 리스크 검증 완료"
+        used_fallback = True
 
     # ── 5. 결과 캐싱 (fingerprint 저장, 폴백 여부도 함께 기록) ───────────
     try:
@@ -1035,7 +1089,7 @@ def get_risk_evidences(ticker: str):
         if bond_3y >= 3.8:
             bond_status, bond_inf, bond_desc = "위험", "high", f"국고채 금리가 {bond_3y:.2f}%로 고금리 기조가 연장되어 기업의 단기 차입 이자 및 조달 비용 부담이 아주 큰 상태야."
         elif bond_3y >= 3.3:
-            bond_status, bond_inf, bond_desc = "주의", "medium", f"국고채 금리가 {bond_3y:.2f}% 선에서 강보합 상태를 그려 이자 비용을 줄이기에는 다소 무리인 보수적 장세야."
+            bond_status, bond_inf, bond_desc = "주의", "medium", f"국고채 금리가 {bond_3y:.2f}% 선에서 약간 높은 수준을 유지하고 있어 이자 비용을 줄이기에는 다소 무리인 보수적 장세야."
         else:
             bond_status, bond_inf, bond_desc = "안정", "low", f"국고채 금리가 {bond_3y:.2f}%로 연중 낮고 안정적인 범위에 있어 대출 및 금융 비용 관련 위협도가 뚝 낮아졌어."
 
