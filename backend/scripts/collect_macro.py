@@ -47,7 +47,19 @@ if __name__ == "__main__":
     fx = get_fx_rate("20230102", end_date_str)
 
     macro = rate.merge(fx, on="date", how="outer").sort_values("date")
-    
+
+    # 결측은 직전 관측값으로 보완(forward-fill).
+    #  - 기준금리: 한국은행이 변경할 때만 갱신되는 정책금리라 그 사이 날짜는 직전 값이 유효하다.
+    #    ECOS가 당일치를 아직 안 올린 경우에도 마찬가지.
+    #  - 환율: 주말·공휴일에는 고시가 없으므로 직전 영업일 값을 쓴다.
+    # 미래 값이 과거로 새지 않도록 반드시 날짜 오름차순 정렬 후 앞방향으로만 채운다.
+    before = macro[["macro_rate", "macro_fx"]].isna().sum()
+    macro[["macro_rate", "macro_fx"]] = macro[["macro_rate", "macro_fx"]].ffill()
+    after = macro[["macro_rate", "macro_fx"]].isna().sum()
+    print(f"[INFO] forward-fill 보완: "
+          f"금리 {before['macro_rate']}→{after['macro_rate']}건, "
+          f"환율 {before['macro_fx']}→{after['macro_fx']}건 결측")
+
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     macro.to_csv(OUTPUT_PATH, index=False, encoding="utf-8-sig")
     print(macro.tail(10))
