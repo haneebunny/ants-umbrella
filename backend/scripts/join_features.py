@@ -65,6 +65,18 @@ def build_ml_rows(news_csv, price_csv, macro_csv, supplementary_csv, corp_code_m
         .reset_index()
     )
 
+    # ── 뉴스 "존재" 및 "강도" 피처 ────────────────────────────────
+    # signed_value는 neutral을 0으로 매핑한다. 그런데 수집된 기사의 약 64%가 neutral이라,
+    # 위 집계만으로는 "뉴스가 아예 없는 날"과 "중립 뉴스만 있는 날"이 똑같이 0이 되어
+    # 모델이 둘을 구분할 수 없다. 기사 건수를 별도 피처로 넣어 이를 분리한다.
+    news["_is_neg"] = (news["news_direction"] == "negative").astype(int)
+    daily_cnt = (
+        news.groupby(["ticker", "date"])
+        .agg(news_count=("news_direction", "size"),
+             news_neg_count=("_is_neg", "sum"))
+        .reset_index()
+    )
+
     # 기존 daily_news 집계 코드 아래에 추가
     news["is_esg"] = (news["news_category"] == "ESG").astype(int)
 
@@ -109,12 +121,32 @@ def build_ml_rows(news_csv, price_csv, macro_csv, supplementary_csv, corp_code_m
         ["category_material_value", "category_immaterial_value"]
     ].fillna(0.0)
     
+    # 뉴스 건수 결합 (없는 날은 0건)
+    merged = merged.merge(daily_cnt, on=["ticker", "date"], how="left")
+    merged[["news_count", "news_neg_count"]] = (
+        merged[["news_count", "news_neg_count"]].fillna(0).astype(int)
+    )
+
+    # ── 뉴스 누적 피처 ────────────────────────────────────────────
+    # 뉴스는 하루 단위로 보면 너무 드문드문해서(칸의 약 25%는 기사 0건) 모델이 배우기 어렵다.
+    # 악재의 영향은 하루로 끝나지 않으므로 최근 5·20거래일 누적치를 함께 제공한다.
+    # rolling은 과거 방향으로만 계산되므로 미래 정보 누수는 발생하지 않는다.
+    merged = merged.sort_values(["ticker", "date"]).reset_index(drop=True)
+    for w in (5, 20):
+        for src, dst in [("category_material_value", f"news_mat_sum_{w}d"),
+                         ("news_neg_count", f"news_neg_cnt_{w}d"),
+                         ("news_count", f"news_cnt_{w}d")]:
+            merged[dst] = (
+                merged.groupby("ticker")[src]
+                .transform(lambda s: s.rolling(w, min_periods=1).sum())
+            )
+
     # 보조 신호 결합
     merged = merged.merge(daily_supp, on=["ticker", "date"], how="left")
     merged[["capital_event_flag", "delisting_related_flag"]] = (
         merged[["capital_event_flag", "delisting_related_flag"]].fillna(0).astype(int)
     )
-    
+
     return merged
 
 if __name__ == "__main__":
@@ -124,8 +156,13 @@ if __name__ == "__main__":
     
     data_dir = project_root / "data"
 
-    # 학습용 뉴스 피처 파일이 감지되면 최우선 사용, 없으면 데일리 또는 더미 파일 로드
-    news_csv = data_dir / "news_features_training.csv"
+    # 뉴스 피처 파일 우선순위
+    #   1) news_features_all.csv    — 전 종목 빅카인즈 분류본 (콜랩 산출물)
+    #   2) news_features_training.csv — 구 버전(네이버 단일 종목만 담겨 있음)
+    #   3) news_features_day2.csv / dummy
+    news_csv = data_dir / "news_features_all.csv"
+    if not news_csv.exists():
+        news_csv = data_dir / "news_features_training.csv"
     if not news_csv.exists():
         news_csv = data_dir / "news_features_day2.csv"
     if not news_csv.exists():

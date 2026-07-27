@@ -25,8 +25,20 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata = {
-  title: "개미의 우산 - 투자성향진단 시스템",
-  description: "개미의 우산의 정교한 알고리즘을 통해 당신만의 독특한 투자 성향을 분석합니다.",
+  title: "개미의 우산 | 캐릭터 날씨로 쉽게 확인하는 내 주식 리스크 진단",
+  description: "개미미 캐릭터가 알려주는 오늘 내 주식의 날씨! 복잡한 ESG 악재와 거시 지표를 날씨 기호(맑음·비·번개)로 쉽고 직관적으로 판단하여 주가 급락 위험을 지켜줍니다.",
+  openGraph: {
+    title: "개미의 우산 | 캐릭터 날씨로 쉽게 확인하는 내 주식 리스크 진단",
+    description: "내 주식의 오늘 날씨는 어떨까? 개미미와 함께 복잡한 리스크를 날씨로 쉽고 직관적으로 진단해 보세요.",
+    images: [
+      {
+        url: "/icon.png",
+        width: 512,
+        height: 512,
+        alt: "개미의 우산 로고",
+      },
+    ],
+  },
 };
 
 // 페이지 렌더 전에 localStorage에서 테마를 읽어 <html>에 즉시 적용

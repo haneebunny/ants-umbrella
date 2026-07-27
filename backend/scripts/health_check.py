@@ -19,6 +19,9 @@ RAW_PRICE = PROJECT_ROOT / "data" / "price_features_raw.csv"
 FEATURES = [
     "log_return_1d", "volatility_20d", "volume_zscore", "beta_60d", "macro_rate", "macro_fx",
     "category_material_value", "category_immaterial_value",
+    "news_count", "news_neg_count",
+    "news_mat_sum_5d", "news_neg_cnt_5d", "news_cnt_5d",
+    "news_mat_sum_20d", "news_neg_cnt_20d", "news_cnt_20d",
     "capital_event_flag", "delisting_related_flag",
 ]
 LABEL = "label_drawdown_20d"
@@ -250,7 +253,10 @@ section("D. 단계별 기여도 — 무엇을 넣었더니 얼마나 좋아졌�
 PRICE = ["log_return_1d", "volatility_20d", "volume_zscore", "beta_60d"]
 MACRO = ["macro_rate", "macro_fx"]
 DISC = ["capital_event_flag", "delisting_related_flag"]
-NEWS = ["category_material_value", "category_immaterial_value"]
+NEWS = ["category_material_value", "category_immaterial_value",
+        "news_count", "news_neg_count",
+        "news_mat_sum_5d", "news_neg_cnt_5d", "news_cnt_5d",
+        "news_mat_sum_20d", "news_neg_cnt_20d", "news_cnt_20d"]
 
 
 def eval_cols(cols):
