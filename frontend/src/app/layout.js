@@ -25,11 +25,11 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata = {
-  title: "개미의 우산 | AI 기반 주가 급락 위험 진단 서비스",
-  description: "ESG 리스크(뉴스·공시)와 거시 경제 지표를 XGBoost AI 모델로 분석하여, 내 포트폴리오 종목의 20거래일 내 주가 급락 위험을 사전 진단합니다.",
+  title: "개미의 우산 | 캐릭터 날씨로 쉽게 확인하는 내 주식 리스크 진단",
+  description: "개미미 캐릭터가 알려주는 오늘 내 주식의 날씨! 복잡한 ESG 악재와 거시 지표를 날씨 기호(맑음·비·번개)로 쉽고 직관적으로 판단하여 주가 급락 위험을 지켜줍니다.",
   openGraph: {
-    title: "개미의 우산 | AI 기반 주가 급락 위험 진단 서비스",
-    description: "개인 투자자를 위한 ESG 및 거시 지표 기반 주가 급락 위험 예측 플랫폼",
+    title: "개미의 우산 | 캐릭터 날씨로 쉽게 확인하는 내 주식 리스크 진단",
+    description: "내 주식의 오늘 날씨는 어떨까? 개미미와 함께 복잡한 리스크를 날씨로 쉽고 직관적으로 진단해 보세요.",
     images: [
       {
         url: "/icon.png",
