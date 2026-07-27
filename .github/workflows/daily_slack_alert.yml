@@ -94,6 +94,34 @@ jobs:
         poetry run python scripts/add_sector.py
         poetry run python scripts/join_features.py
 
+    # 데이터·모델 건강검진 — 적재 전에 데이터 품질과 확률 보정을 점검한다.
+    # FAIL이 나면 종료 코드 1 → 이 스텝이 빨간불로 표시된다(리포트는 아래에서 업로드).
+    # 알림 파이프라인 자체는 막지 않기 위해 continue-on-error를 유지한다.
+    - name: Data & Model Health Check
+      id: health
+      continue-on-error: true
+      run: |
+        cd backend
+        poetry run python scripts/health_check.py
+
+    - name: Upload Health Report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: health-report-${{ github.run_number }}
+        path: reports/health_check.md
+        if-no-files-found: warn
+
+    # 건강검진 요약을 Actions 실행 화면에 바로 표시
+    - name: Publish Health Report to Summary
+      if: always()
+      run: |
+        if [ -f reports/health_check.md ]; then
+          cat reports/health_check.md >> "$GITHUB_STEP_SUMMARY"
+        else
+          echo "건강검진 리포트가 생성되지 않았습니다." >> "$GITHUB_STEP_SUMMARY"
+        fi
+
     # XGBoost 추론/DB 적재 — 실패해도 슬랙 알림은 계속 실행
     - name: Update MongoDB Risk Scores (XGBoost Inference)
       continue-on-error: true
