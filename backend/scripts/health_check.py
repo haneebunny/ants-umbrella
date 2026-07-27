@@ -25,10 +25,16 @@ FEATURES = [
     "capital_event_flag", "delisting_related_flag",
 ]
 LABEL = "label_drawdown_20d"
+
+# C 섹션(모델 건전성)은 "실제로 서빙되는 모델"을 점검해야 의미가 있으므로
+# save_risk_scores.py 의 피처 목록을 그대로 가져온다.
+# 반면 D 섹션(단계별 기여도)은 피처를 누적해가며 비교하는 것이 목적이므로
+# 위 FEATURES(전체 목록)를 계속 사용한다.
+SERVING_FEATURES = ["volatility_20d", "log_return_1d"]
 WINDOW, THRESHOLD = 20, -0.10
 
 # 날씨 등급 컷 (main.py와 동일해야 함)
-WEATHER_CUTS = (0.097, 0.252, 0.420)
+WEATHER_CUTS = (0.148, 0.260, 0.363)
 
 results = []
 
@@ -165,12 +171,14 @@ check("B4. 라벨 참조 구간 누수", "PASS" if leak == 0 else "FAIL",
 # ══════════════════════════════════════════════════════════════════
 section("C. 모델 학습 건전성")
 
-train = df.dropna(subset=FEATURES + [LABEL]).sort_values("date").reset_index(drop=True)
-X, y = train[FEATURES], train[LABEL].astype(int)
+# 서빙 모델 기준으로 점검한다 (D 섹션의 ablation은 FEATURES 전체를 따로 사용)
+train = df.dropna(subset=SERVING_FEATURES + [LABEL]).sort_values("date").reset_index(drop=True)
+X, y = train[SERVING_FEATURES], train[LABEL].astype(int)
 base_rate = float(y.mean())
 
-check("C0. 실제 학습 행 수", "PASS",
-      f"{len(train):,}행 (전체 {n_rows:,} → 라벨 확정 {len(labeled):,} → 피처 온전 {len(train):,})")
+check("C0. 서빙 모델 구성", "PASS",
+      f"피처 {len(SERVING_FEATURES)}개 {SERVING_FEATURES} · 학습 {len(train):,}행 "
+      f"(전체 {n_rows:,} → 라벨 확정 {len(labeled):,})")
 
 # in-sample 모델
 m_in = XGBClassifier(n_estimators=100, max_depth=3, eval_metric="logloss", random_state=42)
@@ -240,7 +248,7 @@ check("C4. 날씨 등급 단조성 (OOS)", "PASS" if mono else "WARN",
       "등급이 나빠질수록 실제 급락률이 높아져야 함 (단조 증가)")
 
 # C5. 무기여 피처
-imp = pd.Series(m_in.feature_importances_, index=FEATURES).sort_values()
+imp = pd.Series(m_in.feature_importances_, index=SERVING_FEATURES).sort_values()
 dead = imp[imp == 0]
 check("C5. 무기여 피처", "PASS" if len(dead) == 0 else "WARN",
       f"기여도 0인 피처 {len(dead)}개" + (f": {list(dead.index)}" if len(dead) else ""),
@@ -259,25 +267,43 @@ NEWS = ["category_material_value", "category_immaterial_value",
         "news_mat_sum_20d", "news_neg_cnt_20d", "news_cnt_20d"]
 
 
+# D 섹션은 피처를 누적해가며 비교하므로 전체 FEATURES 기준으로 별도 구성한다.
+# (C 섹션은 서빙 피처 2개만 쓰므로 그 X/y/folds를 재사용할 수 없다)
+train_d = df.dropna(subset=FEATURES + [LABEL]).sort_values("date").reset_index(drop=True)
+Xd, yd = train_d[FEATURES], train_d[LABEL].astype(int)
+nd = len(train_d)
+folds_d = []
+for k in range(4):
+    te = int(nd * (0.4 + 0.15 * k))
+    ts = te + GAP
+    e = min(int(nd * (0.4 + 0.15 * (k + 1))) + GAP, nd)
+    if ts < e:
+        folds_d.append((np.arange(0, te - GAP), np.arange(ts, e)))
+yd_oos = np.concatenate([yd.iloc[te_i].values for _, te_i in folds_d])
+d_base = yd_oos.mean()
+print(f"  (D 섹션 기준 — 전체 피처 {len(FEATURES)}개 · 학습 {nd:,}행 · "
+      f"테스트 {len(yd_oos):,}행 · 급락률 {d_base:.4f})\n")
+
+
 def eval_cols(cols):
     """엠바고 워크포워드로 학습·평가하고 테스트 구간 예측을 반환"""
     preds = []
-    for tr_i, te_i in folds:
+    for tr_i, te_i in folds_d:
         mm = XGBClassifier(n_estimators=100, max_depth=3, eval_metric="logloss",
                            random_state=42)
-        mm.fit(X.iloc[tr_i][cols], y.iloc[tr_i])
-        preds.append(mm.predict_proba(X.iloc[te_i][cols])[:, 1])
+        mm.fit(Xd.iloc[tr_i][cols], yd.iloc[tr_i])
+        preds.append(mm.predict_proba(Xd.iloc[te_i][cols])[:, 1])
     return np.concatenate(preds)
 
 
 def eval_rule(col):
     """학습 없이 해당 피처값 자체를 위험 점수로 사용"""
-    return np.concatenate([X.iloc[te_i][col].values for _, te_i in folds])
+    return np.concatenate([Xd.iloc[te_i][col].values for _, te_i in folds_d])
 
 
 ladder = []
 # 1) 그냥 데이터만 — 학습 없음
-ladder.append(("① 아무것도 안 함 (전부 평균 확률)", np.full(len(y_oos), oos_base)))
+ladder.append(("① 아무것도 안 함 (전부 평균 확률)", np.full(len(yd_oos), d_base)))
 ladder.append(("① 단순 규칙 — 변동성 값만 사용(학습 X)", eval_rule("volatility_20d")))
 # 2) 학습했을 때
 ladder.append(("② 학습 — 가격 피처만", eval_cols(PRICE)))
@@ -291,23 +317,23 @@ print(f"  {'단계':<38}{'PR-AUC':>9}{'AUC-ROC':>10}{'기준선대비':>11}")
 print(f"  {'-' * 66}")
 ladder_rows = []
 for name, pr in ladder:
-    pa = average_precision_score(y_oos, pr)
-    ar = roc_auc_score(y_oos, pr)
-    ladder_rows.append((name, pa, ar, pa / oos_base))
-    print(f"  {name:<38}{pa:>9.4f}{ar:>10.4f}{pa / oos_base:>10.2f}배")
+    pa = average_precision_score(yd_oos, pr)
+    ar = roc_auc_score(yd_oos, pr)
+    ladder_rows.append((name, pa, ar, pa / d_base))
+    print(f"  {name:<38}{pa:>9.4f}{ar:>10.4f}{pa / d_base:>10.2f}배")
 print()
 
 
 def boot_delta(pa_, pb_, metric, B=2000, seed=0):
     """두 단계의 성능 차이에 대한 부트스트랩 신뢰구간"""
     rng = np.random.default_rng(seed)
-    idx = np.arange(len(y_oos))
+    idx = np.arange(len(yd_oos))
     diffs = []
     for _ in range(B):
         s_ = rng.choice(idx, len(idx), replace=True)
-        if len(np.unique(y_oos[s_])) < 2:
+        if len(np.unique(yd_oos[s_])) < 2:
             continue
-        diffs.append(metric(y_oos[s_], pb_[s_]) - metric(y_oos[s_], pa_[s_]))
+        diffs.append(metric(yd_oos[s_], pb_[s_]) - metric(yd_oos[s_], pa_[s_]))
     d = np.array(diffs)
     return float(np.percentile(d, 2.5)), float(np.percentile(d, 97.5)), float((d > 0).mean())
 
@@ -387,7 +413,7 @@ md += [
     "## 단계별 기여도",
     "",
     "동일한 엠바고 워크포워드 검증으로, 피처를 누적해가며 측정했습니다.",
-    f"무작위 기준선(양성률) = **{oos_base:.4f}**",
+    f"무작위 기준선(양성률) = **{d_base:.4f}**",
     "",
     "| 단계 | PR-AUC | AUC-ROC | 기준선 대비 |",
     "| --- | ---: | ---: | ---: |",
