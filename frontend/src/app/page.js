@@ -18,6 +18,23 @@ import { PORTFOLIO_PRESETS, kosdaqIndex } from './data/mockData';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+/** 20거래일 전(약 한 달 전) 실제 우량주 가격 캐시 사전 (3안 백테스팅 매핑용) */
+const HISTORICAL_PRICE_20D = {
+  '005930': 71500,  // 삼성전자
+  '000660': 168000, // SK하이닉스
+  '005490': 395000, // POSCO홀딩스
+  '068270': 175000, // 셀트리온
+  '055550': 45000,  // 신한지주
+  '000270': 116000, // 기아
+  '051910': 440000, // LG화학
+  '028260': 147000, // 삼성물산
+  '017670': 51000,  // SK텔레콤
+  '010950': 78000,  // S-Oil
+  '033780': 90500,  // KT&G
+  '035420': 195000, // NAVER
+  '373220': 405000, // LG에너지솔루션
+};
+
 /** 컴포넌트 언마운트(페이지 이동) 시에도 유지되는 전역 날씨 캐시 */
 const globalWeatherCache = {};
 
@@ -58,9 +75,13 @@ export default function Home() {
   const { isDark, toggleTheme } = useTheme();
   const [isDemo, setIsDemo] = useState(true);
 
-  // 선택된 포트폴리오 ID (sessionStorage에서 복원하여 상세페이지 이동 후 복귀 시 유지)
+  // 선택된 포트폴리오 ID (sessionStorage 및 리포트 적용 파라미터 복원)
   const [selectedPortfolioId, setSelectedPortfolioId] = useState(() => {
     if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('applied') === 'true') {
+        return 99; // 맞춤 포트폴리오 즉시 활성화
+      }
       const saved = sessionStorage.getItem('ants_selected_portfolio');
       if (saved) return Number(saved);
     }
@@ -75,8 +96,74 @@ export default function Home() {
     }
   }, []);
 
-  // 선택된 포트폴리오 mockData (기본값)
-  const mockPortfolio = PORTFOLIO_PRESETS.find(p => p.id === selectedPortfolioId) || PORTFOLIO_PRESETS[0];
+  // 💡 선택된 포트폴리오 객체 동적 연산 (ID 99: 맞춤 포트폴리오)
+  const mockPortfolio = React.useMemo(() => {
+    if (selectedPortfolioId === 99 && typeof window !== 'undefined') {
+      const customStocks = localStorage.getItem('ants_portfolio');
+      const savedProfile = localStorage.getItem('ants_result_profile');
+      if (customStocks) {
+        try {
+          const stocks = JSON.parse(customStocks);
+          const prof = savedProfile ? JSON.parse(savedProfile) : PORTFOLIO_PRESETS[0].profile;
+          
+          // 맞춤 종목 리스트 포맷 (로컬스토리지 수량 및 평단가 반영 + 20거래일 전 종가 백테스팅 연동)
+          const stockWeatherList = stocks.map(s => {
+            const rawPrice = Number(s.purchasePrice);
+            // 사용자가 수동 입력을 거치지 않은 경우(5만원 고정 상태) 20거래일 전 실제 종가 꽂아넣기
+            const purchasePrice = (rawPrice === 50000 || !rawPrice)
+              ? (HISTORICAL_PRICE_20D[s.ticker] || 50000)
+              : rawPrice;
+
+            return {
+              ticker: s.ticker,
+              name: s.name,
+              weight: s.weight || 25,
+              tag: s.tag || '#우량주',
+              quantity: Number(s.quantity) || 10,
+              purchasePrice: purchasePrice,
+              weather: 'sunny',
+              direction: 'up',
+              change: 0.0,
+              prob_up: 50.0,
+            };
+          });
+
+          return {
+            id: 99,
+            emoji: '🎯',
+            label: '내 맞춤 포트폴리오',
+            totalLabel: `${stockWeatherList.map(s => s.name).slice(0, 3).join(', ')} 등`,
+            profile: prof,
+            radarScores: {
+              esgScore: 85,
+              riskScore: 35,
+              marketSensitivity: 45,
+            },
+            assetSummary: {
+              totalAsset: 120000000,
+              totalPurchaseAsset: 120000000,
+              totalProfitLoss: 0,
+              totalProfitLossRate: 0,
+              totalQuantity: 300,
+              holdings: stockWeatherList.map(s => ({
+                ticker: s.ticker,
+                name: s.name,
+                weight: s.weight,
+                quantity: s.quantity,
+                purchasePrice: s.purchasePrice,
+                currentPrice: s.purchasePrice,
+              }))
+            },
+            overallWeather: { status: 'sunny', label: '맑음' },
+            stockWeatherList,
+          };
+        } catch (e) {
+          console.warn('Failed to parse custom portfolio:', e);
+        }
+      }
+    }
+    return PORTFOLIO_PRESETS.find(p => p.id === selectedPortfolioId) || PORTFOLIO_PRESETS[0];
+  }, [selectedPortfolioId]);
 
   // 초기 상태부터 전역 캐시된 데이터로 즉시 렌더링 (돌아왔을 때 딜레이/깜빡임 100% 차단)
   const [liveStockList, setLiveStockList] = useState(() => globalWeatherCache[selectedPortfolioId] || null);

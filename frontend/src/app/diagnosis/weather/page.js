@@ -138,20 +138,32 @@ export default function DiagnosisWeatherPage() {
     <div className="w-full">
       <main className="pt-2 pb-10 px-1 max-w-4xl">
 
-        {/* ── 2단계 탭 내비게이션 ── */}
-        <div className="pt-2 pb-4 flex items-center gap-2">
+        {/* ── 3단계 탭 내비게이션 ── */}
+        <div className="pt-2 pb-4 flex items-center gap-2 flex-wrap">
           <button
             onClick={() => router.push('/diagnosis')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${isDark ? 'bg-white/5 text-slate-500 hover:text-slate-300' : 'bg-white text-slate-400 border border-slate-200 hover:text-slate-600'}`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${isDark ? 'bg-white/5 text-slate-500 hover:text-slate-300' : 'bg-white text-slate-400 border border-slate-200 hover:text-slate-600'}`}
           >
             <span className="w-4 h-4 rounded-full bg-slate-300 flex items-center justify-center text-white text-[9px] font-black">1</span>
             위험 레이더
           </button>
+          
           <Icon name="arrowRight" className={`w-3.5 h-3.5 ${isDark ? 'text-slate-600' : 'text-slate-300'}`} />
+          
           <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${isDark ? 'bg-[#3eb489]/15 text-[#69dbad]' : 'bg-[#3eb489]/10 text-[#3eb489]'}`}>
             <span className="w-4 h-4 rounded-full flex items-center justify-center text-white text-[9px] font-black" style={{backgroundColor: isDark ? '#69dbad' : '#3eb489'}}>2</span>
             포트폴리오 날씨 ({activePortfolio.label})
           </div>
+
+          <Icon name="arrowRight" className={`w-3.5 h-3.5 ${isDark ? 'text-slate-600' : 'text-slate-300'}`} />
+
+          <button
+            onClick={() => router.push('/diagnosis/result')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${isDark ? 'bg-white/5 text-slate-500 hover:text-slate-300' : 'bg-white text-slate-400 border border-slate-200 hover:text-slate-600'}`}
+          >
+            <span className="w-4 h-4 rounded-full bg-slate-300 flex items-center justify-center text-white text-[9px] font-black">3</span>
+            성향 종합 리포트
+          </button>
         </div>
 
         {/* ── ☀️ 포트폴리오 날씨 카드 ── */}
@@ -270,13 +282,23 @@ export default function DiagnosisWeatherPage() {
         </div>
 
         <button
-          onClick={() => router.push('/')}
-          className={`mt-6 w-full py-3.5 rounded-2xl text-sm font-black flex items-center justify-center gap-2 transition-all ${
-            isDark ? 'bg-white/5 text-slate-300 hover:bg-white/10' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+          onClick={() => router.push('/diagnosis/result')}
+          className={`mt-6 w-full py-4 rounded-2xl text-sm font-black flex items-center justify-center gap-2 transition-all ${
+            isDark ? 'bg-[#3eb489] text-[#0a1f14] hover:bg-[#69dbad]' : 'bg-[#3eb489] text-white hover:bg-[#2d966e] shadow-[0_4px_20px_rgba(62,180,137,0.3)]'
           }`}
         >
-          <Icon name="home" className="w-4 h-4" />
-          홈으로 돌아가기
+          다음 단계: 내 투자성향 종합 리포트 확인하기 🦔
+          <Icon name="arrowRight" className="w-4 h-4" />
+        </button>
+
+        <button
+          onClick={() => router.push('/')}
+          className={`mt-3 w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+            isDark ? 'text-slate-500 hover:text-slate-400' : 'text-slate-400 hover:text-slate-500'
+          }`}
+        >
+          <Icon name="home" className="w-3.5 h-3.5" />
+          홈으로 가기
         </button>
       </main>
     </div>
