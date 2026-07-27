@@ -100,6 +100,12 @@ if not ML_READY.exists():
     df_mock = pd.DataFrame(mock_rows)
     df_mock.to_csv(ML_READY, index=False)
 
+if not RAW_PRICE.exists():
+    print(f"[INFO] {RAW_PRICE} 파일이 존재하지 않아 가상 테스트 데이터셋을 복원합니다.")
+    RAW_PRICE.parent.mkdir(parents=True, exist_ok=True)
+    df_raw = df_mock[["ticker", "date", "log_return_1d"]].copy()
+    df_raw.to_csv(RAW_PRICE, index=False)
+
 df = pd.read_csv(ML_READY, dtype={"ticker": str}, parse_dates=["date"])
 df = df.sort_values(["ticker", "date"]).reset_index(drop=True)
 

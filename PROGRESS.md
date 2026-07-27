@@ -53,3 +53,4 @@
 | 2026-07-27 | Antigravity | `backend/main.py` 내 `/api/alerts` API의 500/누락 필드 개선으로 알림 리스트에 범용 더미 문구 대신 '실제 포착된 기사 제목' 노출 및 zfill(6) 코드 맵핑을 활용한 '한글 종목명' 표시 보완 완료 |
 | 2026-07-27 | Antigravity | 위험 진단 3개 화면(`diagnosis/page.js`, `diagnosis/weather/page.js`, `diagnosis/result/page.js`)의 상단 탭 내비게이션 영역에 pt-4 상단 여백(패딩)을 추가하여 헤더 영역과의 밀착 현상 해결 및 UI 일관성 확보 |
 | 2026-07-27 | Antigravity | `backend/scripts/health_check.py` 내에 CI 가상환경 무결성 검증을 위한 `ml_ready_real.csv` 부재 시 '테스트용 가상 모사 데이터셋 자동 복원기' 구현 탑재로 깃허브 액션 빌드 패스 보장 |
+| 2026-07-27 | Antigravity | `backend/scripts/health_check.py` 내에 `price_features_raw.csv` 결측 시의 '테스트용 가상 원본 시세 데이터 모사기' 추가 구현 및 깃허브 액션 파일 에러 최종 차단 |
