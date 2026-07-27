@@ -1,16 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Icon from '../Icon';
+import { PORTFOLIO_PRESETS } from '../../data/mockData';
 
 const NAV_ITEMS = [
   { href: '/', icon: 'home', label: '홈 대시보드' },
   { href: '/diagnosis', icon: 'activity', label: '위험 진단' },
   { href: '/diagnosis/result', icon: 'shield', label: '성향 종합 리포트' },
   { href: '/alerts', icon: 'bell', label: '위험 알림' },
-  
-  { href: '/onboarding', icon: 'trendingUp', label: '투자성향 재진단' },
+  { href: '/stock/005930', icon: 'barChart2', label: '종목 상세 분석', exactMatch: false },
+  { href: '/onboarding', icon: 'refreshCw', label: '투자성향 재진단' },
 ];
 
 /**
@@ -21,12 +22,30 @@ export default function Header({ isDark, toggleTheme, alertCount = 0, showBack =
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  // 활성 포트폴리오의 첫 번째 종목 코드 동적 탐색
+  const [firstTicker, setFirstTicker] = useState('005930');
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('selectedPortfolioId');
+      const activeId = saved ? parseInt(saved, 10) : 1;
+      const activePreset = PORTFOLIO_PRESETS.find(p => p.id === activeId) || PORTFOLIO_PRESETS[0];
+      const holdings = activePreset?.assetSummary?.holdings || [];
+      if (holdings.length > 0 && holdings[0].ticker) {
+        setFirstTicker(holdings[0].ticker);
+      }
+    }
+  }, []);
+
   const openDrawer = () => setDrawerOpen(true);
   const closeDrawer = () => setDrawerOpen(false);
 
   const navigate = (href) => {
     closeDrawer();
-    router.push(href);
+    let targetHref = href;
+    if (href.startsWith('/stock/')) {
+      targetHref = `/stock/${firstTicker}`;
+    }
+    router.push(targetHref);
   };
 
   return (
@@ -160,7 +179,9 @@ export default function Header({ isDark, toggleTheme, alertCount = 0, showBack =
         {/* 네비게이션 목록 */}
         <nav className="flex-1 py-4 overflow-y-auto">
           {NAV_ITEMS.map(item => {
-            const isActive = pathname === item.href;
+            const isActive = item.exactMatch !== false
+              ? pathname === item.href
+              : pathname.startsWith('/stock/');
             return (
               <button
                 key={item.href}

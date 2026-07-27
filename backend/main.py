@@ -1299,17 +1299,45 @@ def get_alerts():
         "탄소": "ESG 탄소배출 관련 이슈 포착",
     }
 
+    TICKER_NAME_MAP = {
+        "005930": "삼성전자",
+        "000660": "SK하이닉스",
+        "005490": "POSCO홀딩스",
+        "068270": "셀트리온",
+        "055550": "신한지주",
+        "000270": "기아",
+        "051910": "LG화학",
+        "028260": "삼성물산",
+        "017670": "SK텔레콤",
+        "010950": "S-Oil",
+        "033780": "KT&G",
+        "035420": "NAVER",
+        "373220": "LG에너지솔루션",
+        "015760": "한국전력",
+        "000810": "삼성화재",
+        "032640": "LG유플러스",
+        "005935": "삼성전자우",
+        "006400": "삼성SDI",
+        "035720": "카카오",
+        "003550": "LG",
+        "000670": "영풍",
+        "003490": "대한항공",
+        "009540": "HD한국조선해양",
+        "034730": "SK",
+    }
+
     alerts = []
     try:
         esg_col = get_collection("esg_events")
-        # DB 레벨에서 긍정 뉴스 선필터 + 필요 필드만 projection으로 조회 (속도 개선)
+        # DB 레벨에서 긍정 뉴스 선필터 + 필요 필드(제목 포함) projection으로 조회
         query = {"news_direction": {"$ne": "positive"}}
-        projection = {"ticker": 1, "date": 1, "news_direction": 1, "is_material": 1, "news_category": 1, "_id": 0}
+        projection = {"ticker": 1, "date": 1, "news_direction": 1, "is_material": 1, "news_category": 1, "title": 1, "news_title": 1, "text": 1, "_id": 0}
         docs = list(esg_col.find(query, projection, sort=[("date", -1)]).limit(15))
 
         for i, d in enumerate(docs):
             ticker = d.get("ticker", "005930")
-            corp_name = corp_dict.get(ticker, ticker)
+            ticker_clean = str(ticker).zfill(6)
+            corp_name = corp_dict.get(ticker_clean) or TICKER_NAME_MAP.get(ticker_clean) or f"종목({ticker_clean})"
 
             is_mat = d.get("is_material", 0)
             direction = d.get("news_direction", "negative")
@@ -1319,24 +1347,29 @@ def get_alerts():
             dt_str = d.get("date", "2026.07.24")
             news_category = d.get("news_category", "")
 
-            # 실제 기사 제목 대신 카테고리 기반 범용 제목 사용
-            generic_title = "ESG 미디어 이슈 포착"
-            for keyword, label in CATEGORY_TITLE_MAP.items():
-                if keyword in str(news_category):
-                    generic_title = label
-                    break
+            # ── [개선] 기사의 실제 소식 제목 또는 카테고리 범용 제목 ──
+            real_title = d.get("title") or d.get("news_title") or d.get("text")
+            if real_title:
+                real_title = str(real_title).strip()
+            
+            if not real_title or len(real_title) < 3:
+                real_title = "ESG 미디어 이슈 포착"
+                for keyword, label in CATEGORY_TITLE_MAP.items():
+                    if keyword in str(news_category):
+                        real_title = label
+                        break
 
             # 카테고리 판별 및 백엔드 필터링
-            cat = get_alert_category(generic_title, news_category)
+            cat = get_alert_category(real_title, news_category)
             if not categories.get(cat, True):
                 continue
 
             alerts.append({
                 "id": len(alerts) + 1,
                 "level": level,
-                "ticker_code": ticker,
+                "ticker_code": ticker_clean,
                 "ticker": corp_name,
-                "title": generic_title,
+                "title": real_title,
                 "time": dt_str,
                 "read": False,
                 "category": cat

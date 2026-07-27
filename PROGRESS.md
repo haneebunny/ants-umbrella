@@ -49,3 +49,5 @@
 | 2026-07-27 | Antigravity | `frontend/src/app/components/DiagnosisResultView.js` 성향 종합 리포트 무한 루프 수정 및 API 404 예외 처리 보완, isStandalone prop 누락 경고 제거 |
 | 2026-07-27 | Antigravity | `frontend/src/app/components/home/StockWeatherList.js` 홈 대시보드 종목별 날씨 플로팅 패널 내 상세 버튼 잘림 제거, panelH 여유 배치 및 화면 이탈 방지 가드 보완 |
 | 2026-07-27 | Antigravity | `.github/workflows/ml_ablation_experiment.yml` 내 유실된 `run_pipeline.py` 호출부를 종합 검증 파이프라인인 `health_check.py`로 수정하여 CI 빌드 에러 해결 |
+| 2026-07-27 | Antigravity | `frontend/src/app/components/layout/Header.js` 에 '종목 상세 분석' 메뉴 추가, 상세 진입 시 하이라이트 연동 및 활성 포트폴리오 첫 번째 종목 자동 우회 라우팅 결합 완료 |
+| 2026-07-27 | Antigravity | `backend/main.py` 내 `/api/alerts` API의 500/누락 필드 개선으로 알림 리스트에 범용 더미 문구 대신 '실제 포착된 기사 제목' 노출 및 zfill(6) 코드 맵핑을 활용한 '한글 종목명' 표시 보완 완료 |
