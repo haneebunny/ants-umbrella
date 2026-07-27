@@ -45,3 +45,6 @@
 | 2026-07-27 | Antigravity | 브리핑 영역 Hydration/Nested Tag HTML 오류 (<p> 내 <p> 및 <div> 상속) 해소 및 미미 캐릭터 토끼 이모지(🐰) 제거 완료 |
 | 2026-07-27 | Antigravity | 종목 상세 페이지 주가 차트(sparkline), ESG 3대 영역 리스크 카드, 자산 시뮬레이터 비중 및 총액 정보의 하드코딩 전수 제거 및 백엔드/포트폴리오 연동 완료 |
 | 2026-07-27 | Antigravity | 홈 대시보드 게스트 CTA 배너(GuestCTABanner) 상단 여백(pt-4) 추가로 헤더 밀착 현상 해결 및 가독성 개선 |
+| 2026-07-27 | Antigravity | `frontend/src/app/diagnosis/page.js` 위험진단 페이지 상단 중복 단계 표시 바 제거 및 하단 탭 내비게이션 바 유지 |
+| 2026-07-27 | Antigravity | `frontend/src/app/components/DiagnosisResultView.js` 성향 종합 리포트 무한 루프 수정 및 API 404 예외 처리 보완, isStandalone prop 누락 경고 제거 |
+| 2026-07-27 | Antigravity | `frontend/src/app/components/home/StockWeatherList.js` 홈 대시보드 종목별 날씨 플로팅 패널 내 상세 버튼 잘림 제거, panelH 여유 배치 및 화면 이탈 방지 가드 보완 |
