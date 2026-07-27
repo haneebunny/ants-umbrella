@@ -5,6 +5,7 @@
 
 실행:  poetry run python scripts/health_check.py
 """
+import os
 from pathlib import Path
 
 import numpy as np
@@ -54,79 +55,65 @@ def section(title):
 
 
 # ══════════════════════════════════════════════════════════════════
-# CI 환경 등에서 ml_ready_real.csv 파일이 유실되었을 때 테스트 가상 데이터 자동 복원
-if not ML_READY.exists():
-    print(f"[INFO] {ML_READY} 파일이 존재하지 않아 가상 테스트 데이터셋을 복원합니다.")
+# 데이터 존재 확인
+#
+# ⚠️ 여기서 "검진을 통과하는" 데이터를 만들어내지 않는다.
+#   과거 이 자리에 라벨을 보고 변동성을 역산하는 합성 데이터 생성기가 있었다.
+#   정답을 베껴 피처를 만들면 모델이 100% 맞히는 것이 당연하므로,
+#   검진이 통과해도 아무것도 검증하지 못한다. 검사 도구가 검사를 통과하려고
+#   데이터를 지어내는 것은 검사 자체를 무의미하게 만든다.
+#
+#   실제 데이터가 없으면 그 사실을 그대로 알리고 종료한다.
+#   CI에서 파이프라인 산출물 없이 스크립트 자체의 동작만 확인하고 싶다면
+#   SMOKE_TEST=1 로 실행한다 — 이 경우 리포트 전체에 경고가 찍히고
+#   어떤 수치도 성과로 인용할 수 없음을 명시한다.
+SMOKE_TEST = os.environ.get("SMOKE_TEST") == "1"
+
+if not ML_READY.exists() or not RAW_PRICE.exists():
+    missing = [str(f.relative_to(PROJECT_ROOT))
+               for f in (ML_READY, RAW_PRICE) if not f.exists()]
+    if not SMOKE_TEST:
+        print("[ERROR] 검진에 필요한 데이터가 없습니다: " + ", ".join(missing))
+        print("        먼저 파이프라인을 실행하세요:")
+        print("          poetry run python scripts/collect_price.py")
+        print("          poetry run python scripts/generate_labels.py")
+        print("          poetry run python scripts/add_sector.py")
+        print("          poetry run python scripts/join_features.py")
+        print()
+        print("        스크립트 동작만 확인하려면 SMOKE_TEST=1 로 실행하세요.")
+        raise SystemExit(2)
+
+    # ── SMOKE_TEST 전용 ───────────────────────────────────────────
+    # 스크립트가 끝까지 도는지만 보는 용도. 신호가 없는 순수 난수라서
+    # 검진 결과는 대부분 FAIL/WARN이 나오는 것이 정상이다.
+    print("=" * 68)
+    print("⚠️  SMOKE TEST 모드 — 무작위 데이터로 실행합니다.")
+    print("    실제 데이터가 아니므로 아래 수치는 아무 의미가 없습니다.")
+    print("=" * 68)
+    rng_smoke = np.random.default_rng(0)
+    rows, base = [], pd.Timestamp("2026-01-01")
+    for tk in ["005930", "000660", "015760"]:
+        for i in range(300):
+            rows.append({
+                "ticker": tk, "date": base + pd.Timedelta(days=i),
+                "log_return_1d": rng_smoke.normal(0, 0.02),
+                "volatility_20d": abs(rng_smoke.normal(0.02, 0.01)),
+                "volume_zscore": rng_smoke.normal(0, 1),
+                "beta_60d": rng_smoke.normal(1, 0.3),
+                "macro_rate": 3.5, "macro_fx": 1380.0,
+                "category_material_value": 0.0, "category_immaterial_value": 0.0,
+                "news_count": 0, "news_neg_count": 0,
+                "news_mat_sum_5d": 0.0, "news_neg_cnt_5d": 0, "news_cnt_5d": 0,
+                "news_mat_sum_20d": 0.0, "news_neg_cnt_20d": 0, "news_cnt_20d": 0,
+                "capital_event_flag": 0, "delisting_related_flag": 0,
+                # 라벨은 피처와 독립적인 난수 — 정답을 베끼지 않는다
+                "label_drawdown_20d": float(rng_smoke.random() < 0.18) if i < 280 else np.nan,
+                "sector": "smoke-test",
+            })
+    smoke = pd.DataFrame(rows)
     ML_READY.parent.mkdir(parents=True, exist_ok=True)
-    
-    mock_rows = []
-    import random
-    from datetime import datetime, timedelta
-    
-    test_tickers = ["005930", "000660", "015760"]
-    base_date = datetime(2026, 7, 24)
-    
-    # B1 및 B3/B4 검증 규칙과 완벽 부합하도록 모사 데이터 생성
-    for ticker in test_tickers:
-        days_to_generate = 60
-        # log_return_1d 를 10일 간격으로 확실하게 급락을 주입하여 클래스 불균형과 OOS 결측을 방지함
-        returns = []
-        for offset in range(days_to_generate):
-            if offset % 10 == 3:
-                returns.append(random.uniform(-0.11, -0.07))
-            else:
-                returns.append(random.uniform(-0.005, 0.015))
-        
-        # 라벨링 계산
-        labels = []
-        for t in range(days_to_generate):
-            if t + WINDOW >= days_to_generate:
-                labels.append(None)  # 마지막 20일은 미확정 결측치 처리 (B3/B4 만족)
-            else:
-                window_returns = returns[t + 1 : t + 1 + WINDOW]
-                min_cum = np.exp(np.cumsum(window_returns).min()) - 1
-                labels.append(1.0 if min_cum <= THRESHOLD else 0.0)
-                
-        for offset in range(days_to_generate):
-            cur_date = base_date - timedelta(days=(days_to_generate - 1 - offset))
-            lbl = labels[offset]
-            # 라벨이 1이면 고변동성, 0이거나 결측이면 저변동성을 부여해 예측 성능을 강제로 상승시킴 (C1 통과)
-            vol = random.uniform(0.04, 0.08) if lbl == 1.0 else random.uniform(0.005, 0.02)
-
-            row = {
-                "ticker": ticker,
-                "date": cur_date.strftime("%Y-%m-%d"),
-                "log_return_1d": returns[offset],
-                "volatility_20d": vol,
-                "volume_zscore": random.uniform(-2, 2),
-                "beta_60d": random.uniform(0.8, 1.2),
-                "macro_rate": 3.50,
-                "macro_fx": 1380.0,
-                "category_material_value": random.choice([0, 1]),
-                "category_immaterial_value": random.choice([0, 1]),
-                "news_count": random.randint(0, 5),
-                "news_neg_count": random.randint(0, 2),
-                "news_mat_sum_5d": random.randint(0, 3),
-                "news_neg_cnt_5d": random.randint(0, 2),
-                "news_cnt_5d": random.randint(0, 10),
-                "news_mat_sum_20d": random.randint(0, 10),
-                "news_neg_cnt_20d": random.randint(0, 5),
-                "news_cnt_20d": random.randint(0, 20),
-                "capital_event_flag": random.choice([0, 1]),
-                "delisting_related_flag": random.choice([0, 1]),
-                "label_drawdown_20d": labels[offset],
-                "sector": "전기전자" if ticker in ["005930", "000660"] else "전기가스",
-            }
-            mock_rows.append(row)
-            
-    df_mock = pd.DataFrame(mock_rows)
-    df_mock.to_csv(ML_READY, index=False)
-
-if not RAW_PRICE.exists():
-    print(f"[INFO] {RAW_PRICE} 파일이 존재하지 않아 가상 테스트 데이터셋을 복원합니다.")
-    RAW_PRICE.parent.mkdir(parents=True, exist_ok=True)
-    df_raw = df_mock[["ticker", "date", "log_return_1d"]].copy()
-    df_raw.to_csv(RAW_PRICE, index=False)
+    smoke.to_csv(ML_READY, index=False)
+    smoke[["ticker", "date", "log_return_1d"]].to_csv(RAW_PRICE, index=False)
 
 df = pd.read_csv(ML_READY, dtype={"ticker": str}, parse_dates=["date"])
 df = df.sort_values(["ticker", "date"]).reset_index(drop=True)
@@ -466,6 +453,18 @@ ICON = {"PASS": "✅", "WARN": "⚠️", "FAIL": "❌"}
 md = [
     "# 데이터·모델 건강검진 리포트",
     "",
+]
+if SMOKE_TEST:
+    md += [
+        "> # ⚠️ SMOKE TEST — 실제 데이터가 아닙니다",
+        "> 파이프라인 산출물이 없어 무작위 데이터로 실행했습니다.",
+        "> **아래 수치는 어떤 것도 성과로 인용할 수 없습니다.**",
+        "> 신호가 없는 난수이므로 FAIL이 나오는 것이 정상입니다.",
+        "",
+        "---",
+        "",
+    ]
+md += [
     f"> 생성 시각: {datetime.now().strftime('%Y-%m-%d %H:%M')}  ",
     f"> 대상: `data/ml_ready_real.csv` — {n_rows:,}행 · {n_tickers}개 종목 · {span}  ",
     f"> 결과: **PASS {n_pass} · WARN {n_warn} · FAIL {n_fail}**",
