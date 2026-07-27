@@ -65,6 +65,23 @@ const WEATHER_CONFIG = {
     textOnBg: 'text-rose-950',
     subLabelOnBg: 'text-rose-800',
   },
+  // 예측 점수를 만들지 못한 상태. 무채색으로 두어 4단계 위험 등급과 시각적으로
+  // 확실히 구분한다 — "데이터 없음"이 "위험도 보통"처럼 보이면 안 되기 때문이다.
+  unknown: {
+    icon: 'cloud',
+    label: '예측 불가',
+    text: 'text-slate-600',
+    darkText: 'text-slate-300',
+    bgFrom: '#cbd5e1', bgMid: '#e2e8f0', bgTo: '#f1f5f9',
+    darkBgFrom: '#1e293b', darkBgMid: '#334155', darkBgTo: '#0f172a',
+    radial: 'radial-gradient(ellipse at 80% 20%, rgba(148,163,184,0.35) 0%, transparent 65%)',
+    border: 'border-slate-300/60',
+    darkBorder: 'border-slate-600/50',
+    accent: '#64748b',
+    darkAccent: '#cbd5e1',
+    textOnBg: 'text-slate-900',
+    subLabelOnBg: 'text-slate-700',
+  },
 };
 
 /* ─── 맑음: 태양 광선 + 빛 원 ─── */
@@ -209,7 +226,10 @@ export default function WeatherBanner({
 }) {
   const status = weather?.status || 'sunny';
   const cfg = WEATHER_CONFIG[status] || WEATHER_CONFIG.sunny;
-  const Decor = DECOR[status] || SunnyDecor;
+  // unknown은 DECOR에 없다 → 장식을 그리지 않는다.
+  // 예측이 없는 상태를 화창한 연출로 꾸미면 사용자가 정상으로 오인한다.
+  const Decor = DECOR[status] || null;
+  const isUnknown = status === 'unknown';
 
   // 날씨 상태별 AI 판단 근거 멘트 — status에 따라 항상 맞는 메시지 출력
   const WEATHER_COMMENTS = {
@@ -232,6 +252,12 @@ export default function WeatherBanner({
       '☀️ 배당 우량주 중심 구성 덕분에 포트폴리오 전반이 편안하고 안정적인 흐름을 유지하고 있어요! 🛡️',
       '📈 보유 종목들의 상승 신호가 고루 확인되고, ESG 평판 리스크도 낮아서 안심할 수 있는 구간이에요!',
       '💸 현재 위험 수준은 허용 범위 아래에 있어요. 원한다면 분산 투자를 더 든든하게 늘려봐도 좋아요!',
+    ],
+    // 예측 점수가 없을 때. 안전하다고도 위험하다고도 말하지 않는다.
+    unknown: [
+      '🌫️ 지금은 날씨 예측이 어려워요. 위험 점수를 아직 만들지 못했어요.',
+      '🔧 예측에 필요한 데이터가 준비되지 않았어요. 안전하다는 뜻이 아니니 참고만 해주세요.',
+      '⏳ 잠시 후 다시 확인해 주세요. 매일 아침 새 예보가 갱신돼요.',
     ],
   };
   
@@ -263,8 +289,8 @@ export default function WeatherBanner({
           />
         )}
 
-        {/* 날씨 배경 데코 (로딩 중이 아닐 때만 렌더링) */}
-        {!isStatusLoading && <Decor isDark={isDark} />}
+        {/* 날씨 배경 데코 (로딩 중이 아닐 때만 렌더링 · unknown은 데코 없음) */}
+        {!isStatusLoading && Decor && <Decor isDark={isDark} />}
 
         {/* 콘텐츠 (z-index 위) */}
         <div className="relative z-10">
@@ -300,11 +326,16 @@ export default function WeatherBanner({
                   }`}>
                     오늘 내 포트폴리오 날씨
                   </p>
-                  <p className={`text-2xl font-medium leading-tight ${
+                  <p className={`${isUnknown ? 'text-xl' : 'text-2xl'} font-medium leading-tight ${
                     isDark ? 'text-white' : cfg.textOnBg
                   }`}>
-                    {cfg.label}
+                    {isUnknown ? '지금은 날씨 예측이 어려워요' : cfg.label}
                   </p>
+                  {isUnknown && (
+                    <p className={`text-[11px] mt-0.5 ${isDark ? 'text-white/60' : cfg.subLabelOnBg}`}>
+                      위험 점수를 만들지 못했어요 — 안전하다는 뜻은 아니에요
+                    </p>
+                  )}
                 </div>
               </div>
             )}

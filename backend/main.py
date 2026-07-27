@@ -457,6 +457,33 @@ _WEATHER_CUT_RAINY = 0.363
 # 아니라 이 값이 "위험도 보통"에 해당하므로 폴백 기본값으로 사용한다.
 _NEUTRAL_PROB_UP = 1.0 - _WEATHER_BASELINE
 
+def _weather_from_doc(doc: dict, market_pd: float) -> tuple[str, float | None, str | None]:
+    """저장된 위험 점수 문서에서 날씨 등급을 산출한다.
+
+    확률이 없으면 "구름"으로 얼버무리지 않고 'unknown'을 반환한다.
+    데이터가 없는 것과 실제로 위험도가 보통인 것은 사용자에게 다른 정보이므로,
+    화면에서도 구분되어야 한다. (unavailable_reason 으로 원인을 함께 전달)
+    """
+    raw = doc.get("prob_crash")
+    if raw is None:
+        raw_up = doc.get("prob_up")
+        raw = (1.0 - float(raw_up)) if raw_up is not None else None
+
+    if raw is None:
+        return "unknown", None, "예측 점수 없음"
+
+    try:
+        prob_crash = float(raw)
+    except (TypeError, ValueError):
+        return "unknown", None, "예측 점수 형식 오류"
+
+    if not (0.0 <= prob_crash <= 1.0):
+        return "unknown", None, "예측 점수 범위 오류"
+
+    prob_up = 1.0 - prob_crash
+    return _prob_to_weather(prob_up, doc.get("direction", "up"), market_pd), prob_up, None
+
+
 def _prob_to_weather(prob_up: float, direction: str = "up", market_pd: float = _WEATHER_BASELINE) -> str:
     # prob_up = 1 - P(급락) 으로 저장되므로 prob_down 이 곧 급락 확률
     prob_down = 1.0 - prob_up
@@ -538,9 +565,10 @@ def get_dashboard_weather(tickers: str = ""):
                 results.append({"ticker": ticker, "available": False})
                 continue
 
-            prob_up   = float(doc.get("prob_up", _NEUTRAL_PROB_UP))
             direction = doc.get("direction", "up")
-            weather   = _prob_to_weather(prob_up, direction, market_pd)
+            weather, prob_up_opt, unavailable_reason = _weather_from_doc(doc, market_pd)
+            # unknown이면 확률을 노출하지 않는다 (없는 값을 지어내지 않기 위해)
+            prob_up = prob_up_opt if prob_up_opt is not None else _NEUTRAL_PROB_UP
 
             # 수집된 실시간 가격 및 변동률 가져오기
             live_price, change = live_results.get(ticker, (None, None))
@@ -563,7 +591,10 @@ def get_dashboard_weather(tickers: str = ""):
                 "available":        True,
                 "weather":          weather,
                 "direction":        direction,
-                "prob_up":          round(prob_up, 4),
+                # 예측 점수가 없으면 확률을 내려보내지 않는다 (프론트가 중립값을 진짜 값처럼
+                # 표시하는 것을 막기 위함). weather == "unknown" 과 짝을 이룬다.
+                "prob_up":          round(prob_up, 4) if unavailable_reason is None else None,
+                "unavailable_reason": unavailable_reason,
                 "confidence_tier":  doc.get("confidence_tier", "weak"),
                 "change":           change,
                 "currentPrice":     live_price,
@@ -1299,17 +1330,45 @@ def get_alerts():
         "탄소": "ESG 탄소배출 관련 이슈 포착",
     }
 
+    TICKER_NAME_MAP = {
+        "005930": "삼성전자",
+        "000660": "SK하이닉스",
+        "005490": "POSCO홀딩스",
+        "068270": "셀트리온",
+        "055550": "신한지주",
+        "000270": "기아",
+        "051910": "LG화학",
+        "028260": "삼성물산",
+        "017670": "SK텔레콤",
+        "010950": "S-Oil",
+        "033780": "KT&G",
+        "035420": "NAVER",
+        "373220": "LG에너지솔루션",
+        "015760": "한국전력",
+        "000810": "삼성화재",
+        "032640": "LG유플러스",
+        "005935": "삼성전자우",
+        "006400": "삼성SDI",
+        "035720": "카카오",
+        "003550": "LG",
+        "000670": "영풍",
+        "003490": "대한항공",
+        "009540": "HD한국조선해양",
+        "034730": "SK",
+    }
+
     alerts = []
     try:
         esg_col = get_collection("esg_events")
-        # DB 레벨에서 긍정 뉴스 선필터 + 필요 필드만 projection으로 조회 (속도 개선)
+        # DB 레벨에서 긍정 뉴스 선필터 + 필요 필드(제목 포함) projection으로 조회
         query = {"news_direction": {"$ne": "positive"}}
-        projection = {"ticker": 1, "date": 1, "news_direction": 1, "is_material": 1, "news_category": 1, "_id": 0}
+        projection = {"ticker": 1, "date": 1, "news_direction": 1, "is_material": 1, "news_category": 1, "title": 1, "news_title": 1, "text": 1, "_id": 0}
         docs = list(esg_col.find(query, projection, sort=[("date", -1)]).limit(15))
 
         for i, d in enumerate(docs):
             ticker = d.get("ticker", "005930")
-            corp_name = corp_dict.get(ticker, ticker)
+            ticker_clean = str(ticker).zfill(6)
+            corp_name = corp_dict.get(ticker_clean) or TICKER_NAME_MAP.get(ticker_clean) or f"종목({ticker_clean})"
 
             is_mat = d.get("is_material", 0)
             direction = d.get("news_direction", "negative")
@@ -1319,24 +1378,29 @@ def get_alerts():
             dt_str = d.get("date", "2026.07.24")
             news_category = d.get("news_category", "")
 
-            # 실제 기사 제목 대신 카테고리 기반 범용 제목 사용
-            generic_title = "ESG 미디어 이슈 포착"
-            for keyword, label in CATEGORY_TITLE_MAP.items():
-                if keyword in str(news_category):
-                    generic_title = label
-                    break
+            # ── [개선] 기사의 실제 소식 제목 또는 카테고리 범용 제목 ──
+            real_title = d.get("title") or d.get("news_title") or d.get("text")
+            if real_title:
+                real_title = str(real_title).strip()
+            
+            if not real_title or len(real_title) < 3:
+                real_title = "ESG 미디어 이슈 포착"
+                for keyword, label in CATEGORY_TITLE_MAP.items():
+                    if keyword in str(news_category):
+                        real_title = label
+                        break
 
             # 카테고리 판별 및 백엔드 필터링
-            cat = get_alert_category(generic_title, news_category)
+            cat = get_alert_category(real_title, news_category)
             if not categories.get(cat, True):
                 continue
 
             alerts.append({
                 "id": len(alerts) + 1,
                 "level": level,
-                "ticker_code": ticker,
+                "ticker_code": ticker_clean,
                 "ticker": corp_name,
-                "title": generic_title,
+                "title": real_title,
                 "time": dt_str,
                 "read": False,
                 "category": cat
@@ -1398,41 +1462,71 @@ def get_weather_briefing(body: dict):
     # ── 3. 날씨별 fallback 멘트 ─────────────────────────────────────
     FALLBACK = {
         "thunder": [
-            "⚡️ 포트폴리오 전반에 고위험 신호가 다수 감지됐어요! 지금은 신중하게 상황을 점검할 타이밍이에요.",
-            "🔴 하락 방향 예측 종목들이 집중돼 있어서 단기 손실 위험이 높아요. 손절 기준선을 미리 확인해 두는 게 좋아요.",
-            "🚨 고위험 종목 비중을 줄이거나 방어주로 일부 교체를 고려해 보세요!",
+            "⚡️ 포트폴리오 전반에 걸쳐 리스크 감지 비율이 다수 증가했어요. 시장 모니터링을 강화할 필요가 있습니다.",
+            "🔴 하락 방향 예측 비중이 높아 변동성 위험이 감지되므로, 개별 자산의 리스크 노출 현황을 차분하게 검토해 보세요.",
+            "🚨 현재 위험 지표 수준이 목표치 대비 상승한 상태입니다. 투자 성향에 맞춘 자산 다각화 방안을 점검해 보시는 것이 좋습니다.",
         ],
         "rainy": [
-            "🌧️ 일부 종목에서 하락 리스크가 감지되고 있어요. 전체적으로 살짝 흐린 상황이에요.",
-            "📉 약세 신호가 중간 수준이에요. 비중 조절과 현금 비중 확보를 고려해 볼 수 있어요.",
-            "🌂 리밸런싱 전략을 점검하고 안정적인 종목 비중을 늘려보세요.",
+            "🌧️ 일부 종목에서 리스크 신호가 감지되고 있어요. 단기적인 지표 변동 가능성이 있습니다.",
+            "📉 하락 방향 예측 비중이 일부 감지되므로, 투자 목적에 비추어 자산 배분이 균형적인지 점검해 볼 타이밍입니다.",
+            "🌂 전반적인 시장 변동성이 확대되는 모습입니다. 변동성 완화를 위해 개별 종목군의 지표 흐름을 차근차근 모니터링해 보세요.",
         ],
         "cloudy": [
             "⛅ 포트폴리오 전반은 크게 문제없지만, 일부 종목에서 불확실성이 보여요.",
-            "🟡 단기 하락 리스크 신호가 일부 있어요. 지켜보면서 대응하면 충분해요.",
-            "📊 분산 구성을 유지하면서 위험 종목만 추가 점검해 보세요!",
+            "🟡 단기 하락 리스크 신호가 일부 있어요. 차분하게 시장 흐름을 관찰하면 충분해요.",
+            "📊 분산 구성을 유지하면서 변동성이 나타난 개별 자산만 추가 확인해 보세요!",
         ],
         "sunny": [
             "☀️ 배당 우량주 중심 구성 덕분에 포트폴리오 전반이 안정적인 흐름을 유지하고 있어요! 🛡️",
-            "📈 보유 종목들의 상승 신호가 고루 확인되고, ESG 평판 리스크도 낮아서 안심할 수 있는 구간이에요!",
-            "💸 현재 위험 수준은 허용 범위 아래에 있어요. 원한다면 분산 투자를 더 늘려봐도 좋아요!",
+            "📈 보유 종목들의 상승 신호가 고루 확인되고, ESG 평판 리스크도 낮아서 편안한 구간이에요!",
+            "💸 현재 위험 수준은 설정된 목표 범위 아래에 안전하게 위치하고 있습니다.",
         ],
     }
     fallback_lines = FALLBACK.get(weather_status, FALLBACK["sunny"])
 
     # ── 4. Gemini로 동적 브리핑 생성 ────────────────────────────────
     risky_desc = ", ".join([f"{t['name']}(하락)" for t in risky_tickers if t.get("direction") == "down"]) or "없음"
+
+    # 날씨 상태별 전용 톤 지시문 — LLM이 날씨를 무시하고 긍정적 답변을 내는 버그 방지
+    TONE_INSTRUCTION = {
+        "thunder": (
+            "⚠️ 현재 날씨는 '번개(위험)'입니다. "
+            "자산 배분의 관점에서 객관적인 리스크 점검 유도 톤으로 작성하세요. "
+            "위험 지표가 크게 상승한 점을 설명하되, 특정 주식의 매도(비중 축소, 손절 등)를 직접 강요하거나 매매를 조장하는 표현은 절대로 사용하지 마세요. "
+            "자산 다각화 및 포트폴리오 리스크 자체를 냉정하게 모니터링할 것을 객관적으로 서술하세요."
+        ),
+        "rainy": (
+            "⚠️ 현재 날씨는 '비(주의)'입니다. "
+            "객관적인 위험 경계 및 관리 톤으로 작성하세요. "
+            "일부 하락 리스크 지표가 확인되므로 변동성 대비 현황을 차분히 자가 점검하도록 유도하되, 구체적인 매매나 매도 행위를 부추기거나 단정적으로 권유하는 어조는 배제하세요."
+        ),
+        "cloudy": (
+            "현재 날씨는 '구름(보통)'입니다. "
+            "중립적 톤으로 작성하세요. "
+            "일부 불확실성이 있음을 언급하되 과도한 경고나 과도한 긍정 표현은 피하세요."
+        ),
+        "sunny": (
+            "현재 날씨는 '맑음(안전)'입니다. "
+            "안심·긍정 톤으로 작성하세요. "
+            "포트폴리오가 안정적임을 알리고 유지 전략을 권장하는 내용을 담으세요."
+        ),
+    }
+    tone_instruction = TONE_INSTRUCTION.get(weather_status, TONE_INSTRUCTION["sunny"])
+
     prompt = f"""당신은 주식 초보자에게 친근하게 정보를 전달하는 '나개미' 캐릭터입니다.
 뉴닉 스타일로 아래 포트폴리오 상황을 분석해서 AI 판단 근거를 3줄 bullet point로 작성해 주세요.
+
+[현재 날씨 상태 — 이 지시를 최우선으로 따르세요]
+{tone_instruction}
 
 [포트폴리오 상황]
 - 전체 날씨: {weather_label} ({weather_status})
 - 하락 위험 종목: {risky_desc}
 
 [작성 규칙]
-- 각 줄을 이모지로 시작
+- 각 줄을 날씨에 맞는 이모지로 시작 (번개⚡·비🌧️·구름⛅·맑음☀️)
 - 초보자 눈높이의 쉬운 용어
-- 날씨({weather_label})에 맞는 톤 (번개=긴급경고, 비=주의권고, 구름=중립, 맑음=안심)
+- 위의 [현재 날씨 상태] 지시에 맞는 톤을 반드시 유지
 - 각 줄은 완결된 한 문장
 - 총 3줄만 출력, 다른 부가 설명 없이"""
 

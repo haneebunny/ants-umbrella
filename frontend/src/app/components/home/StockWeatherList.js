@@ -11,6 +11,8 @@ const WEATHER_ICON = {
   cloudy:  { icon: 'cloud',     label: '구름', color: 'text-slate-400',  pillBg: 'bg-slate-50 border-slate-200',     darkPillBg: 'bg-slate-800/40 border-slate-600/30'   },
   rainy:   { icon: 'cloudRain', label: '비',   color: 'text-sky-400',    pillBg: 'bg-sky-50 border-sky-200',         darkPillBg: 'bg-sky-900/30 border-sky-700/40'       },
   thunder: { icon: 'zap',       label: '번개', color: 'text-rose-400',   pillBg: 'bg-rose-50 border-rose-200',       darkPillBg: 'bg-rose-900/30 border-rose-700/40'     },
+  // 예측 점수 없음 — 무채색으로 4단계와 구분한다
+  unknown: { icon: 'cloud',     label: '예측 불가', color: 'text-slate-400', pillBg: 'bg-slate-50 border-slate-200', darkPillBg: 'bg-slate-800/40 border-slate-600/30' },
 };
 
 const INDICATOR_COLOR = {
@@ -26,6 +28,8 @@ const RISK_LABEL = {
   cloudy:  { text: '보통',     color: 'text-slate-400'   },
   rainy:   { text: '위험',     color: 'text-orange-500'  },
   thunder: { text: '매우위험', color: 'text-rose-500'    },
+  // '보통'으로 표기하면 안 된다 — 판정을 못 한 것이지 위험이 낮은 게 아니다
+  unknown: { text: '판정 불가', color: 'text-slate-400'  },
 };
 
 const WEATHER_BG = {
@@ -55,7 +59,6 @@ function FloatingPanel({ stock, live, anchorRect, isDark, onClose, onNavigate })
   const wCfg   = WEATHER_ICON[stock.weather] || WEATHER_ICON.cloudy;
   const wBg    = WEATHER_BG[stock.weather]   || WEATHER_BG.cloudy;
   const panelW = 280;
-  const panelH = 300;
 
   // 등락률: '주식 실시간 시세'(watchlist-prices)와 동일한 실시간 값 사용.
   // 실시간 조회 실패/미체결(price<=0) 시 예측 기반 change로 폴백.
@@ -69,11 +72,14 @@ function FloatingPanel({ stock, live, anchorRect, isDark, onClose, onNavigate })
     ? anchorRect.right + 8
     : anchorRect.left - panelW - 8;
 
-  // 세로 위치: 클릭 행 기준 (화면 아래 잘리면 위로)
+  // 세로 위치: anchorRect 중앙 기준, 화면 위/아래 여백 16px 확보
+  // panelH를 고정하지 않고 충분한 공간 확보 (실제 높이는 auto)
+  const estimatedH = 320; // 넉넉하게 추정
   let top = anchorRect.top - 16;
-  if (top + panelH > window.innerHeight - 16) {
-    top = window.innerHeight - panelH - 16;
+  if (top + estimatedH > window.innerHeight - 16) {
+    top = Math.max(16, window.innerHeight - estimatedH - 16);
   }
+  if (top < 16) top = 16;
 
   return (
     <>
@@ -85,7 +91,7 @@ function FloatingPanel({ stock, live, anchorRect, isDark, onClose, onNavigate })
 
       {/* 패널 */}
       <div
-        className={`fixed z-50 rounded-2xl shadow-2xl border overflow-hidden ${
+        className={`fixed z-50 rounded-2xl shadow-2xl border ${
           isDark ? 'bg-[#1a1d1a] border-white/10' : 'bg-white border-slate-100'
         }`}
         style={{
