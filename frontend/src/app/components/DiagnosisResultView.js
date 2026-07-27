@@ -205,7 +205,7 @@ const BANDS_CONFIG = [
   { key: 'AGGRESSIVE', label: '공격', emoji: '🔥' },
 ];
 
-export default function DiagnosisResultView({ profile, isDark, onReDiagnose }) {
+export default function DiagnosisResultView({ profile, isDark, onReDiagnose, isStandalone }) {
   const router = useRouter();
 
   // 사용자의 원본 진단 성향
@@ -257,15 +257,27 @@ export default function DiagnosisResultView({ profile, isDark, onReDiagnose }) {
   // 💡 백엔드 DB/로컬 캐시 비동기 동기화 (Cache-First Strategy)
   useEffect(() => {
     async function fetchBackendCachedReasons() {
+      // recPools/currentRecs를 deps에 넣으면 매 렌더마다 새 배열이 생성되어 무한 루프 발생
+      // → selectedBand, setIndex 변경 시에만 실행하고 currentRecs는 내부에서 직접 참조
+      const extras = NEWNEEK_RECOMMENDATION_REASON_CACHE[selectedBand] || NEWNEEK_RECOMMENDATION_REASON_CACHE.BALANCED;
+      const recPools = extras.recommendationPools || [extras.recommendations];
+      const recs = recPools[setIndex % recPools.length];
+      if (!recs || recs.length === 0) return;
+
       try {
-        const promises = currentRecs.map(async (item) => {
-          const url = `/api/v1/recommendations/reasons?ticker=${item.ticker}&risk_band=${selectedBand}&stock_name=${encodeURIComponent(item.name)}&tag=${encodeURIComponent(item.tag)}`;
-          const res = await fetch(url);
-          if (res.ok) {
-            const data = await res.json();
-            return { ticker: item.ticker, reason: data.reason, source: data.source };
+        const promises = recs.map(async (item) => {
+          try {
+            const url = `/api/v1/recommendations/reasons?ticker=${item.ticker}&risk_band=${selectedBand}&stock_name=${encodeURIComponent(item.name)}&tag=${encodeURIComponent(item.tag)}`;
+            const res = await fetch(url);
+            if (res.ok) {
+              const data = await res.json();
+              return { ticker: item.ticker, reason: data.reason, source: data.source };
+            }
+            // 백엔드 미연결(404/500 등) 시 조용히 null 반환 — 콘솔 에러 미출력
+            return null;
+          } catch {
+            return null;
           }
-          return null;
         });
 
         const results = await Promise.all(promises);
@@ -275,16 +287,17 @@ export default function DiagnosisResultView({ profile, isDark, onReDiagnose }) {
             newMap[r.ticker] = r.reason;
           }
         });
-        setDbCachedReasons(prev => ({ ...prev, ...newMap }));
-      } catch (err) {
-        // 백엔드 연결 불가 시 로컬 정적 캐시로 매끄럽게 지속 폴백
+        if (Object.keys(newMap).length > 0) {
+          setDbCachedReasons(prev => ({ ...prev, ...newMap }));
+        }
+      } catch {
+        // 최상위 예외도 조용히 폴백
       }
     }
 
-    if (currentRecs && currentRecs.length > 0) {
-      fetchBackendCachedReasons();
-    }
-  }, [selectedBand, setIndex, currentRecs]);
+    fetchBackendCachedReasons();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedBand, setIndex]);
 
   if (!profile) return null;
 

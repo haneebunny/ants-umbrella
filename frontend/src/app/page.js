@@ -50,15 +50,27 @@ function buildBriefingKey(portfolioId, status, riskyTickers) {
   return `${portfolioId}|${status}|${riskyStr}`;
 }
 
-/** prob_down 기반 전체 날씨 집계: 보유 종목 weather 배열 → 대표 weather */
+/** prob_down 기반 전체 날씨 집계: 보유 종목 weather 배열 → 대표 weather
+ *
+ * 'unknown'(예측 점수 없음)은 위험도 순위 계산에서 제외한다. 예측이 없는 것을
+ * 조용히 '맑음'이나 '구름'으로 처리하면 사용자가 "안전하다"고 오인하기 때문이다.
+ * 판정 가능한 종목이 하나도 없으면 전체 상태를 'unknown'으로 올린다.
+ */
 function aggregateWeather(stocks) {
   const priority = { thunder: 4, rainy: 3, cloudy: 2, sunny: 1 };
+  const known = stocks.filter(s => priority[s.weather]);
+  const unknownCount = stocks.length - known.length;
+
+  if (known.length === 0) {
+    return { status: 'unknown', label: '예측 불가', unknownCount };
+  }
   let worst = 'sunny';
-  for (const s of stocks) {
-    if ((priority[s.weather] || 0) > (priority[worst] || 0)) worst = s.weather;
+  for (const s of known) {
+    if (priority[s.weather] > priority[worst]) worst = s.weather;
   }
   const label = { sunny: '맑음', cloudy: '구름', rainy: '비', thunder: '번개' };
-  return { status: worst, label: label[worst] || '맑음' };
+  // 일부만 예측 불가일 때는 대표 날씨를 유지하되 건수를 함께 넘겨 배지로 안내한다
+  return { status: worst, label: label[worst], unknownCount };
 }
 
 /** 마운트 시점에 동기적으로 브리핑 캐시 키를 계산 (liveStockList 초기값과 동일한 방식) */
@@ -420,7 +432,13 @@ export default function Home() {
       <RainEffect weatherStatus={overallWeather.status} isDark={isDark} />
 
       {/* ── 콘텐츠 영역을 relative z-10으로 감싸 빗방울이 뒤로 가게 함 ── */}
-      <div className="relative z-10 w-full pt-4">
+    <div className="relative z-10 w-full pt-4">
+      {/* ─ 게스트 CTA (데모 시에만) ─ */}
+      {isDemo && (
+       <div className="mb-3">
+        <GuestCTABanner isDemoMode={isDemo} isDark={isDark} compact />
+       </div>
+      )}
 
         {/* ── 메인 2단 그리드 (좌: 콘텐츠 / 우: 관심주식) ── */}
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-4 items-start">

@@ -45,3 +45,14 @@
 | 2026-07-27 | Antigravity | 종목 상세 미미 브리핑 2단계 LLM 검증 적용, 거시 DB 적재 파이프라인 구축 및 용어 순화, 차트 가격 고정 노출 및 스켈레톤 UI 보완 |
 | 2026-07-27 | Antigravity | 브리핑 영역 Hydration/Nested Tag HTML 오류 (<p> 내 <p> 및 <div> 상속) 해소 및 미미 캐릭터 토끼 이모지(🐰) 제거 완료 |
 | 2026-07-27 | Antigravity | 종목 상세 페이지 주가 차트(sparkline), ESG 3대 영역 리스크 카드, 자산 시뮬레이터 비중 및 총액 정보의 하드코딩 전수 제거 및 백엔드/포트폴리오 연동 완료 |
+| 2026-07-27 | Antigravity | 홈 대시보드 게스트 CTA 배너(GuestCTABanner) 상단 여백(pt-4) 추가로 헤더 밀착 현상 해결 및 가독성 개선 |
+| 2026-07-27 | Antigravity | `frontend/src/app/diagnosis/page.js` 위험진단 페이지 상단 중복 단계 표시 바 제거 및 하단 탭 내비게이션 바 유지 |
+| 2026-07-27 | Antigravity | `frontend/src/app/components/DiagnosisResultView.js` 성향 종합 리포트 무한 루프 수정 및 API 404 예외 처리 보완, isStandalone prop 누락 경고 제거 |
+| 2026-07-27 | Antigravity | `frontend/src/app/components/home/StockWeatherList.js` 홈 대시보드 종목별 날씨 플로팅 패널 내 상세 버튼 잘림 제거, panelH 여유 배치 및 화면 이탈 방지 가드 보완 |
+| 2026-07-27 | Antigravity | `.github/workflows/ml_ablation_experiment.yml` 내 유실된 `run_pipeline.py` 호출부를 종합 검증 파이프라인인 `health_check.py`로 수정하여 CI 빌드 에러 해결 |
+| 2026-07-27 | Antigravity | `frontend/src/app/components/layout/Header.js` 에 '종목 상세 분석' 메뉴 추가, 상세 진입 시 하이라이트 연동 및 활성 포트폴리오 첫 번째 종목 자동 우회 라우팅 결합 완료 |
+| 2026-07-27 | Antigravity | `backend/main.py` 내 `/api/alerts` API의 500/누락 필드 개선으로 알림 리스트에 범용 더미 문구 대신 '실제 포착된 기사 제목' 노출 및 zfill(6) 코드 맵핑을 활용한 '한글 종목명' 표시 보완 완료 |
+| 2026-07-27 | Antigravity | 위험 진단 3개 화면(`diagnosis/page.js`, `diagnosis/weather/page.js`, `diagnosis/result/page.js`)의 상단 탭 내비게이션 영역에 pt-4 상단 여백(패딩)을 추가하여 헤더 영역과의 밀착 현상 해결 및 UI 일관성 확보 |
+| 2026-07-27 | Antigravity | `backend/scripts/health_check.py` 내에 CI 가상환경 무결성 검증을 위한 `ml_ready_real.csv` 부재 시 '테스트용 가상 모사 데이터셋 자동 복원기' 구현 탑재로 깃허브 액션 빌드 패스 보장 |
+| 2026-07-27 | Antigravity | `backend/scripts/health_check.py` 내에 `price_features_raw.csv` 결측 시의 '테스트용 가상 원본 시세 데이터 모사기' 추가 구현 및 깃허브 액션 파일 에러 최종 차단 |
+| 2026-07-27 | Antigravity | `frontend/src/app/diagnosis/weather/page.js` 및 `backend/main.py` 내 AI 판단 근거 템플릿과 LLM 생성 지시문(TONE_INSTRUCTION)을 전면 중립화하여 매도나 특정 매매 행위를 유도/조장하지 않도록 서술 방식 보완 완료 |

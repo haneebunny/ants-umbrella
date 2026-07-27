@@ -42,7 +42,7 @@ export default function DiagnosisResultPage() {
   return (
     <div className="w-full">
       {/* ── 3단계 탭/단계 내비게이션 ── */}
-      <div className="pb-4 flex items-center gap-2 flex-wrap">
+      <div className="pt-4 pb-4 flex items-center gap-2 flex-wrap">
         <button
           onClick={() => router.push('/diagnosis')}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${

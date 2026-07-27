@@ -42,24 +42,24 @@ function calculateWeather(portfolio, band) {
 // 날씨별 AI 판단 근거 멘트 (날씨 라벨과 1:1 매핑)
 const WEATHER_COMMENTS = {
   '번개': [
-    '⚡️ 포트폴리오 전반에 걸쳐 고위험 신호가 다수 감지됐어요! 지금은 신중하게 상황을 점검할 타이밍이에요.',
-    '🔴 하락 방향 예측 종목들이 집중돼 있어서 단기 손실 위험이 높아요. 손절 기준선을 미리 확인해 두는 게 좋아요.',
-    '🚨 현재 위험 수준이 허용 한도를 크게 초과했어요. 고위험 종목 비중을 줄이거나 방어주로 일부 교체를 고려해 보세요!',
+    '⚡️ 포트폴리오 전반에 걸쳐 리스크 감지 비율이 다수 증가했어요. 시장 모니터링을 강화할 필요가 있습니다.',
+    '🔴 하락 방향 예측 비중이 높아 변동성 위험이 감지되므로, 개별 자산의 리스크 노출 현황을 차분하게 검토해 보세요.',
+    '🚨 현재 위험 지표 수준이 목표치 대비 상승한 상태입니다. 투자 성향에 맞춘 자산 다각화 방안을 점검해 보시는 것이 좋습니다.',
   ],
   '비': [
-    '🌧️ 일부 종목에서 하락 리스크가 감지되고 있어요. 전체적으로 살짝 흐린 상황이에요.',
-    '📉 약세 신호가 중간 수준으로 감지되고 있어요. 비중 조절과 현금 비중 확보를 고려해 볼 수 있어요.',
-    '🌂 시장 변동성이 높아지는 구간이에요. 리밸런싱 전략을 점검하고 안정적인 종목 비중을 늘려보세요.',
+    '🌧️ 일부 종목에서 리스크 신호가 감지되고 있어요. 단기적인 지표 변동 가능성이 있습니다.',
+    '📉 하락 방향 예측 비중이 일부 감지되므로, 투자 목적에 비추어 자산 배분이 균형적인지 점검해 볼 타이밍입니다.',
+    '🌂 전반적인 시장 변동성이 확대되는 모습입니다. 변동성 완화를 위해 개별 종목군의 지표 흐름을 차근차근 모니터링해 보세요.',
   ],
   '구름': [
     '⛅ 포트폴리오 전반은 크게 문제없지만, 일부 종목에서 불확실성이 보여요.',
-    '🟡 대부분 종목은 괜찮지만 단기 하락 리스크 신호가 일부 있어요. 지켜보면서 대응하면 충분해요.',
-    '📊 전반적으로 중립 수준이에요. 분산 구성을 유지하면서 위험 종목만 추가 점검해 보세요!',
+    '🟡 단기 하락 리스크 신호가 일부 있어요. 차분하게 시장 흐름을 관찰하면 충분해요.',
+    '📊 분산 구성을 유지하면서 변동성이 나타난 개별 자산만 추가 확인해 보세요!',
   ],
   '맑음': [
-    '☀️ 배당 우량주 중심 구성 덕분에 포트폴리오 전반이 편안하고 안정적인 흐름을 유지하고 있어요! 🛡️',
-    '📈 보유 종목들의 상승 신호가 고루 확인되고, ESG 평판 리스크도 낮아서 안심할 수 있는 구간이에요!',
-    '💸 현재 위험 수준은 허용 범위 아래에 있어요. 원한다면 분산 투자를 더 든든하게 늘려봐도 좋아요!',
+    '☀️ 배당 우량주 중심 구성 덕분에 포트폴리오 전반이 안정적인 흐름을 유지하고 있어요! 🛡️',
+    '📈 보유 종목들의 상승 신호가 고루 확인되고, ESG 평판 리스크도 낮아서 편안한 구간이에요!',
+    '💸 현재 위험 수준은 설정된 목표 범위 아래에 안전하게 위치하고 있습니다.',
   ],
 };
 
@@ -139,7 +139,7 @@ export default function DiagnosisWeatherPage() {
       <main className="pt-2 pb-10 px-1 max-w-4xl">
 
         {/* ── 3단계 탭 내비게이션 ── */}
-        <div className="pt-2 pb-4 flex items-center gap-2 flex-wrap">
+        <div className="pt-4 pb-4 flex items-center gap-2 flex-wrap">
           <button
             onClick={() => router.push('/diagnosis')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${isDark ? 'bg-white/5 text-slate-500 hover:text-slate-300' : 'bg-white text-slate-400 border border-slate-200 hover:text-slate-600'}`}
@@ -257,10 +257,10 @@ export default function DiagnosisWeatherPage() {
                 idx < stockList.length - 1 ? (isDark ? 'border-b border-white/5' : 'border-b border-slate-50') : ''
               } ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}
             >
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
+            <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
                   <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>{s.name}</p>
-                  <span className={`text-[10px] font-mono font-bold px-2 py-0.2 rounded-full ${isDark ? 'bg-white/10 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${isDark ? 'bg-white/10 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
                     {s.ticker} · 비중 {s.weight || 25}%
                   </span>
                 </div>
@@ -271,12 +271,13 @@ export default function DiagnosisWeatherPage() {
                 )}
               </div>
 
-              <div className="flex items-center gap-3">
-                <span className={`text-xs font-black ${s.direction === 'up' ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : 'text-rose-500'}`}>
+              <div className="flex items-center gap-3 flex-shrink-0 ml-2">
+                <span className={`text-xs font-black whitespace-nowrap ${s.direction === 'up' ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : 'text-rose-500'}`}>
                   {s.direction === 'up' ? '▲ 상승' : '▼ 하락'} ({s.change > 0 ? `+${s.change}%` : `${s.change}%`})
                 </span>
                 <Icon name="chevronRight" className={`w-4 h-4 ${isDark ? 'text-slate-600' : 'text-slate-400'}`} />
               </div>
+
             </button>
           ))}
         </div>
