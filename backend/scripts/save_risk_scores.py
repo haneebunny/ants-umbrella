@@ -14,7 +14,23 @@ from pymongo import UpdateOne
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 DATA_PATH = PROJECT_ROOT / "data" / "ml_ready_real.csv"
 
-# 피처 리스트 (Ablation 3단 전체 적용)
+# 서빙 모델 피처 리스트
+#
+# ※ 뉴스 건수·누적 피처(news_count, news_neg_count, news_*_5d/20d)는 의도적으로 제외한다.
+#   join_features.py 가 이 피처들을 만들어 ml_ready_real.csv 에 담고 있고
+#   health_check.py 는 평가용으로 사용하지만, 서빙 모델에는 넣지 않는다.
+#
+#   근거 — 급락 예측 기여가 확인되지 않았다. 조건을 4번 바꿔가며 측정했으나
+#   결론이 계속 뒤집혔고, 최종(17종목·중립 처리 개선 완료) 측정에서는 오히려 악화됐다.
+#       뉴스 1종목만        ΔPR-AUC 95%CI [-0.0066, +0.0030]  P(개선)=0.25
+#       17종목 확대         ΔPR-AUC 95%CI [-0.0048, +0.0049]  P(개선)=0.53
+#       + 중립 처리 개선     ΔPR-AUC 95%CI [-0.0009, +0.0196]  P(개선)=0.96
+#       + 전 종목 완비(최종) ΔPR-AUC 95%CI [-0.0212, -0.0027]  P(개선)=0.00  ← 악화
+#   종목 하나 추가로 부호가 뒤집힌다는 것은 안정적인 신호가 없다는 뜻이다.
+#   (재현: backend/scripts/health_check.py 의 D 섹션)
+#
+#   단 뉴스를 버리는 것은 아니다. 위험 판정의 "근거 표시"와 Slack 알림의
+#   악재 필터에는 계속 사용한다. 예측이 아니라 설명을 담당하도록 역할을 나눴다.
 FEATURE_COLS = [
     "log_return_1d", "volatility_20d", "volume_zscore", "beta_60d", "macro_rate", "macro_fx",
     "category_material_value", "category_immaterial_value",
