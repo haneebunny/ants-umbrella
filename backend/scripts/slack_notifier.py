@@ -70,7 +70,20 @@ TICKER_NAME_MAP = {
 }
 
 def get_event_details(ticker, date_str):
-    name = TICKER_NAME_MAP.get(ticker, "알 수 없는 종목")
+    # 역매핑용 사전 정의
+    NAME_TO_TICKER = {v: k for k, v in TICKER_NAME_MAP.items()}
+    
+    # 만약 ticker 변수에 종목코드 대신 이미 회사명(예: "현대차")이 들어와 있다면 상호 복원
+    if ticker in NAME_TO_TICKER:
+        name = ticker
+        ticker = NAME_TO_TICKER[name]
+    else:
+        name = TICKER_NAME_MAP.get(ticker, "알 수 없는 종목")
+        if name == "알 수 없는 종목" and ticker and not str(ticker).isdigit():
+            # ticker 자체가 종목명 역할을 하는 경우 복구
+            name = str(ticker)
+            # 수동 매핑으로 6자리 코드로의 치환 시도
+            ticker = NAME_TO_TICKER.get(name, ticker)
     
     root_path = Path(__file__).resolve().parent.parent.parent
     
