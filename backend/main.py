@@ -1225,6 +1225,22 @@ def get_risk_evidences(ticker: str):
     if sparkline_data and len(sparkline_data) > 0:
         sparkline_data[-1] = current_price
 
+    # ── [추가] ESG 브레이크다운 영역 동적 추출 ──
+    esg_breakdown = {
+        "e": { "status": "safe", "text": "친환경 공정 전환 및 기후 변화 표준 규제 충족 여부를 확인하고 있습니다." },
+        "s": { "status": "safe", "text": "임직원 안전 보건 표준 준수 및 노동·인권 리스크 관리가 안정적입니다." },
+        "g": { "status": "safe", "text": "이사회 투명성 유지 및 주주가치 제고 지배구조 기준을 충족하고 있습니다." }
+    }
+    for ev in evidences:
+        if ev.get("direction") == "부정":
+            title = ev.get("title", "")
+            if any(k in title for k in ["탄소", "환경", "기후", "배출", "오염", "RE100", "폐기물", "화학", "에너지"]):
+                esg_breakdown["e"] = { "status": "caution", "text": f"주의 관측: {title}" }
+            elif any(k in title for k in ["노동", "안전", "인권", "사망", "상생", "사회", "직원", "임금", "파업", "노조"]):
+                esg_breakdown["s"] = { "status": "caution", "text": f"주의 관측: {title}" }
+            elif any(k in title for k in ["지배구조", "이사", "횡령", "사법", "주주", "배임", "감사", "경영권", "소송"]):
+                esg_breakdown["g"] = { "status": "caution", "text": f"주의 관측: {title}" }
+
     return {
         "ticker": ticker, 
         "ai_briefing": ai_brief, 
@@ -1232,7 +1248,8 @@ def get_risk_evidences(ticker: str):
         "macro_analysis": macro_analysis,
         "sparkline": sparkline_data,
         "current_price": current_price,
-        "change_percent": change_percent
+        "change_percent": change_percent,
+        "esg_breakdown": esg_breakdown
     }
 
 @app.get("/api/alerts")
