@@ -94,20 +94,13 @@ export default function SurveyScreen({
           </button>
 
           <div className="flex items-center gap-2 font-mono text-xs">
-            <span className={`hidden sm:inline-block px-2.5 py-1 rounded-lg ${
+            <span className={`px-2.5 py-1 rounded-lg ${
               isDark 
                 ? 'bg-slate-800 text-[#69dbad]' 
                 : 'bg-[#3eb489]/10 border border-[#3eb489]/20 text-[#3eb489] font-bold'
             }`}>
               질문 {String(currentQuestionIndex + 1).padStart(2, '0')}
             </span>
-            <div className={`w-8 h-8 rounded-full overflow-hidden border ${isDark ? 'border-[#3d4943]' : 'border-[#3eb489]/20'}`}>
-              <img 
-                className="w-full h-full object-cover" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNY5NDw88xhiYKkv9zCStz5DeMSn1z9x8zbDEx8Rmtv-n1RzKTRZ9dW9UhzlRHyZVWZoZQWIgGrILxwoqhuvl-E2ALQKOZP4takWWeAs8l5pY1um27lbAj3JMxxbpdMPhrhgxjN7zloMUtTXtAR3HY8bp-VPpO8U9XXb_gIZoBe67AWv-AiR0mdCPjITnxwgaskhC0aJ-adj7QC2z6MT6ZzfiNq2r4kW_S-EELFtuFBRT-0TbmZOpqIw" 
-                alt="Avatar"
-              />
-            </div>
           </div>
         </div>
       </header>
