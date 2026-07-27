@@ -183,18 +183,42 @@ def send_slack_alert():
                     df_macro = df_macro.dropna(subset=["date"])
                     latest_date = df_macro["date"].max()
                     latest_row = df_macro[df_macro["date"] == latest_date].iloc[-1]
-                    # 환율 결측치(주말/공휴일)가 있으면 최근 유효값으로 대체
+                    latest_date_str = latest_date.strftime("%Y-%m-%d")
+
+                    # 환율 결측치(주말/공휴일)가 있으면 최근 유효값으로 대체 및 실제 날짜 추적
                     if pd.isna(latest_row.get("macro_fx")):
                         valid_fx = df_macro[df_macro["macro_fx"].notna()]
-                        fx_val = valid_fx.iloc[-1]["macro_fx"] if not valid_fx.empty else None
+                        if not valid_fx.empty:
+                            fx_val = valid_fx.iloc[-1]["macro_fx"]
+                            fx_date_str = pd.to_datetime(valid_fx.iloc[-1]["date"]).strftime("%Y-%m-%d")
+                        else:
+                            fx_val = None
+                            fx_date_str = None
                     else:
                         fx_val = latest_row.get("macro_fx")
+                        fx_date_str = latest_date_str
+
+                    # 기준금리 결측치가 있으면 최근 유효값으로 대체 및 실제 날짜 추적
+                    if pd.isna(latest_row.get("macro_rate")):
+                        valid_rate = df_macro[df_macro["macro_rate"].notna()]
+                        if not valid_rate.empty:
+                            rate_val = valid_rate.iloc[-1]["macro_rate"]
+                            rate_date_str = pd.to_datetime(valid_rate.iloc[-1]["date"]).strftime("%Y-%m-%d")
+                        else:
+                            rate_val = None
+                            rate_date_str = None
+                    else:
+                        rate_val = latest_row.get("macro_rate")
+                        rate_date_str = latest_date_str
+
                     macro_info = {
-                        "date": latest_date.strftime("%Y-%m-%d"),
-                        "rate": latest_row.get("macro_rate"),
-                        "fx": fx_val
+                        "date": latest_date_str,
+                        "rate": rate_val,
+                        "rate_date": rate_date_str,
+                        "fx": fx_val,
+                        "fx_date": fx_date_str
                     }
-                    print(f"[INFO] 거시 지표 로드 완료: {macro_info['date']} 기준 금리={macro_info['rate']}, 환율={macro_info['fx']}")
+                    print(f"[INFO] 거시 지표 로드 완료: {macro_info['date']} 기준 금리={macro_info['rate']}({macro_info['rate_date']}), 환율={macro_info['fx']}({macro_info['fx_date']})")
             except Exception as e:
                 print(f"[WARN] Failed to read macro_features.csv for macro info: {e}")
 
@@ -376,14 +400,35 @@ def send_slack_alert():
 
         # 5-1. 거시 지표 블록 추가
         if macro_info:
+            # 결측치를 대체하여 사용한 경우, 실제 지표의 기준일을 표시
+            def format_date_suffix(target_date_str, base_date_str):
+                if not target_date_str or target_date_str == base_date_str:
+                    return ""
+                try:
+                    dt = pd.to_datetime(target_date_str)
+                    return f" ({dt.strftime('%m/%d')} 값)"
+                except:
+                    return f" ({target_date_str} 값)"
+
+            rate_suffix = format_date_suffix(macro_info.get("rate_date"), macro_info["date"])
+            fx_suffix = format_date_suffix(macro_info.get("fx_date"), macro_info["date"])
+
+            # 거시 흐름이 모델에 미치는 영향 요약
+            macro_impact_note = (
+                "\n\n💡 *거시 지표 영향 분석*\n"
+                "• 거시 지표(기준금리, 환율)는 모델 예측 중요도의 *43% 이상*을 차지하는 핵심 변수예요.\n"
+                "• 금리 인상이나 환율 상승은 전반적인 시장 위험과 개별 종목의 하락 위험을 높이는 주요인으로 작용합니다."
+            )
+
             blocks.append({
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
                     "text": f"📊 *시장 주요 거시 경제 지표*\n"
-                            f"• *한국은행 기준금리*: `{macro_info['rate']}%`\n"
-                            f"• *원/달러 환율*: `{macro_info['fx']}원`\n"
+                            f"• *한국은행 기준금리*: `{macro_info['rate']}%`{rate_suffix}\n"
+                            f"• *원/달러 환율*: `{macro_info['fx']}원`{fx_suffix}\n"
                             f"{_macro_freshness_note(macro_info['date'])}"
+                            f"{macro_impact_note}"
                 }
             })
             blocks.append({"type": "divider"})

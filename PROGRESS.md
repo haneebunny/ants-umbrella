@@ -39,3 +39,4 @@
 | 2026-07-26 | Antigravity | GEMINI_MODEL 하드코딩 전면 제거: main.py / process_news_features.py / slack_notifier.py 세 곳을 os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")로 통일 |
 | 2026-07-26 | Antigravity | 슬랙 알림 스케줄 개편: 하루 3회(6:41/12:00/17:46) → 2회(7:41 KST 무조건 발송 / 17:46 KST 변동 시만 발송). GitHub Actions 크론 및 ALERT_MODE 자동 판별 로직 추가 |
 | 2026-07-26 | Antigravity | 불필요 파일 정리: 실험용 스크립트 12개 삭제(verify2.py / compare_features.py / run_experiments.py 등), 더미·목업 데이터 파일 7개 삭제, DL/ 및 training/ 폴더 제거 |
+| 2026-07-27 | Antigravity | `slack_notifier.py` 거시 지표(금리/환율) 결측 보정 시 실제 지표 생성일 표시 및 거시 흐름 영향 요약 문구 슬랙 메시지에 추가 |
