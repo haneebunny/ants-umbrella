@@ -423,7 +423,7 @@ export default function Home() {
       <div className="relative z-10 w-full">
         {/* ─ 게스트 CTA (데모 시에만) ─ */}
         {isDemo && (
-          <div className="mb-3">
+          <div className="pt-4 mb-3">
             <GuestCTABanner isDemoMode={isDemo} isDark={isDark} compact />
           </div>
         )}
