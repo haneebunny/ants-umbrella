@@ -25,8 +25,20 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata = {
-  title: "개미의 우산 - 투자성향진단 시스템",
-  description: "개미의 우산의 정교한 알고리즘을 통해 당신만의 독특한 투자 성향을 분석합니다.",
+  title: "개미의 우산 | AI 기반 주가 급락 위험 진단 서비스",
+  description: "ESG 리스크(뉴스·공시)와 거시 경제 지표를 XGBoost AI 모델로 분석하여, 내 포트폴리오 종목의 20거래일 내 주가 급락 위험을 사전 진단합니다.",
+  openGraph: {
+    title: "개미의 우산 | AI 기반 주가 급락 위험 진단 서비스",
+    description: "개인 투자자를 위한 ESG 및 거시 지표 기반 주가 급락 위험 예측 플랫폼",
+    images: [
+      {
+        url: "/icon.png",
+        width: 512,
+        height: 512,
+        alt: "개미의 우산 로고",
+      },
+    ],
+  },
 };
 
 // 페이지 렌더 전에 localStorage에서 테마를 읽어 <html>에 즉시 적용
