@@ -24,13 +24,13 @@ const WEATHER_PALETTES = {
   ],
 };
 
-// ── 레이더 5대 축 정의 ──────────────────────────────────────────
+// ── 레이더 5대 축 정의 (뉴닉 스타일 친근하고 위트있는 1줄 톡톡 해설) ──
 const RADAR_AXES = [
-  { key: 'sectorDiv',    label: '업종\n다각화', desc: '금융·IT·철강 등 특정 산업군에 자산이 쏠리지 않고 분산된 정도' },
-  { key: 'stockSpread',  label: '종목\n분산도', desc: '특정 1~2개 종목에 자금이 몰리지 않고 고르게 나뉜 투자 비중' },
-  { key: 'volatilityFit',label: '변동성\n적합도', desc: '고객님의 투자 위험 성향 대비 포트폴리오 주가 변동 폭의 적합성' },
-  { key: 'capStability', label: '시총\n안정성', desc: '대형 우량주 비중 기반의 재무 펀더멘털 및 주가 하방 안정성' },
-  { key: 'esgRisk',      label: 'ESG\n안전도', desc: 'E(환경)·S(사회)·G(지배구조) 사법/공시 리스크 노출도가 낮고 안전한 정도' },
+  { key: 'sectorDiv',    label: '업종\n다각화', desc: 'IT부터 금융까지 다양한 산업군에 나눠 담아 특정 분야 불황도 안 무서워요!' },
+  { key: 'stockSpread',  label: '종목\n분산도', desc: '한두 종목에 쏠리지 않게 기분 좋게 골고루 배분한 안전 지수예요.' },
+  { key: 'volatilityFit',label: '변동성\n적합도', desc: '내 투자 성향과 실제 주가 출렁임의 합이 얼마나 찰떡궁합인지 보여줘요.' },
+  { key: 'capStability', label: '시총\n안정성', desc: '든든한 대형 우량주가 버팀목이 되어주어 외부 풍파에도 끄떡없어요.' },
+  { key: 'esgRisk',      label: 'ESG\n안전도', desc: '환경·사회·지배구조 관련 뜻밖의 악재 소식으로부터 안전한 정도예요.' },
 ];
 
 const N = RADAR_AXES.length;
@@ -207,29 +207,29 @@ function RadarChart({ scores, weatherStatus, isDark }) {
 
       </svg>
 
-      {/* ── ℹ️ 툴팁 스마트 해설 카드 (높이 고정하여 레이아웃 시프트 방지) ── */}
-      <div className="w-full min-h-[96px] h-[96px] flex items-stretch">
+      {/* ── ℹ️ 툴팁 스마트 해설 카드 (슬림 컴팩트 높이 h-[64px]로 축소) ── */}
+      <div className="w-full min-h-[64px] h-[64px] flex items-stretch">
         {hoveredAx ? (
-          <div className={`w-full p-3 rounded-xl border text-left transition-all animate-fadeIn ${
+          <div className={`w-full px-3 py-2 rounded-xl border text-left transition-all animate-fadeIn flex flex-col justify-center ${
             isDark
               ? 'bg-zinc-800/90 border-emerald-500/40 text-slate-200 shadow-xl'
               : 'bg-white border-emerald-500/30 text-slate-800 shadow-md'
           }`}>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between mb-0.5">
               <span className={`font-black text-xs ${isDark ? 'text-[#69dbad]' : 'text-[#2d966e]'}`}>
                 {hoveredAx.label.replace('\n', ' ')} ({scores[hoveredAx.key] ?? 0}점)
               </span>
-              <span className={`text-[10px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>ℹ️ 지표 스마트 해설</span>
+              <span className={`text-[10px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>ℹ️ 지표 해설</span>
             </div>
-            <p className={`text-[12px] leading-relaxed font-medium ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+            <p className={`text-[11.5px] leading-snug font-medium ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
               {hoveredAx.desc}
             </p>
           </div>
         ) : (
-          <div className={`w-full p-2.5 rounded-xl text-[11px] text-center flex items-center justify-center transition-all ${
+          <div className={`w-full px-3 py-2 rounded-xl text-[11px] text-center flex items-center justify-center transition-all ${
             isDark ? 'text-slate-400 bg-white/5 border border-white/5' : 'text-slate-500 bg-slate-50 border border-slate-200'
           }`}>
-            <span>💡 각 항목 지표를 마우스로 건드리면 상세 해설이 나타납니다</span>
+            <span>💡 지표 꼭짓점을 건드리면 뉴닉 스타일 해설이 쏙 나타납니다</span>
           </div>
         )}
       </div>
@@ -332,31 +332,31 @@ export default function AssetSummaryCard({ summary, stockWeatherList = [], radar
     <div className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
       isDark ? `bg-[#141715] ${border} card-glow-dark` : `bg-white ${border} shadow-sm card-glow-light`
     }`}>
-      {/* ── 헤더 ── */}
+      {/* ── 헤더 (글자 크기 1단계 확대 text-sm & 아래로 ~2px 이동 translate-y-0.5) ── */}
       <div className={`flex items-center justify-between px-5 py-3.5 border-b ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-50'}`}>
-        <div className="flex items-center gap-1.5">
-          <span className="text-sm">☂️</span>
-          <p className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+        <div className="flex items-center gap-1.5 translate-y-0.5">
+          <span className="text-base">☂️</span>
+          <p className={`text-sm font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
             내 우산 속 보유 자산
           </p>
         </div>
         <a
           href="/portfolio/register"
-          className={`text-xs font-bold flex items-center gap-1 transition-all ${
+          className={`text-sm font-bold flex items-center gap-1 transition-all translate-y-0.5 ${
             isDark ? 'text-[#69dbad] hover:text-[#52c49b]' : 'text-[#3eb489] hover:text-[#2ea070]'
           }`}
         >
-          <Icon name="edit" className="w-3 h-3" />
+          <Icon name="edit" className="w-3.5 h-3.5" />
           <span>편집</span>
         </a>
       </div>
 
-      {/* ── 카드 본문 (제목과 여백 3px 축소 밀착) ── */}
-      <div className="px-5 pt-1.5 pb-3.5">
-        {/* ── [배열 완벽 맞춤] 좌측 수치와 우측 뱃지의 수평 세로 중앙선 1:1 수평 교정 ── */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-3.5">
-          {/* [좌측] 메인 총 평가 자산 (-4px 위로 올림 미세조정) */}
-          <div className="flex items-center gap-1.5 flex-shrink-0 -translate-y-1">
+      {/* ── 카드 본문 (안정적인 표준 세로 패딩 수복) ── */}
+      <div className="p-5">
+        {/* ── [배열 완벽 맞춤] 좌측 수치와 우측 뱃지의 수평 세로 중앙선 정돈 ── */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          {/* [좌측] 메인 총 평가 자산 */}
+          <div className="flex items-center gap-1.5 flex-shrink-0">
             <span className={`text-xl font-extrabold ${accent}`}>₩</span>
             <span className={`text-2xl sm:text-3xl font-black tracking-tight ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
               {formatted}
