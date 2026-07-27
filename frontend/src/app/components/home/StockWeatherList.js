@@ -11,6 +11,8 @@ const WEATHER_ICON = {
   cloudy:  { icon: 'cloud',     label: '구름', color: 'text-slate-400',  pillBg: 'bg-slate-50 border-slate-200',     darkPillBg: 'bg-slate-800/40 border-slate-600/30'   },
   rainy:   { icon: 'cloudRain', label: '비',   color: 'text-sky-400',    pillBg: 'bg-sky-50 border-sky-200',         darkPillBg: 'bg-sky-900/30 border-sky-700/40'       },
   thunder: { icon: 'zap',       label: '번개', color: 'text-rose-400',   pillBg: 'bg-rose-50 border-rose-200',       darkPillBg: 'bg-rose-900/30 border-rose-700/40'     },
+  // 예측 점수 없음 — 무채색으로 4단계와 구분한다
+  unknown: { icon: 'cloud',     label: '예측 불가', color: 'text-slate-400', pillBg: 'bg-slate-50 border-slate-200', darkPillBg: 'bg-slate-800/40 border-slate-600/30' },
 };
 
 const INDICATOR_COLOR = {
@@ -26,6 +28,8 @@ const RISK_LABEL = {
   cloudy:  { text: '보통',     color: 'text-slate-400'   },
   rainy:   { text: '위험',     color: 'text-orange-500'  },
   thunder: { text: '매우위험', color: 'text-rose-500'    },
+  // '보통'으로 표기하면 안 된다 — 판정을 못 한 것이지 위험이 낮은 게 아니다
+  unknown: { text: '판정 불가', color: 'text-slate-400'  },
 };
 
 const WEATHER_BG = {
