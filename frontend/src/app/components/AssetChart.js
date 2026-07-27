@@ -154,7 +154,7 @@ export default function AssetChart({ theme, weights, data, isDark: propIsDark })
               onMouseEnter={() => setHoveredCategory(asset.category)}
               onMouseLeave={() => setHoveredCategory(null)}
               onClick={() => handleNavigate(asset.category)}
-              className={`p-2.5 rounded-xl transition-all flex items-center justify-between border cursor-pointer ${
+              className={`p-3 rounded-xl transition-all flex items-center justify-between border cursor-pointer ${
                 isHovered 
                   ? isDark 
                     ? 'bg-[#1e2020] border-[#69dbad]' 
@@ -173,33 +173,33 @@ export default function AssetChart({ theme, weights, data, isDark: propIsDark })
                       borderColor: isDark ? 'transparent' : 'rgba(62, 180, 137, 0.3)'
                     }}
                   />
-                  <span className={`text-[12px] font-bold font-sans truncate ${isDark ? 'text-slate-200' : 'text-[#0f1713]'}`}>
+                  <span className={`text-[13.5px] font-black font-sans truncate ${isDark ? 'text-slate-200' : 'text-[#0f1713]'}`}>
                     {asset.category}
                   </span>
-                  {/* 날씨 리스크 배지 */}
-                  <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-full text-[9px] font-bold flex-shrink-0 ${weatherConfig.bg} ${weatherConfig.color}`}>
-                    <span className="text-[10px]">
+                  {/* 날씨 리스크 배지 (폰트 10.5px로 확대) */}
+                  <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10.5px] font-bold flex-shrink-0 ${weatherConfig.bg} ${weatherConfig.color}`}>
+                    <span className="text-[11px]">
                       {weatherConfig.label === '맑음' ? '☀️' : weatherConfig.label === '구름' ? '⛅' : weatherConfig.label === '비' ? '🌧️' : '⚡'}
                     </span>
                     <span>{weatherConfig.label}</span>
                   </span>
                 </div>
-                {/* 보유량 및 평단가 정보 */}
-                <div className={`text-[9.5px] pl-4 mt-1 font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                {/* 보유량 및 평단가 정보 (폰트 11px로 확대) */}
+                <div className={`text-[11px] pl-4 mt-1 font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                   {quantity}주 | {new Intl.NumberFormat('ko-KR').format(purchasePrice)}원
                 </div>
               </div>
 
-              {/* 수익률 및 비중 정보 */}
+              {/* 수익률 및 비중 정보 (폰트 13px/10.5px로 확대) */}
               <div className="text-right flex-shrink-0 pl-1">
-                <div className={`text-[11px] font-mono font-black ${
+                <div className={`text-[13px] font-mono font-black ${
                   profitLossRate >= 0
                     ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]')
                     : 'text-rose-500'
                 }`}>
                   {profitLossRate >= 0 ? '+' : ''}{profitLossRate.toFixed(1)}%
                 </div>
-                <div className={`text-[9.5px] font-mono font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                <div className={`text-[10.5px] font-mono font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                   비중 {asset.weight}%
                 </div>
               </div>

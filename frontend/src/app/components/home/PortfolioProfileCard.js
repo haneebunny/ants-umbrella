@@ -57,6 +57,14 @@ export default function PortfolioProfileCard({
         }`}>
           내 투자성향
         </p>
+        {isDemoMode && (
+          <span className={`text-[9.5px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
+            isDark ? 'bg-amber-400/15 text-amber-300 border border-amber-400/20' : 'bg-amber-50 text-amber-700 border border-amber-200'
+          }`}>
+            <span>📊</span>
+            <span>샘플 체험 중</span>
+          </span>
+        )}
       </div>
 
       {/* ── 성향명 ── */}

@@ -420,13 +420,7 @@ export default function Home() {
       <RainEffect weatherStatus={overallWeather.status} isDark={isDark} />
 
       {/* ── 콘텐츠 영역을 relative z-10으로 감싸 빗방울이 뒤로 가게 함 ── */}
-      <div className="relative z-10 w-full">
-        {/* ─ 게스트 CTA (데모 시에만) ─ */}
-        {isDemo && (
-          <div className="mb-3">
-            <GuestCTABanner isDemoMode={isDemo} isDark={isDark} compact />
-          </div>
-        )}
+      <div className="relative z-10 w-full pt-4">
 
         {/* ── 메인 2단 그리드 (좌: 콘텐츠 / 우: 관심주식) ── */}
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-4 items-start">

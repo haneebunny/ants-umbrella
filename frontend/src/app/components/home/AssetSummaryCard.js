@@ -332,11 +332,14 @@ export default function AssetSummaryCard({ summary, stockWeatherList = [], radar
     <div className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
       isDark ? `bg-[#141715] ${border} card-glow-dark` : `bg-white ${border} shadow-sm card-glow-light`
     }`}>
-      {/* ── 헤더 (종목별 날씨 카드 헤더와 100% 수평 Y축 픽셀 라인 맞춤) ── */}
+      {/* ── 헤더 ── */}
       <div className={`flex items-center justify-between px-5 py-3.5 border-b ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-50'}`}>
-        <p className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-          내 포트폴리오 & 자산 진단
-        </p>
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm">☂️</span>
+          <p className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+            내 우산 속 보유 자산
+          </p>
+        </div>
         <a
           href="/portfolio/register"
           className={`text-xs font-bold flex items-center gap-1 transition-all ${
@@ -348,50 +351,46 @@ export default function AssetSummaryCard({ summary, stockWeatherList = [], radar
         </a>
       </div>
 
-      {/* ── 카드 본문 (p-5) ── */}
-      <div className="p-5">
-        {/* 하단 라인: 총 자산 금액(좌) + 우측 위험자산 뱃지(우) */}
-        <div className="flex flex-col gap-2 mb-4">
-          <div className="flex items-baseline gap-1">
-            <span className={`text-lg font-black font-mono ${accent}`}>₩</span>
-            <span className={`text-2xl font-black font-mono leading-none ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
+      {/* ── 카드 본문 (제목과 여백 3px 축소 밀착) ── */}
+      <div className="px-5 pt-1.5 pb-3.5">
+        {/* ── [배열 완벽 맞춤] 좌측 수치와 우측 뱃지의 수평 세로 중앙선 1:1 수평 교정 ── */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3.5">
+          {/* [좌측] 메인 총 평가 자산 (-4px 위로 올림 미세조정) */}
+          <div className="flex items-center gap-1.5 flex-shrink-0 -translate-y-1">
+            <span className={`text-xl font-extrabold ${accent}`}>₩</span>
+            <span className={`text-2xl sm:text-3xl font-black tracking-tight ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
               {formatted}
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-2 mt-1.5">
-            {/* 보유 액수 | 수익(손실) 액수 | 수익률 */}
-            <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] font-bold">
-              {/* 보유 액수 (검정색 / 다크모드는 회색 계열) */}
-              <span className={`whitespace-nowrap ${isDark ? 'text-slate-300' : 'text-black'}`}>
-                보유 ₩{new Intl.NumberFormat('ko-KR').format(totalPurchaseAsset)}
-              </span>
-              <span className={`whitespace-nowrap ${isDark ? 'text-slate-800' : 'text-slate-200'}`}>|</span>
-              {/* 수익(손실) 액수 */}
-              <span className={`whitespace-nowrap ${
-                totalProfitLoss >= 0
-                  ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]')
-                  : 'text-rose-500'
-              }`}>
-                {totalProfitLoss >= 0 ? '+' : '-'}₩{new Intl.NumberFormat('ko-KR').format(Math.abs(totalProfitLoss))}
-              </span>
-              <span className={`whitespace-nowrap ${isDark ? 'text-slate-800' : 'text-slate-200'}`}>|</span>
-              {/* 수익률 */}
-              <span className={`whitespace-nowrap ${
-                totalProfitLossRate >= 0
-                  ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]')
-                  : 'text-rose-500'
-              }`}>
-                {totalProfitLossRate >= 0 ? '+' : ''}{totalProfitLossRate.toFixed(2)}%
-              </span>
+          {/* [우측] 세로 중앙선에 맞춰 정렬된 3개 미니 뱃지 */}
+          <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
+            {/* 1. 원금 뱃지 */}
+            <div className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 ${
+              isDark ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'
+            }`}>
+              <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>원금</span>
+              <span className="font-extrabold">₩{new Intl.NumberFormat('ko-KR').format(totalPurchaseAsset)}</span>
             </div>
 
-            <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1 flex-shrink-0 whitespace-nowrap ${
+            {/* 2. 평가 손익 뱃지 */}
+            <div className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 ${
+              totalProfitLoss >= 0
+                ? (isDark ? 'bg-[#3eb489]/15 text-[#69dbad] border-[#3eb489]/30' : 'bg-emerald-50 text-[#2ea070] border-emerald-200')
+                : (isDark ? 'bg-rose-950/40 text-rose-300 border-rose-500/30' : 'bg-rose-50 text-rose-600 border-rose-200')
+            }`}>
+              <span className={totalProfitLoss >= 0 ? (isDark ? 'text-[#69dbad]/80' : 'text-[#2ea070]/80') : 'text-rose-500/80'}>손익</span>
+              <span className="font-extrabold">{totalProfitLoss >= 0 ? '+' : '-'}₩{new Intl.NumberFormat('ko-KR').format(Math.abs(totalProfitLoss))}</span>
+              <span className="text-[11px] font-semibold opacity-90">({totalProfitLossRate >= 0 ? '+' : ''}{totalProfitLossRate.toFixed(1)}%)</span>
+            </div>
+
+            {/* 3. 위험자산 뱃지 */}
+            <div className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 ${
               isDark ? 'bg-rose-950/40 border-rose-500/30 text-rose-300' : 'bg-rose-50 border-rose-200 text-rose-600'
             }`}>
-              <span>위험자산</span>
-              <span className="font-mono font-black">{riskAssetRatio}%</span>
-            </span>
+              <span className={isDark ? 'text-rose-300/80' : 'text-rose-600/80'}>위험자산</span>
+              <span className="font-extrabold">{riskAssetRatio}%</span>
+            </div>
           </div>
         </div>
 
