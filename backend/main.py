@@ -443,11 +443,16 @@ def get_portfolios():
 #       prob_crash 분포가 실제 기저율(0.185)에 맞춰 낮게 형성된다. 컷도 같은
 #       분포에서 산출했다. 학습 데이터가 크게 바뀌면 save_risk_scores.py가
 #       출력하는 prob_crash 중앙값으로 BASELINE을 갱신할 것.
+#
+# v5: 서빙 피처를 10개 → 2개(변동성·수익률)로 축소하면서 prob_crash 분포가 이동해
+#     컷을 다시 잡았다. 기존 날씨 구성비(맑음 41 / 구름 39.5 / 비 15 / 번개 4.6%)는 유지.
+#     보정 결과 등급별 실측 급락률이 뚜렷하게 단조 증가한다
+#     (맑음 0.071 → 구름 0.203 → 비 0.318 → 번개 0.567).
 _WEATHER_ALPHA = 0.7        # 시장 공통분 제거 강도 (0=절대, 1=완전 상대화)
-_WEATHER_BASELINE = 0.138   # 중립 급락확률 기준선 = prob_crash 중앙값
-_WEATHER_CUT_SUNNY = 0.097
-_WEATHER_CUT_CLOUDY = 0.252
-_WEATHER_CUT_RAINY = 0.420
+_WEATHER_BASELINE = 0.180   # 중립 급락확률 기준선 = prob_crash 중앙값
+_WEATHER_CUT_SUNNY = 0.148
+_WEATHER_CUT_CLOUDY = 0.260
+_WEATHER_CUT_RAINY = 0.363
 # 데이터 누락 시 쓰는 중립 prob_up (= 1 - 기준선). 급락 모델 전환 후에는 0.5가
 # 아니라 이 값이 "위험도 보통"에 해당하므로 폴백 기본값으로 사용한다.
 _NEUTRAL_PROB_UP = 1.0 - _WEATHER_BASELINE

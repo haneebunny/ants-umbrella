@@ -37,8 +37,8 @@ LLM_FILTER_STATE = {"failed": False, "reason": ""}
 # 실측(806거래일) 결과 위험 종목이 0개인 날이 15.9%, 3개 미만인 날이 39.5%였는데도
 # 매일 3건을 경보해 과잉 경보가 발생했고, 반대로 위험 종목이 6개 이상인 날에도
 # 3건만 보내 누락이 생겼다. 절대 임계값 방식으로 바꿔 양방향 오류를 제거한다.
-ALERT_PROB_THRESHOLD = 0.252   # '비' 이상 = 알림 대상
-ALERT_SEVERE_THRESHOLD = 0.420  # '번개' 이상 = 강조 표기
+ALERT_PROB_THRESHOLD = 0.260   # '비' 이상 = 알림 대상   (main.py _WEATHER_CUT_CLOUDY)
+ALERT_SEVERE_THRESHOLD = 0.363  # '번개' 이상 = 강조 표기 (main.py _WEATHER_CUT_RAINY)
 ALERT_MAX_ITEMS = 5             # 한 번에 나열할 최대 종목 수
 
 # 16개 포트폴리오 기업명 매핑
