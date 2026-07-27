@@ -150,11 +150,47 @@ def save_to_mongodb(features):
         
     collection = get_collection("esg_events")
     
+    COMPANY_NAME_TO_CODE = {
+        "삼성전자": "005930",
+        "SK하이닉스": "000660",
+        "NAVER": "035420",
+        "카카오": "035720",
+        "LG에너지솔루션": "373220",
+        "삼성SDI": "006400",
+        "에코프로": "086520",
+        "에코프로비엠": "247540",
+        "알테오젠": "196170",
+        "POSCO홀딩스": "005490",
+        "포스코홀딩스": "005490",
+        "삼성생명": "032830",
+        "KT&G": "033780",
+        "KB금융": "105560",
+        "현대차": "005380",
+        "현대자동차": "005380",
+        "셀트리온": "068270",
+        "신한지주": "055550",
+        "기아": "000270",
+        "SK텔레콤": "017670",
+        "S-Oil": "010950",
+        "에스오일": "010950",
+        "삼성물산": "028260",
+        "LG화학": "051910",
+        "LG": "003550",
+        "엔씨소프트": "036570",
+        "넷마블": "251270",
+        "한국전력": "015760"
+    }
+
     print("\n[DB] MongoDB 'esg_events' 컬렉션에 적재 중...")
     success_count = 0
     for item in features:
         company_name = item["ticker"]
-        stock_code = name_to_code.get(company_name, company_name)
+        # 1. 우선순위: 수동 매핑 사전 조회
+        stock_code = COMPANY_NAME_TO_CODE.get(company_name)
+        # 2. 없으면: corp_code_map.csv 로드 결과 조회
+        if not stock_code:
+            stock_code = name_to_code.get(company_name, company_name)
+            
         match = re.search(r"\d+", str(stock_code))
         if match:
             stock_code = match.group(0).zfill(6)
