@@ -8,8 +8,15 @@ BASE_DIR = pathlib.Path(__file__).resolve().parent.parent.parent
 raw_csv_path = BASE_DIR / "data" / "price_features_raw.csv"
 price_csv_path = BASE_DIR / "data" / "price_features_labeled.csv"
 
-price_df = pd.read_csv(raw_csv_path, dtype={"ticker": str})
+# 입력은 labeled 우선.
+#   generate_labels.py 가 raw → labeled 로 라벨을 붙이는데, 여기서 raw 를 읽어
+#   labeled 를 통째로 덮어쓰면 방금 만든 라벨이 사라진다.
+#   (파이프라인 순서가 generate_labels → add_sector 이므로 실제로 매번 유실됐음)
+#   labeled 가 있으면 그 위에 sector 만 얹는다.
+source_path = price_csv_path if price_csv_path.exists() else raw_csv_path
+price_df = pd.read_csv(source_path, dtype={"ticker": str})
 price_df["ticker"] = price_df["ticker"].str.zfill(6)
+print(f"[INFO] 입력: {source_path.name} ({len(price_df):,}행, 컬럼 {len(price_df.columns)}개)")
 
 # 이미 잘못 매핑된 sector 컬럼이 존재할 경우 삭제하여 중복 방지
 if "sector" in price_df.columns:

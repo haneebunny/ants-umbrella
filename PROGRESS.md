@@ -42,3 +42,4 @@
 | 2026-07-27 | Antigravity | `slack_notifier.py` 거시 지표(금리/환율) 결측 보정 시 실제 지표 생성일 표시 및 거시 흐름 영향 요약 문구 슬랙 메시지에 추가 |
 | 2026-07-27 | Antigravity | `layout.js` 메타데이터 수정(AI 주가 급락 위험 예측 반영) 및 파비콘/앱 아이콘(`icon.png`, `favicon.ico`) 개미의 우산 로고 이미지로 교체 |
 | 2026-07-27 | Antigravity | 종목 상세 미미 브리핑 2단계 LLM 검증 적용, 거시 DB 적재 파이프라인 구축 및 용어 순화, 차트 가격 고정 노출 및 스켈레톤 UI 보완 |
+| 2026-07-27 | Antigravity | 브리핑 영역 Hydration/Nested Tag HTML 오류 (<p> 내 <p> 및 <div> 상속) 해소 및 미미 캐릭터 토끼 이모지(🐰) 제거 완료 |
