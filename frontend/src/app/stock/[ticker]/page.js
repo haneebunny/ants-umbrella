@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useTheme } from '../../hooks/useTheme';
 import RainEffect from '../../components/RainEffect';
 import Icon from '../../components/Icon';
+import { PORTFOLIO_PRESETS } from '../../data/mockData';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -247,6 +248,17 @@ export default function StockDetailPage() {
   // 라이브 API 데이터 연동 상태
   const [liveData, setLiveData] = useState(null);
 
+  // 로컬스토리지를 활용한 활성 포트폴리오 비중 연계
+  const [activePortfolioId, setActivePortfolioId] = useState(1);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('selectedPortfolioId');
+      if (saved) {
+        setActivePortfolioId(parseInt(saved, 10));
+      }
+    }
+  }, []);
+
   // 차트 기간 선택 탭 ('1D', '1W', '1M', '1Y')
   const [selectedPeriod, setSelectedPeriod] = useState('1W');
   const [hoveredIdx, setHoveredIdx] = useState(null);
@@ -302,6 +314,7 @@ export default function StockDetailPage() {
           marketCap: scoreRes?.market_cap,
           high52w: (kisData && kisData.w52_hgpr > 0) ? `${kisData.w52_hgpr.toLocaleString()}원` : scoreRes?.high_52w,
           low52w: (kisData && kisData.w52_lwpr > 0) ? `${kisData.w52_lwpr.toLocaleString()}원` : scoreRes?.low_52w,
+          esgBreakdown: evRes?.esg_breakdown || undefined,
         });
       } catch (e) {
         console.warn('[StockDetail] Live backend API fetch fallback:', e);
@@ -309,6 +322,10 @@ export default function StockDetailPage() {
     }
     fetchLiveData();
   }, [ticker]);
+
+  const activePreset = PORTFOLIO_PRESETS.find(p => p.id === activePortfolioId) || PORTFOLIO_PRESETS[0];
+  const portfolioStock = activePreset.assetSummary.holdings.find(h => h.ticker === ticker);
+  const realWeight = portfolioStock ? portfolioStock.weight : 0;
 
   const fallbackName = TICKER_NAME_MAP[ticker] || '종목 분석 리포트';
   const baseStock = STOCK_DATA[ticker] || { ...DEFAULT_STOCK, name: fallbackName };
@@ -333,12 +350,16 @@ export default function StockDetailPage() {
     marketCap: liveData?.marketCap || baseStock.marketCap,
     high52w: liveData?.high52w || baseStock.high52w,
     low52w: liveData?.low52w || baseStock.low52w,
+    esgBreakdown: liveData?.esgBreakdown || baseStock.esgBreakdown,
+    weight: realWeight,
   };
 
   const isUp = stock.direction === 'up';
 
   // 기간별 주가 데이터 및 툴팁 연산
-  const chartData = stock.sparklines[selectedPeriod] || stock.sparklines['1W'];
+  const chartData = (liveData?.sparkline && liveData.sparkline.length > 0)
+    ? liveData.sparkline
+    : (stock.sparklines[selectedPeriod] || stock.sparklines['1W']);
   const chartW = 600, chartH = 120;
   const minP = Math.min(...chartData), maxP = Math.max(...chartData), rangeP = (maxP - minP) || 1;
   const isPeriodUp = chartData.length >= 2 ? (chartData[chartData.length - 1] >= chartData[0]) : isUp;
@@ -352,9 +373,9 @@ export default function StockDetailPage() {
   const lineColor = isDark ? (isPeriodUp ? '#69dbad' : '#ff8b8b') : (isPeriodUp ? '#3eb489' : '#ef4444');
 
   // 내 자산 실시간 / 가상 매수 리스크 체감 연산
-  const isHeld = Boolean(stock.weight && stock.weight > 0);
-  const userTotalAsset = 40000000;
-  const stockHoldingValue = Math.round((userTotalAsset * (stock.weight || 0)) / 100);
+  const isHeld = Boolean(realWeight && realWeight > 0);
+  const userTotalAsset = activePreset.assetSummary.totalAsset || 40000000;
+  const stockHoldingValue = Math.round((userTotalAsset * realWeight) / 100);
   const impactLossValue = isHeld
     ? Math.round(stockHoldingValue * (simDropPct / 100))
     : Math.round(simVirtualAmount * (simDropPct / 100));
