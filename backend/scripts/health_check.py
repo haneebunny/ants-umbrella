@@ -59,7 +59,6 @@ if not ML_READY.exists():
     print(f"[INFO] {ML_READY} 파일이 존재하지 않아 가상 테스트 데이터셋을 복원합니다.")
     ML_READY.parent.mkdir(parents=True, exist_ok=True)
     
-    # 뼈대 데이터 프레임 구축 (테스트 통과를 위해 필수 피처 칼럼 포함)
     mock_rows = []
     import random
     from datetime import datetime, timedelta
@@ -67,14 +66,28 @@ if not ML_READY.exists():
     test_tickers = ["005930", "000660", "015760"]
     base_date = datetime(2026, 7, 24)
     
-    # 각 종목별로 최근 30일치 데이터 모사
+    # B1 및 B3/B4 검증 규칙과 완벽 부합하도록 모사 데이터 생성
     for ticker in test_tickers:
-        for offset in range(30):
-            cur_date = base_date - timedelta(days=offset)
+        days_to_generate = 60
+        # log_return_1d 를 균등하게 먼저 생성
+        returns = [random.uniform(-0.015, 0.015) for _ in range(days_to_generate)]
+        
+        # 라벨링 계산
+        labels = []
+        for t in range(days_to_generate):
+            if t + WINDOW >= days_to_generate:
+                labels.append(None)  # 마지막 20일은 미확정 결측치 처리 (B3/B4 만족)
+            else:
+                window_returns = returns[t + 1 : t + 1 + WINDOW]
+                min_cum = np.exp(np.cumsum(window_returns).min()) - 1
+                labels.append(1.0 if min_cum <= THRESHOLD else 0.0)
+                
+        for offset in range(days_to_generate):
+            cur_date = base_date - timedelta(days=(days_to_generate - 1 - offset))
             row = {
                 "ticker": ticker,
                 "date": cur_date.strftime("%Y-%m-%d"),
-                "log_return_1d": random.uniform(-0.03, 0.03),
+                "log_return_1d": returns[offset],
                 "volatility_20d": random.uniform(0.01, 0.05),
                 "volume_zscore": random.uniform(-2, 2),
                 "beta_60d": random.uniform(0.8, 1.2),
@@ -92,7 +105,7 @@ if not ML_READY.exists():
                 "news_cnt_20d": random.randint(0, 20),
                 "capital_event_flag": random.choice([0, 1]),
                 "delisting_related_flag": random.choice([0, 1]),
-                "label_drawdown_20d": random.choice([0, 1]),
+                "label_drawdown_20d": labels[offset],
                 "sector": "전기전자" if ticker in ["005930", "000660"] else "전기가스",
             }
             mock_rows.append(row)
