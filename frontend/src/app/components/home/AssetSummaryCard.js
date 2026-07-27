@@ -248,7 +248,7 @@ function RadarChart({ scores, weatherStatus, isDark }) {
  * @param {boolean} props.isDark
  * @param {string}  props.weatherStatus  - 'sunny'|'cloudy'|'rainy'|'thunder'
  */
-export default function AssetSummaryCard({ summary, radarScores, isDark, weatherStatus = 'sunny', isLoading }) {
+export default function AssetSummaryCard({ summary, stockWeatherList = [], radarScores, isDark, weatherStatus = 'sunny', isLoading }) {
   const [activeTab, setActiveTab] = useState('donut'); // 'donut' | 'radar'
 
   if (isLoading) {
@@ -258,7 +258,7 @@ export default function AssetSummaryCard({ summary, radarScores, isDark, weather
       }`}>
         <div className={`flex items-center justify-between px-5 py-3.5 border-b ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-50'}`}>
           <p className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-            주식 보유량
+            내 포트폴리오 & 자산 진단
           </p>
         </div>
         <div className="p-5 space-y-4">
@@ -285,8 +285,18 @@ export default function AssetSummaryCard({ summary, radarScores, isDark, weather
 
   const { totalAsset = 0, riskAssetRatio = 0, holdings = [], totalProfitLossRate = 0, totalQuantity = 0, totalPurchaseAsset = 0, totalProfitLoss = 0 } = summary || {};
 
+  // stockWeatherList 정보를 holdings 데이터에 머지 (날씨 리스크 통합)
+  const holdingsWithWeather = holdings.map(h => {
+    const matched = stockWeatherList.find(s => s.ticker === h.ticker || s.name === h.name) || {};
+    return {
+      ...h,
+      weather: matched.weather || 'sunny',
+      weatherInfo: matched,
+    };
+  });
+
   const palette = WEATHER_PALETTES[weatherStatus] || WEATHER_PALETTES.sunny;
-  const chartWeights = holdings.map((h, i) => ({
+  const chartWeights = holdingsWithWeather.map((h, i) => ({
     category: h.name,
     weight:   h.weight,
     color:    palette[i % palette.length],
@@ -325,7 +335,7 @@ export default function AssetSummaryCard({ summary, radarScores, isDark, weather
       {/* ── 헤더 (종목별 날씨 카드 헤더와 100% 수평 Y축 픽셀 라인 맞춤) ── */}
       <div className={`flex items-center justify-between px-5 py-3.5 border-b ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-50'}`}>
         <p className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>
-          주식 보유량
+          내 포트폴리오 & 자산 진단
         </p>
         <a
           href="/portfolio/register"
@@ -389,7 +399,7 @@ export default function AssetSummaryCard({ summary, radarScores, isDark, weather
       {/* ── 탭 버튼 ── */}
       <div className={`flex gap-1 mb-4 p-0.5 rounded-xl ${isDark ? 'bg-white/5' : 'bg-slate-100'}`}>
         {[
-          { id: 'donut', icon: 'pieChart', label: '자산 구성' },
+          { id: 'donut', icon: 'pieChart', label: '자산 구성 & 날씨' },
           { id: 'radar', icon: 'activity', label: '포트폴리오 핏' },
         ].map(tab => (
           <button
@@ -407,7 +417,7 @@ export default function AssetSummaryCard({ summary, radarScores, isDark, weather
 
       {/* ── 탭 콘텐츠 ── */}
       {activeTab === 'donut' && chartWeights.length > 0 && (
-        <AssetChart theme={isDark ? 'dark' : 'light'} weights={chartWeights} data={holdings} />
+        <AssetChart theme={isDark ? 'dark' : 'light'} weights={chartWeights} data={holdingsWithWeather} />
       )}
 
       {activeTab === 'radar' && radarScores && (
