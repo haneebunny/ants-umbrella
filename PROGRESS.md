@@ -48,3 +48,4 @@
 | 2026-07-27 | Antigravity | `frontend/src/app/diagnosis/page.js` 위험진단 페이지 상단 중복 단계 표시 바 제거 및 하단 탭 내비게이션 바 유지 |
 | 2026-07-27 | Antigravity | `frontend/src/app/components/DiagnosisResultView.js` 성향 종합 리포트 무한 루프 수정 및 API 404 예외 처리 보완, isStandalone prop 누락 경고 제거 |
 | 2026-07-27 | Antigravity | `frontend/src/app/components/home/StockWeatherList.js` 홈 대시보드 종목별 날씨 플로팅 패널 내 상세 버튼 잘림 제거, panelH 여유 배치 및 화면 이탈 방지 가드 보완 |
+| 2026-07-27 | Antigravity | `.github/workflows/ml_ablation_experiment.yml` 내 유실된 `run_pipeline.py` 호출부를 종합 검증 파이프라인인 `health_check.py`로 수정하여 CI 빌드 에러 해결 |
