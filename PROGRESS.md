@@ -45,3 +45,10 @@
 | 2026-07-27 | Antigravity | 브리핑 영역 Hydration/Nested Tag HTML 오류 (<p> 내 <p> 및 <div> 상속) 해소 및 미미 캐릭터 토끼 이모지(🐰) 제거 완료 |
 | 2026-07-27 | Antigravity | 종목 상세 페이지 주가 차트(sparkline), ESG 3대 영역 리스크 카드, 자산 시뮬레이터 비중 및 총액 정보의 하드코딩 전수 제거 및 백엔드/포트폴리오 연동 완료 |
 | 2026-07-27 | Antigravity | 홈 대시보드 게스트 CTA 배너(GuestCTABanner) 상단 여백(pt-4) 추가로 헤더 밀착 현상 해결 및 가독성 개선 |
+| 2026-07-27 | Antigravity | `frontend/src/app/diagnosis/page.js` 위험진단 페이지 상단 중복 단계 표시 바 제거 및 하단 탭 내비게이션 바 유지 |
+| 2026-07-27 | Antigravity | `frontend/src/app/components/DiagnosisResultView.js` 성향 종합 리포트 무한 루프 수정 및 API 404 예외 처리 보완, isStandalone prop 누락 경고 제거 |
+| 2026-07-27 | Antigravity | `frontend/src/app/components/home/StockWeatherList.js` 홈 대시보드 종목별 날씨 플로팅 패널 내 상세 버튼 잘림 제거, panelH 여유 배치 및 화면 이탈 방지 가드 보완 |
+| 2026-07-27 | Antigravity | `.github/workflows/ml_ablation_experiment.yml` 내 유실된 `run_pipeline.py` 호출부를 종합 검증 파이프라인인 `health_check.py`로 수정하여 CI 빌드 에러 해결 |
+| 2026-07-27 | Antigravity | `frontend/src/app/components/layout/Header.js` 에 '종목 상세 분석' 메뉴 추가, 상세 진입 시 하이라이트 연동 및 활성 포트폴리오 첫 번째 종목 자동 우회 라우팅 결합 완료 |
+| 2026-07-27 | Antigravity | `backend/main.py` 내 `/api/alerts` API의 500/누락 필드 개선으로 알림 리스트에 범용 더미 문구 대신 '실제 포착된 기사 제목' 노출 및 zfill(6) 코드 맵핑을 활용한 '한글 종목명' 표시 보완 완료 |
+| 2026-07-27 | Antigravity | 위험 진단 3개 화면(`diagnosis/page.js`, `diagnosis/weather/page.js`, `diagnosis/result/page.js`)의 상단 탭 내비게이션 영역에 pt-4 상단 여백(패딩)을 추가하여 헤더 영역과의 밀착 현상 해결 및 UI 일관성 확보 |
