@@ -55,7 +55,6 @@ function FloatingPanel({ stock, live, anchorRect, isDark, onClose, onNavigate })
   const wCfg   = WEATHER_ICON[stock.weather] || WEATHER_ICON.cloudy;
   const wBg    = WEATHER_BG[stock.weather]   || WEATHER_BG.cloudy;
   const panelW = 280;
-  const panelH = 300;
 
   // 등락률: '주식 실시간 시세'(watchlist-prices)와 동일한 실시간 값 사용.
   // 실시간 조회 실패/미체결(price<=0) 시 예측 기반 change로 폴백.
@@ -69,11 +68,14 @@ function FloatingPanel({ stock, live, anchorRect, isDark, onClose, onNavigate })
     ? anchorRect.right + 8
     : anchorRect.left - panelW - 8;
 
-  // 세로 위치: 클릭 행 기준 (화면 아래 잘리면 위로)
+  // 세로 위치: anchorRect 중앙 기준, 화면 위/아래 여백 16px 확보
+  // panelH를 고정하지 않고 충분한 공간 확보 (실제 높이는 auto)
+  const estimatedH = 320; // 넉넉하게 추정
   let top = anchorRect.top - 16;
-  if (top + panelH > window.innerHeight - 16) {
-    top = window.innerHeight - panelH - 16;
+  if (top + estimatedH > window.innerHeight - 16) {
+    top = Math.max(16, window.innerHeight - estimatedH - 16);
   }
+  if (top < 16) top = 16;
 
   return (
     <>
@@ -85,7 +87,7 @@ function FloatingPanel({ stock, live, anchorRect, isDark, onClose, onNavigate })
 
       {/* 패널 */}
       <div
-        className={`fixed z-50 rounded-2xl shadow-2xl border overflow-hidden ${
+        className={`fixed z-50 rounded-2xl shadow-2xl border ${
           isDark ? 'bg-[#1a1d1a] border-white/10' : 'bg-white border-slate-100'
         }`}
         style={{

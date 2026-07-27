@@ -53,18 +53,6 @@ export default function DiagnosisPage() {
 
   return (
     <div className="w-full">
-      {/* 단계 표시 */}
-      <div className="pb-4 flex items-center gap-2">
-        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${isDark ? 'bg-[#3eb489]/15 text-[#69dbad]' : 'bg-[#3eb489]/10 text-[#3eb489]'}`}>
-          <span className="w-4 h-4 rounded-full flex items-center justify-center text-white text-[9px] font-black" style={{backgroundColor: isDark ? '#69dbad' : '#3eb489'}}>1</span>
-          위험 레이더
-        </div>
-        <Icon name="arrowRight" className={`w-3.5 h-3.5 ${isDark ? 'text-slate-600' : 'text-slate-300'}`} />
-        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${isDark ? 'bg-white/5 text-slate-500' : 'bg-white text-slate-400 border border-slate-200'}`}>
-          <span className="w-4 h-4 rounded-full bg-slate-300 flex items-center justify-center text-white text-[9px] font-black">2</span>
-          포트폴리오 날씨
-        </div>
-      </div>
 
       <main className="pt-2 pb-10 px-1 max-w-4xl">
 
