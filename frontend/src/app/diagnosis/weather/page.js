@@ -257,10 +257,10 @@ export default function DiagnosisWeatherPage() {
                 idx < stockList.length - 1 ? (isDark ? 'border-b border-white/5' : 'border-b border-slate-50') : ''
               } ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}
             >
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
+            <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
                   <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-[#0f1713]'}`}>{s.name}</p>
-                  <span className={`text-[10px] font-mono font-bold px-2 py-0.2 rounded-full ${isDark ? 'bg-white/10 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${isDark ? 'bg-white/10 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
                     {s.ticker} · 비중 {s.weight || 25}%
                   </span>
                 </div>
@@ -271,12 +271,13 @@ export default function DiagnosisWeatherPage() {
                 )}
               </div>
 
-              <div className="flex items-center gap-3">
-                <span className={`text-xs font-black ${s.direction === 'up' ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : 'text-rose-500'}`}>
+              <div className="flex items-center gap-3 flex-shrink-0 ml-2">
+                <span className={`text-xs font-black whitespace-nowrap ${s.direction === 'up' ? (isDark ? 'text-[#69dbad]' : 'text-[#3eb489]') : 'text-rose-500'}`}>
                   {s.direction === 'up' ? '▲ 상승' : '▼ 하락'} ({s.change > 0 ? `+${s.change}%` : `${s.change}%`})
                 </span>
                 <Icon name="chevronRight" className={`w-4 h-4 ${isDark ? 'text-slate-600' : 'text-slate-400'}`} />
               </div>
+
             </button>
           ))}
         </div>
