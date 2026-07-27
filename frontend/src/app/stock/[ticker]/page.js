@@ -456,9 +456,9 @@ export default function StockDetailPage() {
                   예측 원리 보기
                 </button>
               </div>
-              <p className={`text-xs sm:text-sm leading-relaxed font-medium ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+              <div className={`text-xs sm:text-sm leading-relaxed font-medium ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                 {renderMarkdownBold(stock.aiBriefing)}
-              </p>
+              </div>
             </div>
           </div>
         </div>
