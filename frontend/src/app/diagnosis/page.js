@@ -57,7 +57,7 @@ export default function DiagnosisPage() {
       <main className="pt-2 pb-10 px-1 max-w-4xl">
 
         {/* ── 2단계 탭 내비게이션 ── */}
-        <div className="pt-2 pb-4 flex items-center gap-2">
+        <div className="pt-4 pb-4 flex items-center gap-2">
           <button
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
               isDark ? 'bg-[#3eb489]/20 text-[#69dbad]' : 'bg-[#3eb489]/10 text-[#3eb489]'

@@ -139,7 +139,7 @@ export default function DiagnosisWeatherPage() {
       <main className="pt-2 pb-10 px-1 max-w-4xl">
 
         {/* ── 3단계 탭 내비게이션 ── */}
-        <div className="pt-2 pb-4 flex items-center gap-2 flex-wrap">
+        <div className="pt-4 pb-4 flex items-center gap-2 flex-wrap">
           <button
             onClick={() => router.push('/diagnosis')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${isDark ? 'bg-white/5 text-slate-500 hover:text-slate-300' : 'bg-white text-slate-400 border border-slate-200 hover:text-slate-600'}`}
