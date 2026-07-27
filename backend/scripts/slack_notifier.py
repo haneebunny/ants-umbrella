@@ -2,6 +2,7 @@
 import os
 import sys
 import requests
+import numpy as np
 import pandas as pd
 import pytz
 from pathlib import Path
@@ -21,6 +22,12 @@ except ImportError:
 # app 모듈 로드를 위한 경로 수정
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from app.db import get_collection
+
+DEFAULT_GEMINI_MODEL = "gemini-3.1-flash-lite"
+
+# LLM 악재 검증이 실제로 수행됐는지 추적. 한 건이라도 검증 없이 통과했다면
+# 알림 본문에서 "검증된 뉴스" 표현을 빼고 미검증 경고를 노출한다.
+LLM_FILTER_STATE = {"failed": False, "reason": ""}
 
 # ── 알림 발송 임계값 ────────────────────────────────────────────────
 # main.py의 날씨 컷과 동일한 기준을 쓴다(_WEATHER_CUT_CLOUDY / _WEATHER_CUT_RAINY).
@@ -79,13 +86,44 @@ def get_event_details(ticker, date_str):
             
     return name, "중대 리스크 요인 감지", "#"
 
+def _macro_freshness_note(macro_date_str: str) -> str:
+    """거시 지표 기준일을 사람이 이해할 수 있게 표기한다.
+
+    ECOS 환율은 영업일에만 발표되므로 월요일 아침 배치에서는 직전 금요일 값이 최신이다.
+    이는 정상 동작이지만 '(7-24 기준)'만 찍히면 데이터가 낡은 것처럼 보인다.
+    → 영업일 기준 며칠 전인지 계산해서 정상/지연을 구분해 보여준다.
+    """
+    try:
+        macro_date = pd.to_datetime(macro_date_str).date()
+        today = datetime.now(pytz.timezone("Asia/Seoul")).date()
+        # 두 날짜 사이의 영업일 수 (주말 제외)
+        business_gap = int(np.busday_count(macro_date, today))
+        label = macro_date.strftime("%m월 %d일")
+        if business_gap <= 1:
+            return f"_{label} 기준(최근 영업일)이에요. 거시 흐름이 바뀌었다면 살펴봐 주세요!_"
+        return (f"⚠️ _{label} 기준으로, 영업일 {business_gap}일 전 데이터예요. "
+                f"거시 지표 수집이 밀렸을 수 있어요._")
+    except Exception:
+        return f"_{macro_date_str} 기준이에요._"
+
+
 def validate_event_with_llm(name: str, title: str) -> bool:
     """LLM을 호출하여 해당 이벤트가 해당 기업에 대한 실질적인 ESG 악재 공시/뉴스인지 검증합니다.
     단순 클릭베이트성 낚시글, 기회성 긍정 뉴스, 혹은 무관한 스포츠/문화 기사는 필터링합니다.
+
+    검증 불가 시(키 미설정·API 오류) 항목을 통과시키되 LLM_FILTER_STATE에 실패를 기록한다.
+    호출부는 이 플래그를 보고 "검증됨" 문구를 빼고 "미검증" 배지를 붙인다.
+    조용히 통과시키면서 "검증된 뉴스"라고 표기하는 것이 가장 나쁜 실패 모드이기 때문이다.
     """
-    gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    # 주의: os.environ.get(key, default)는 키가 "없을 때"만 default를 쓴다.
+    # GitHub Actions는 미설정 secret을 빈 문자열로 주입하므로 default가 적용되지 않는다.
+    # 따라서 `or`로 빈 문자열까지 걸러야 한다.
+    gemini_key = (os.environ.get("GEMINI_API_KEY") or "").strip()
     if not gemini_key:
-        print("[INFO] GEMINI_API_KEY가 설정되지 않아 LLM 필터 검증을 건너뛰고 기본 통과 처리합니다.")
+        print("[ERROR] GEMINI_API_KEY 미설정 — LLM 악재 검증을 수행할 수 없습니다. "
+              "항목을 통과시키되 '미검증'으로 표기합니다.")
+        LLM_FILTER_STATE["failed"] = True
+        LLM_FILTER_STATE["reason"] = "GEMINI_API_KEY 미설정"
         return True
 
     try:
@@ -97,7 +135,7 @@ def validate_event_with_llm(name: str, title: str) -> bool:
 제목: "{title}"
 """
         response = client.models.generate_content(
-            model=os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite").strip(),
+            model=(os.environ.get("GEMINI_MODEL") or DEFAULT_GEMINI_MODEL).strip(),
             contents=prompt,
             config={
                 "response_mime_type": "application/json",
@@ -108,7 +146,9 @@ def validate_event_with_llm(name: str, title: str) -> bool:
         print(f"[LLM Filter] Ticker: {name} | Title: {title} | Validation: {result.is_real_risk} | Reason: {result.reason}")
         return result.is_real_risk
     except Exception as e:
-        print(f"[WARN] LLM 검증 필터 도중 예외 발생 (기본값 True 처리): {e}")
+        print(f"[ERROR] LLM 검증 필터 예외 — 항목을 통과시키되 '미검증'으로 표기합니다: {e}")
+        LLM_FILTER_STATE["failed"] = True
+        LLM_FILTER_STATE["reason"] = f"LLM 호출 실패: {type(e).__name__}"
         return True
 
 
@@ -340,7 +380,10 @@ def send_slack_alert():
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"📊 *시장 주요 거시 경제 지표 ({macro_info['date']} 기준)*\n• *한국은행 기준금리*: `{macro_info['rate']}%`\n• *원/달러 환율*: `{macro_info['fx']}원`\n거시 경제 흐름이 바뀌고 있다면 꼭 한번 살펴봐 주세요!"
+                    "text": f"📊 *시장 주요 거시 경제 지표*\n"
+                            f"• *한국은행 기준금리*: `{macro_info['rate']}%`\n"
+                            f"• *원/달러 환율*: `{macro_info['fx']}원`\n"
+                            f"{_macro_freshness_note(macro_info['date'])}"
                 }
             })
             blocks.append({"type": "divider"})
@@ -380,11 +423,17 @@ def send_slack_alert():
             blocks.append({"type": "divider"})
 
         # 5-3. 개별 종목 ESG 악재 리스트 추가
+        #      LLM 검증이 실패했다면 "검증됨"이라고 말해서는 안 된다.
+        llm_ok = not LLM_FILTER_STATE["failed"]
+        header_text = f"📰 *포트폴리오 주요 개별 종목 악재 및 공시 ({len(docs)}건 감지)*"
+        if not llm_ok:
+            header_text += (f"\n⚠️ _악재 검증 필터가 동작하지 않아 걸러지지 않은 뉴스가 섞여 있을 수 있어요_"
+                            f"\n_(원인: {LLM_FILTER_STATE['reason']})_")
         blocks.append({
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f"📰 *포트폴리오 주요 개별 종목 악재 및 공시 ({len(docs)}건 감지)*"
+                "text": header_text
             }
         })
         
@@ -400,7 +449,10 @@ def send_slack_alert():
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": f"*대상 종목*: *{name}* (`{ticker}`)\n*이슈 유형*: `[{doc.get('news_category', '리스크')}]`\n*상세 내용*: {details_str}\n실질적인 기업 악재로 검증된 뉴스예요. 꼭 꼼꼼히 확인해 보세요!"
+                        "text": f"*대상 종목*: *{name}* (`{ticker}`)\n*이슈 유형*: `[{doc.get('news_category', '리스크')}]`\n*상세 내용*: {details_str}\n"
+                                + ("실질적인 기업 악재로 검증된 뉴스예요. 꼭 꼼꼼히 확인해 보세요!"
+                                   if llm_ok else
+                                   "⚠️ 미검증 항목이에요 — 실제 악재가 아닐 수 있으니 원문을 직접 확인해 주세요.")
                     }
                 })
         else:
