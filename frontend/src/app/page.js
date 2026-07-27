@@ -432,10 +432,10 @@ export default function Home() {
       <RainEffect weatherStatus={overallWeather.status} isDark={isDark} />
 
       {/* ── 콘텐츠 영역을 relative z-10으로 감싸 빗방울이 뒤로 가게 함 ── */}
-      <div className="relative z-10 w-full">
+      <div className="relative z-10 w-full pt-4">
         {/* ─ 게스트 CTA (데모 시에만) ─ */}
         {isDemo && (
-          <div className="pt-4 mb-3">
+          <div className="mb-3">
             <GuestCTABanner isDemoMode={isDemo} isDark={isDark} compact />
           </div>
         )}
@@ -456,7 +456,7 @@ export default function Home() {
               onForceWeatherChange={setForceWeather}
             />
 
-            {/* 하단 3열 위젯 그리드: 12열 레이아웃으로 변경하여 좌측은 좁히고 종목별 날씨는 넓힘 */}
+            {/* 하단 위젯 그리드: 좌측 코스닥+투자성향(4열) / 우측 내 포트폴리오 & 자산 진단 통합 카드(8열) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 items-start">
 
               {/* 코스닥 + 투자성향 (12열 중 3열 배정, 컴팩트하게) */}
@@ -472,19 +472,11 @@ export default function Home() {
                 />
               </div>
 
-              {/* 종목별 날씨 (12열 중 5열 배정, 종목명이 안 잘리도록 넉넉하게) */}
-              <div className="md:col-span-1 lg:col-span-4 flex flex-col gap-4">
-                <StockWeatherList
-                  stocks={stockWeatherList}
-                  isDark={isDark}
-                  isLoading={apiLoading || apiFailed || !liveStockList}
-                />
-              </div>
-
-              {/* 보유 자산 (md에서 2칸 차지, lg에서 4열 배정) */}
-              <div className="md:col-span-2 lg:col-span-5 flex flex-col gap-4">
+              {/* 내 포트폴리오 & 자산 진단 (통합 카드 - 12열 중 9열 배정하여 훨씬 넓은 가로 공간 확보) */}
+              <div className="md:col-span-1 lg:col-span-9 flex flex-col gap-4">
                 <AssetSummaryCard
                   summary={liveAssetSummary}
+                  stockWeatherList={stockWeatherList}
                   radarScores={radarScores}
                   isDark={isDark}
                   weatherStatus={overallWeather.status}

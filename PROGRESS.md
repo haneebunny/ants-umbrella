@@ -37,7 +37,8 @@
 | 2026-07-26 | Antigravity | validate_event_with_llm() LLM 악재 검증 필터 도입: 낚시성·매수추천 뉴스 Gemini가 자동 차단, 테스트 모드 우회 제거 |
 | 2026-07-26 | Antigravity | GenerateContentConfig API 수정: response_format → response_mime_type + response_schema (현재 SDK 호환, slack_notifier.py / process_news_features.py 동시 수정) |
 | 2026-07-26 | Antigravity | GEMINI_MODEL 하드코딩 전면 제거: main.py / process_news_features.py / slack_notifier.py 세 곳을 os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")로 통일 |
-| 2026-07-26 | Antigravity | 슬랙 알림 스케줄 개편: 하루 3회(6:41/12:00/17:46) → 2회(7:41 KST 무조건 발송 / 17:46 KST 변동 시만 발송). GitHub Actions 크론 및 ALERT_MODE 자동 판별 로직 추가 |
+| 2026-07-27 | Antigravity | 대시보드 하단 그리드 개편: 종목별 날씨와 주식 보유량 위젯을 '내 포트폴리오 & 자산 진단'으로 통합, 내부 스크롤 제거 및 2열 타일 레이아웃 적용 |
+
 | 2026-07-26 | Antigravity | 불필요 파일 정리: 실험용 스크립트 12개 삭제(verify2.py / compare_features.py / run_experiments.py 등), 더미·목업 데이터 파일 7개 삭제, DL/ 및 training/ 폴더 제거 |
 | 2026-07-27 | Antigravity | `slack_notifier.py` 거시 지표(금리/환율) 결측 보정 시 실제 지표 생성일 표시 및 거시 흐름 영향 요약 문구 슬랙 메시지에 추가 |
 | 2026-07-27 | Antigravity | `layout.js` 메타데이터 수정(AI 주가 급락 위험 예측 반영) 및 파비콘/앱 아이콘(`icon.png`, `favicon.ico`) 개미의 우산 로고 이미지로 교체 |
