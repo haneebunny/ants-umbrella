@@ -5,7 +5,7 @@
       "portfolio_id": "portfolio_001",
       "portfolio_name": "1번 [안정추구형] 대형 우량주 & 전통 배당·방어",
       "target_budget": 40000000,
-      "total_portfolio_value": 39920000,
+      "total_portfolio_value": 42020000,
       "currency": "KRW",
       "holdings": [
         {
@@ -35,6 +35,13 @@
           "quantity": 40,
           "average_price": 252000,
           "amount": 10080000
+        },
+        {
+          "ticker": "015760",
+          "stock_name": "한국전력",
+          "quantity": 100,
+          "average_price": 21000,
+          "amount": 2100000
         }
       ]
     },
