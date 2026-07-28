@@ -129,6 +129,16 @@ export default function SurveyScreen({
               {isDark ? <Icon name="moon" className="w-3.5 h-3.5" /> : <Icon name="sun" className="w-3.5 h-3.5" />}
             </div>
           </button>
+
+          <div className="flex items-center gap-2 font-mono text-xs">
+            <span className={`px-2.5 py-1 rounded-lg ${
+              isDark 
+                ? 'bg-slate-800 text-[#69dbad]' 
+                : 'bg-[#3eb489]/10 border border-[#3eb489]/20 text-[#3eb489] font-bold'
+            }`}>
+              질문 {String(currentQuestionIndex + 1).padStart(2, '0')}
+            </span>
+          </div>
         </div>
       </header>
 

@@ -12,12 +12,18 @@ from datetime import datetime
 try:
     from google import genai
     from pydantic import BaseModel
+    HAS_GENAI = True
     
     class RiskValidationResult(BaseModel):
         is_real_risk: bool
         reason: str
 except ImportError:
-    pass
+    genai = None
+    BaseModel = object
+    HAS_GENAI = False
+    
+    class RiskValidationResult:
+        pass
 
 # app 모듈 로드를 위한 경로 수정
 sys.path.append(str(Path(__file__).resolve().parent.parent))
@@ -64,7 +70,20 @@ TICKER_NAME_MAP = {
 }
 
 def get_event_details(ticker, date_str):
-    name = TICKER_NAME_MAP.get(ticker, "알 수 없는 종목")
+    # 역매핑용 사전 정의
+    NAME_TO_TICKER = {v: k for k, v in TICKER_NAME_MAP.items()}
+    
+    # 만약 ticker 변수에 종목코드 대신 이미 회사명(예: "현대차")이 들어와 있다면 상호 복원
+    if ticker in NAME_TO_TICKER:
+        name = ticker
+        ticker = NAME_TO_TICKER[name]
+    else:
+        name = TICKER_NAME_MAP.get(ticker, "알 수 없는 종목")
+        if name == "알 수 없는 종목" and ticker and not str(ticker).isdigit():
+            # ticker 자체가 종목명 역할을 하는 경우 복구
+            name = str(ticker)
+            # 수동 매핑으로 6자리 코드로의 치환 시도
+            ticker = NAME_TO_TICKER.get(name, ticker)
     
     root_path = Path(__file__).resolve().parent.parent.parent
     
@@ -127,6 +146,13 @@ def validate_event_with_llm(name: str, title: str) -> bool:
     호출부는 이 플래그를 보고 "검증됨" 문구를 빼고 "미검증" 배지를 붙인다.
     조용히 통과시키면서 "검증된 뉴스"라고 표기하는 것이 가장 나쁜 실패 모드이기 때문이다.
     """
+    if not HAS_GENAI or genai is None:
+        print("[ERROR] google-genai 패키지가 임포트되지 않았습니다 — LLM 악재 검증을 수행할 수 없습니다. "
+              "항목을 통과시키되 '미검증'으로 표기합니다.")
+        LLM_FILTER_STATE["failed"] = True
+        LLM_FILTER_STATE["reason"] = "google-genai 패키지 미설치"
+        return True
+
     # 주의: os.environ.get(key, default)는 키가 "없을 때"만 default를 쓴다.
     # GitHub Actions는 미설정 secret을 빈 문자열로 주입하므로 default가 적용되지 않는다.
     # 따라서 `or`로 빈 문자열까지 걸러야 한다.
