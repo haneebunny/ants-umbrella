@@ -70,19 +70,23 @@ export default function IntroScreen({ theme, onStart, toggleTheme }) {
       <main className="flex-grow w-full max-w-5xl mx-auto px-6 pt-28 pb-16 flex items-center justify-center relative z-10">
         <div className="text-center w-full max-w-3xl space-y-8">
           
-          {/* Logo illustration */}
+          {/* 개미 캐릭터 일러스트 */}
           <div className="mb-8 relative inline-block">
             <div className={`absolute inset-0 blur-3xl rounded-full scale-125 opacity-60 ${
-              isDark ? 'bg-[#69dbad]/15' : 'bg-[#3eb489]/10'
+              isDark ? 'bg-[#69dbad]/20' : 'bg-[#3eb489]/15'
             }`} />
             
-            <div className={`relative rounded-full p-5 w-44 h-44 mx-auto flex items-center justify-center border-2 shadow-xl ${
+            <div className={`relative rounded-full p-5 w-48 h-48 mx-auto flex items-center justify-center border-2 shadow-2xl transition-transform hover:scale-105 ${
               isDark 
-                ? 'bg-[#1e2020]/75 backdrop-blur-md border-[#69dbad]/30' 
-                : 'bg-white/80 backdrop-blur-md border-[#3eb489]/20 soft-shadow-light'
+                ? 'bg-[#1e2020]/80 backdrop-blur-md border-[#69dbad]/40' 
+                : 'bg-white/90 backdrop-blur-md border-[#3eb489]/30 soft-shadow-light'
             }`}>
               <div className="absolute inset-0 pointer-events-none opacity-5 bg-[radial-gradient(#3eb489_1px,transparent_1px)] [background-size:10px_10px]" />
-              <img src="/images/ants_umbrella_logo.png" alt="개미의 우산 로고" className="w-32 h-32 object-contain" />
+              <img 
+                src="/images/mimi/mimi_1.png" 
+                alt="개미 캐릭터 미미" 
+                className="w-36 h-36 object-contain filter drop-shadow-md" 
+              />
             </div>
           </div>
 
@@ -117,7 +121,7 @@ export default function IntroScreen({ theme, onStart, toggleTheme }) {
               </div>
               <div className="flex items-center gap-1.5">
                 <Icon name="timer" className="w-4 h-4 text-[#3eb489]" />
-                <span>약 2분 소요</span>
+                <span>약 3분 소요</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Icon name="info" className="w-4 h-4 text-[#3eb489]" />

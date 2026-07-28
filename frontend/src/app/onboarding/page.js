@@ -21,7 +21,9 @@ export default function OnboardingPage() {
   };
 
   const handleSelectOption = (questionId, optionId) => {
-    setAnswers(prev => ({ ...prev, [questionId]: optionId }));
+    const updated = { ...answers, [questionId]: optionId };
+    setAnswers(updated);
+    return updated;
   };
 
   const handlePrevQuestion = () => {
@@ -32,11 +34,12 @@ export default function OnboardingPage() {
     }
   };
 
-  const handleNextQuestion = () => {
+  const handleNextQuestion = (overrideAnswers) => {
+    const finalAnswers = overrideAnswers || answers;
     if (currentQuestionIndex < QUESTIONS.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
-      const computedProfile = calculateRiskProfile(answers);
+      const computedProfile = calculateRiskProfile(finalAnswers);
       localStorage.setItem('ants_result_profile', JSON.stringify(computedProfile));
       
       // 진단결과 페이지로 분리 라우팅 이동!

@@ -12,5 +12,15 @@
 | 2026-07-26 | Antigravity | [3안 개선] 최초 진단 후 미등록된 종목들에 대해 디폴트로 '20거래일 전 실제 종가'를 자동 매핑하여 실시간 수익률 계산 완성도 고도화 |
 | 2026-07-26 | Antigravity | [3단계] 대시보드 내 개별 종목 클릭 시 노출되는 AI 상세 분석 뷰(`/stock/[ticker]`) 라우팅 최종 검증 및 연동 흐름 확인 완료 |
 | 2026-07-27 | Antigravity | 대시보드 UI/UX 전면 개편: '종목별 날씨'와 '보유 자산' 카드를 '☂️ 내 우산 속 보유 자산' 통합 위젯(9열)으로 합치고, 스크롤 제거, 2열 타일 배치, 3종 통일 미니 뱃지, 헤더 타이포 및 레이더 차트 뉴닉 스타일 해설 튜닝 완료 |
+| 2026-07-27 | Antigravity | `SurveyScreen` 진단 질문 카드 내 이전/다음 내비게이션 버튼을 인라인으로 배치 및 `onboarding/result` 진단 결과 뷰를 `DiagnosisResultView`로 통합 개편 완료 |
+| 2026-07-27 | Antigravity | `SurveyScreen` 개미 미미 캐릭터 5종 포즈 동적 연결, 질문을 바라보는 좌우반전(`-scale-x-100`), 둥실 둥실 부유 애니메이션 및 답변 선택 즉시(250ms 피드백 후) 자동 다음 이동 완료 |
+| 2026-07-27 | Antigravity | `onboarding/result` 진단 결과 리포트 뷰 내 `DiagnosisResultView` 컴포넌트로의 `isDark={isDark}` 전달 연결 및 전체 컨테이너 다크모드 배경색(`bg-[#0d0f0f]`) 반영 완료 |
+| 2026-07-27 | Antigravity | `SurveyScreen` 좌측 카드 하단의 '🐜 우산 비서 미미' 뱃지 삭제 및 개미 캐릭터 높이를 10px 아래로 배치(`translate-y-[10px]`) 수정 완료 |
+| 2026-07-27 | Antigravity | `SurveyScreen` 개미 캐릭터의 상하 바운스/부유 애니메이션 및 그림자 펄스를 완전 제거하여 정적 이미지로 고정 완료 |
+| 2026-07-27 | Antigravity | `IntroScreen` 성향 진단 시작 전 메인 소개 화면의 원형 아이콘을 로고 대신 개미 캐릭터 미미(`mimi_1.png`)로 변경 적용 완료 |
+| 2026-07-27 | Antigravity | `IntroScreen` 메인 뱃지 안내 문구를 '약 3분 소요'로 맞추고 메인 시작 버튼을 '진단 시작하기'로 표기 수정 완료 |
+| 2026-07-27 | Antigravity | `SurveyScreen` 진단 질문 카드 내 개미 미미 캐릭터 수직 위치를 5px 위로 올림(`translate-y-[5px]`) 수정 완료 |
+| 2026-07-27 | Antigravity | `SurveyScreen` 개미 미미 캐릭터가 좌측 말풍선에서 대화체 질문(`mimiQuestions`)을 직접 전담하고, 우측 영역은 가이드 서브텍스트 및 선택지로 구성하여 질문 중복을 완전 해소함 |
+| 2026-07-27 | Antigravity | `SurveyScreen` 우측에 있던 '💡 진단 가이드' 박스를 좌측 개미 캐릭터 아래 영역으로 이동하여 우측 선택지 시선 집중도 극대화 완료 |
 
 

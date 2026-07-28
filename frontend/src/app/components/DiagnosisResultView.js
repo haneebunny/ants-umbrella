@@ -296,7 +296,6 @@ export default function DiagnosisResultView({ profile, isDark, onReDiagnose, isS
     }
 
     fetchBackendCachedReasons();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedBand, setIndex]);
 
   if (!profile) return null;
