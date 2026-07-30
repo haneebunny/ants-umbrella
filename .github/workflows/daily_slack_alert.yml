@@ -1,11 +1,11 @@
 name: Daily ESG Risk Alert Pipeline
 
 on:
-  schedule:
-    # 매일 KST 오전 7시 41분 (UTC 22:41) — 아침 수집 후 1차 알림 발송
-    - cron: '41 22 * * *'
-    # 매일 KST 오후 5시 46분 (UTC 08:46) — 저녁 수집 후 변동 시 2차 알림 발송
-    - cron: '46 8 * * *'
+#   schedule:
+#     # 매일 KST 오전 7시 41분 (UTC 22:41) — 아침 수집 후 1차 알림 발송
+#     - cron: '41 22 * * *'
+#     # 매일 KST 오후 5시 46분 (UTC 08:46) — 저녁 수집 후 변동 시 2차 알림 발송
+#     - cron: '46 8 * * *'
     
   workflow_dispatch: # GitHub 웹 UI에서 수동 실행 지원
     inputs:
