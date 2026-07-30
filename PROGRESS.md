@@ -59,3 +59,4 @@
 | 2026-07-27 | Antigravity | `frontend/src/app/components/SurveyScreen.js` 내 투자성향 진단 시 헤더 영역의 구글 아바타 프로필 사진을 삭제하고, 질문 순번 단계 칩을 항상 반응형으로 렌더링하도록 보완 완료 |
 | 2026-07-27 | Antigravity | `backend/scripts/slack_notifier.py` 내 `google-genai` 패키지 임포트 실패 시 `NameError`로 튕기지 않고 우아하게 '미검증' 예외 처리되도록 `HAS_GENAI` 안전 가드 및 풀백 클래스 구조 설계 완료 |
 | 2026-07-27 | Antigravity | `process_news_features.py`와 `slack_notifier.py` 내 종목코드 매핑 에러('알 수 없는 종목') 해결을 위한 수동 보정 딕셔너리 탑재 및 기존 MongoDB 오염 데이터 마이그레이션(`migrate_esg_events.py`) 완료 |
+| 2026-07-30 | Antigravity | `.github/workflows/daily_slack_alert.yml` 내 `schedule` 설정을 주석 처리하여 매일 실행되는 배치 파이프라인 일시중지 |
